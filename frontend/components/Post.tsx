@@ -1,9 +1,9 @@
-import { Button } from "@/frontend/app/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import Image from "next/image";
 import React, { useContext, useEffect, useState } from "react";
 import moment from "moment";
 import axios from "axios";
-import { AuthContext } from "@/frontend/app/context/AuthContext";
+import { AuthContext } from "@/app/context/AuthContext";
 import { SendIcon } from "lucide-react";
 import { Comments } from "./Comments";
 import { API_ENDPOINT } from "@/axios.config";

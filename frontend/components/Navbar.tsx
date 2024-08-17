@@ -22,9 +22,9 @@ import Image from "next/image";
 import Link from "next/link";
 import Search from "./Search";
 
-import { AuthContext } from "@/frontend/app/context/AuthContext";
+import { AuthContext } from "@/app/context/AuthContext";
 import { AuthContextType } from "@/typings";
-import FeedUploadBox from "@/frontend/app/(dashboard)/feed/_components/FeedUploadBox";
+import FeedUploadBox from "@/app/(dashboard)/feed/_components/FeedUploadBox";
 
 interface navLinks {
   name: string;

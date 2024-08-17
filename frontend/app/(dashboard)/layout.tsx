@@ -1,5 +1,5 @@
 "use client";
-const Navbar = dynamic(() => import("@/frontend/app/components/Navbar"), {
+const Navbar = dynamic(() => import("@/components/Navbar"), {
   ssr: false,
 });
 

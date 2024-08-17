@@ -1,5 +1,5 @@
 import { API_ENDPOINT } from "@/axios.config";
-import { AuthContext } from "@/frontend/app/context/AuthContext";
+import { AuthContext } from "@/app/context/AuthContext";
 import axios from "axios";
 import { useState, useEffect, useContext } from "react";
 

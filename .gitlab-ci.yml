@@ -1,0 +1,9 @@
+stages:
+  - build
+
+build_image:
+  stage: build
+  script:
+    - echo "Building"
+    - env
+    - docker images

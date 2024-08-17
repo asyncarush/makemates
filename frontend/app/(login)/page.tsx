@@ -4,9 +4,9 @@ import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import Signup from "./_component/signup";
 import InputWithLabel from "./_component/InputWithLabel";
-import { Button } from "@/frontend/app/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { AuthContextType } from "@/typings";
-import { AuthContext } from "@/frontend/app/context/AuthContext";
+import { AuthContext } from "@/app/context/AuthContext";
 import Head from "next/head";
 
 function Login() {

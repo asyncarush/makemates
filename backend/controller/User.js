@@ -2,6 +2,9 @@ import { validateNewUser, validateUser } from "../utils/validate.js";
 import DB from "../db/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export function login(req, res) {
   const { error } = validateUser(req.body);
@@ -57,53 +60,73 @@ export function register(req, res) {
 
   if (error) return res.status(400).send(error.details[0].message);
 
-  DB.query(
-    "SELECT email FROM users WHERE email = ?",
-    [req.body.email],
-    (err, result) => {
-      if (err) return res.status(400).send(err);
-      if (result.length) {
-        return res.status(401).send("User already exist.");
-      } else {
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(req.body.password, salt, (err, hash) => {
-            const newUser = {
-              name: req.body.name,
-              email: req.body.email,
-              password: hash,
-              gender: req.body.gender,
-              dob: `${req.body.day} ${req.body.month} ${req.body.year}`,
-            };
+  // create user with prisma
 
-            DB.query(
-              "INSERT INTO users (name, email, password, gender, dob) VALUES (?, ?, ?, ?, STR_TO_DATE(?, '%d %M %Y'))",
-              [...Object.values(newUser)],
-              (err, result) => {
-                if (err) return res.status(400).send(err);
+  bcrypt.genSalt(10, function (err, salt) {
+    bcrypt.hash(myPlaintextPassword, salt, async function (err, hash) {
+      const newUser = {
+        name: req.body.name,
+        email: req.body.email,
+        password: hash,
+        gender: req.body.gender,
+        dob: `${req.body.day} ${req.body.month} ${req.body.year}`,
+      };
 
-                const token = jwt.sign(
-                  { id: result.insertId },
-                  process.env.JWT_PRIVATE_KEY,
-                  {
-                    expiresIn: "24hr",
-                  }
-                );
-                return res
-                  .cookie("x-auth-token", token, {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
-                    sameSite:
-                      process.env.NODE_ENV === "production" ? "None" : "Lax",
-                  })
-                  .status(200)
-                  .send({ id: result.insertId });
-              }
-            );
-          });
-        });
-      }
-    }
-  );
+      const user = await prisma.users({
+        data: newUser,
+      });
+
+      console.log(user);
+    });
+  });
+
+  // DB.query(
+  //   "SELECT email FROM users WHERE email = ?",
+  //   [req.body.email],
+  //   (err, result) => {
+  //     if (err) return res.status(400).send(err);
+  //     if (result.length) {
+  //       return res.status(401).send("User already exist.");
+  //     } else {
+  //       bcrypt.genSalt(10, (err, salt) => {
+  //         bcrypt.hash(req.body.password, salt, (err, hash) => {
+  //           const newUser = {
+  //             name: req.body.name,
+  //             email: req.body.email,
+  //             password: hash,
+  //             gender: req.body.gender,
+  //             dob: `${req.body.day} ${req.body.month} ${req.body.year}`,
+  //           };
+
+  //           DB.query(
+  //             "INSERT INTO users (name, email, password, gender, dob) VALUES (?, ?, ?, ?, STR_TO_DATE(?, '%d %M %Y'))",
+  //             [...Object.values(newUser)],
+  //             (err, result) => {
+  //               if (err) return res.status(400).send(err);
+
+  //               const token = jwt.sign(
+  //                 { id: result.insertId },
+  //                 process.env.JWT_PRIVATE_KEY,
+  //                 {
+  //                   expiresIn: "24hr",
+  //                 }
+  //               );
+  //               return res
+  //                 .cookie("x-auth-token", token, {
+  //                   httpOnly: true,
+  //                   secure: process.env.NODE_ENV === "production",
+  //                   sameSite:
+  //                     process.env.NODE_ENV === "production" ? "None" : "Lax",
+  //                 })
+  //                 .status(200)
+  //                 .send({ id: result.insertId });
+  //             }
+  //           );
+  //         });
+  //       });
+  //     }
+  //   }
+  // );
 }
 
 export async function getUserData(req, res) {

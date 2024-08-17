@@ -10,7 +10,7 @@ import UpdatePassword from "./_component/updatePassword";
 import UpdateMobile from "./_component/updateMobile";
 import UpdateProfilePhoto from "./_component/UpdateProfilePhoto";
 import Image from "next/image";
-import { AuthContext } from "@/frontend/app/context/AuthContext";
+import { AuthContext } from "@/app/context/AuthContext";
 import UpdateCity from "./_component/updateCity";
 import UpdateState from "./_component/updateState";
 import UpdateCountry from "./_component/updateCountry";
