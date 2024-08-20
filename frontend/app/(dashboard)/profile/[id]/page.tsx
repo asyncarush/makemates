@@ -4,11 +4,11 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import axios from "axios";
-import { Badge } from "@/frontend/app/components/ui/badge";
-import { Button } from "@/frontend/app/components/ui/button";
-import Post from "@/frontend/app/components/Post";
-import { useFollowed } from "@/frontend/hooks/isFriend";
-import Posts from "@/frontend/app/components/Posts";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Post from "@/components/Post";
+import { useFollowed } from "@/hooks/isFriend";
+import Posts from "@/components/Posts";
 import { API_ENDPOINT } from "@/axios.config";
 
 function Page() {

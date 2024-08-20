@@ -6,15 +6,15 @@ import Compressor from "compressorjs";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
-import { Button } from "@/frontend/app/components/ui/button";
-import { Progress } from "@/frontend/app/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogTrigger,
   DialogClose,
-} from "@/frontend/app/components/ui/dialog";
+} from "@/components/ui/dialog";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { app } from "@/firebase.js";

@@ -1,4 +1,4 @@
-import { Button } from "@/frontend/app/components/ui/button";
+import { Button } from "@/components/ui/button";
 import React, { useContext, useRef, useState } from "react";
 import FileInput from "./FileInput";
 
@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/frontend/app/components/ui/dialog";
+} from "@/components/ui/dialog";
 
 import Cropper from "react-easy-crop";
 import {
@@ -22,11 +22,11 @@ import {
 } from "firebase/storage";
 import { app } from "@/firebase";
 import axios from "axios";
-import { Progress } from "@/frontend/app/components/ui/progress";
+import { Progress } from "@/components/ui/progress";
 import toast from "react-hot-toast";
 import Compressor from "compressorjs";
 import { API_ENDPOINT } from "@/axios.config";
-import { AuthContext } from "@/frontend/app/context/AuthContext";
+import { AuthContext } from "@/app/context/AuthContext";
 
 function UpdateProfilePhoto({ value }: { value: string }) {
   const { currentUser }: any = useContext(AuthContext);

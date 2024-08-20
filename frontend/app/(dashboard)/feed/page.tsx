@@ -3,7 +3,7 @@
 import React, { useContext, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Posts from "@/frontend/app/components/Posts";
+import Posts from "@/components/Posts";
 
 import { AiFillLike } from "react-icons/ai";
 import { BsMessenger } from "react-icons/bs";
@@ -11,13 +11,13 @@ import { FaBookmark, FaUserFriends } from "react-icons/fa";
 import { TbHttpPost } from "react-icons/tb";
 import { FaUser } from "react-icons/fa";
 import FeedUploadBox from "./_components/FeedUploadBox";
-import { AuthContext } from "@/frontend/app/context/AuthContext";
-import useFriendList from "@/frontend/hooks/useFriendList";
+import { AuthContext } from "@/app/context/AuthContext";
+import useFriendList from "@/hooks/useFriendList";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/frontend/app/components/ui/hover-card";
+} from "@/components/ui/hover-card";
 import axios from "axios";
 import { API_ENDPOINT } from "@/axios.config";
 

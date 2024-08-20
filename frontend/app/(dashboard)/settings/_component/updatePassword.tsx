@@ -1,5 +1,5 @@
 import { API_ENDPOINT } from "@/axios.config";
-import { Button } from "@/frontend/app/components/ui/button";
+import { Button } from "@/components/ui/button";
 import axios from "axios";
 import React, { useRef, useState } from "react";
 import toast from "react-hot-toast";
