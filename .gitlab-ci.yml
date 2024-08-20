@@ -1,11 +1,38 @@
 stages:
   - build
+  - push
+  - deploy
+
+variables:
+  DOCKER_USERNAME: arush3339
 
 build_image:
   stage: build
   script:
-    - echo "Building"
-    - env
+    - echo "Building Makemates frontend ..."
+    - echo "$DOCKER_USERNAME/makemates-frontend" | xargs -I {} docker build -t {} frontend
+    - echo "Building Makemates backend ..."
+    - echo "$DOCKER_USERNAME/makemates-backend" | xargs -I {} docker build -t {} backend
+  tags:
+    - makemates
+  only:
+    - main
+
+push_image:
+  stage: push
+  script:
+    - echo "List Images.."
     - docker images
   tags:
-    - stable
+    - makemates
+  only:
+    - main
+
+deploy_image:
+  stage: deploy
+  script:
+    - echo "Deploy image to docker hub"
+  tags:
+    - makemates
+  only:
+    - main
