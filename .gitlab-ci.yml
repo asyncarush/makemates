@@ -7,3 +7,5 @@ build_image:
     - echo "Building"
     - env
     - docker images
+  tags:
+    - stable
