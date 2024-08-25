@@ -13,6 +13,7 @@ build_image:
     - echo "$DOCKER_USERNAME/makemates-frontend" | xargs -I {} docker build -t {} frontend
     - echo "Building Makemates backend ..."
     - echo "$DOCKER_USERNAME/makemates-backend" | xargs -I {} docker build -t {} backend
+    - docker info | grep username
   tags:
     - makemates
   only:
