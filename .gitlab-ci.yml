@@ -21,8 +21,11 @@ build_image:
 push_image:
   stage: push
   script:
-    - echo "List Images.."
-    - docker images
+    - echo "pushing:\ $DOCKER_USERNAME/makemates-frontend"
+    - docker push "$DOCKER_USERNAME/makemates-frontend"
+    - echo "pushing:\ $DOCKER_USERNAME/makemates-backend"
+    - docker push "$DOCKER_USERNAME/makemates-backend"
+
   tags:
     - makemates
   only:
@@ -31,7 +34,13 @@ push_image:
 deploy_image:
   stage: deploy
   script:
-    - echo "Deploy image to docker hub"
+    - echo "getting deployments details:"
+    - echo "Deploying frontend:"
+    - kubectl get deploy $DOCKER_USERNAME/makemates-frontend || kubectl apply -f cluster-provision/frontend-deloy.yml --create-namespace -n makemates
+    - kubectl set image deployment/$DOCKER_USERNAME/makemates-frontend frontend-container=$DOCKER_USERNAME/makemates-frontend:latest"
+    - kubectl get deploy $DOCKER_USERNAME/makemates-backend || kubectl apply -f cluster-provision/backend-deloy.yml --create-namespace -n makemates
+    - kubectl set image deployment/$DOCKER_USERNAME/makemates-backend backend-container=$DOCKER_USERNAME/makemates-backend:latest"
+    - echo "deployment done...."
   tags:
     - makemates
   only:
