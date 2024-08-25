@@ -21,11 +21,10 @@ build_image:
 push_image:
   stage: push
   script:
-    - echo "pushing:\ $DOCKER_USERNAME/makemates-frontend"
-    - docker push "$DOCKER_USERNAME/makemates-frontend"
+    - echo "pushing:$DOCKER_USERNAME/makemates-frontend"
+    - docker push $DOCKER_USERNAME/makemates-frontend
     - echo "pushing:\ $DOCKER_USERNAME/makemates-backend"
-    - docker push "$DOCKER_USERNAME/makemates-backend"
-
+    - docker push $DOCKER_USERNAME/makemates-backend
   tags:
     - makemates
   only:
