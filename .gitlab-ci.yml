@@ -6,6 +6,9 @@ stages:
 variables:
   DOCKER_USERNAME: arush3339
 
+before_script:
+  - docker login -u $DOCKER_USERNAME -p "Arush@2402" docker.io
+
 build_image:
   stage: build
   script:
