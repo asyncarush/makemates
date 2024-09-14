@@ -1,123 +1,188 @@
 import { Request, Response } from "express";
-import DB from "../db/db"; // Assuming DB is a type of database client instance
+import { PrismaClient } from "@prisma/client";
 import { logger } from "../config/winston";
+
+const prisma = new PrismaClient();
 
 interface User {
   id: number;
 }
 
 interface RequestWithUser extends Request {
-  user: User;
+  user?: User;
 }
 
-export const addPost = (req: RequestWithUser, res: Response): void => {
+// Add Post
+export const addPost = async (req: RequestWithUser, res: Response) => {
   const { desc, imgUrl } = req.body;
 
-  DB.query(
-    "INSERT INTO posts (`user_id`, `desc`) VALUES (?, ?)",
-    [req.user.id, desc],
-    (err: any, result: { insertId: number }) => {
-      if (err) return res.status(500).send(err);
+  try {
+    const post = await prisma.posts.create({
+      data: {
+        user_id: req.user?.id || -1,
+        desc: desc,
+      },
+    });
 
-      DB.query(
-        "INSERT INTO post_media (`post_id`, `media_url`, `user_id`) VALUES (?, ?, ?)",
-        [result.insertId, imgUrl, req.user.id],
-        (err: any, result: any) => {
-          if (err) return res.status(500).send(err);
-          if (result) {
-            return res.status(200).send("Post uploaded...");
-          }
-        }
-      );
+    await prisma.post_media.create({
+      data: {
+        post_id: post.id,
+        media_url: imgUrl,
+        user_id: req.user?.id || -1,
+      },
+    });
+
+    return res.status(200).send("Post uploaded...");
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(err.message);
+      return res.status(500).send(err.message);
     }
-  );
+    logger.error("An unknown error occurred.");
+    return res.status(500).send("An unknown error occurred.");
+  }
 };
 
-export const getUserPosts = (req: Request, res: Response): void => {
+// Get User Posts
+export const getUserPosts = async (req: Request, res: Response) => {
   const { userId } = req.params;
 
-  const query = `SELECT p.id AS postId, u.id, u.name, p.desc, pm.media_url, 
-    p.date, pis.image_url AS profileImage FROM posts p JOIN post_media pm 
-    ON p.id = pm.post_id JOIN users u ON u.id = p.user_id 
-    LEFT JOIN profileimages pis ON u.img = pis.id WHERE p.user_id = ? ORDER BY date DESC;`;
+  try {
+    const posts = await prisma.posts.findMany({
+      where: { user_id: parseInt(userId, 10) },
+      orderBy: { date: "desc" },
+      include: {
+        post_media: true,
+        users: {
+          include: {
+            profileimages: true,
+          },
+        },
+      },
+    });
 
-  DB.query(query, [userId], (err: any, result: any) => {
-    if (err) {
-      return res.status(500).send(err);
-    } else {
-      return res.status(200).send(result);
+    return res.status(200).send(posts);
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(err.message);
+      return res.status(500).send(err.message);
     }
-  });
+    logger.error("An unknown error occurred.");
+    return res.status(500).send("An unknown error occurred.");
+  }
 };
 
-export const likeThePost = (req: RequestWithUser, res: Response): void => {
-  const { id } = req.user;
+// Like the Post
+export const likeThePost = async (req: RequestWithUser, res: Response) => {
   const { postId } = req.body;
 
-  const query = "INSERT INTO likes (`post_id`, `user_id`) VALUES (?, ?)";
+  try {
+    await prisma.likes.create({
+      data: {
+        post_id: postId,
+        user_id: req.user?.id || -1,
+      },
+    });
 
-  DB.query(query, [postId, id], (err: any) => {
-    if (err) {
-      logger.error("Post hasn't been liked...", err);
-    }
     return res.status(200).send(true);
-  });
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error("Post hasn't been liked...", err.message);
+      return res.status(500).send(err.message);
+    }
+    logger.error("An unknown error occurred.");
+    return res.status(500).send("An unknown error occurred.");
+  }
 };
 
-export const unLikeThePost = (req: RequestWithUser, res: Response): void => {
-  const { id } = req.user;
+// Unlike the Post
+export const unLikeThePost = async (req: RequestWithUser, res: Response) => {
   const { postId } = req.body;
 
-  const query = "DELETE FROM likes WHERE user_id = ? AND post_id = ?";
+  try {
+    await prisma.likes.deleteMany({
+      where: {
+        user_id: req.user?.id || -1,
+        post_id: postId,
+      },
+    });
 
-  DB.query(query, [id, postId], (err: any) => {
-    if (err) {
-      logger.error(err);
-    }
     return res.status(200).send(true);
-  });
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(err.message);
+      return res.status(500).send(err.message);
+    }
+    logger.error("An unknown error occurred.");
+    return res.status(500).send("An unknown error occurred.");
+  }
 };
 
-export const checkPostLikeStatus = (
+// Check Post Like Status
+export const checkPostLikeStatus = async (
   req: RequestWithUser,
   res: Response
-): void => {
-  DB.query(
-    "SELECT * FROM likes WHERE user_id = ? AND post_id = ?",
-    [req.user.id, req.body.postId],
-    (err: any, result: any) => {
-      if (err) {
-        logger.error(err);
-      }
-      if (result.length > 0) {
-        return res.status(200).send(true);
-      }
-      return res.status(200).send(false);
+) => {
+  const { postId } = req.body;
+
+  try {
+    const like = await prisma.likes.findFirst({
+      where: {
+        user_id: req.user?.id || -1,
+        post_id: postId,
+      },
+    });
+
+    return res.status(200).send(!!like);
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(err.message);
+      return res.status(500).send(err.message);
     }
-  );
+    logger.error("An unknown error occurred.");
+    return res.status(500).send("An unknown error occurred.");
+  }
 };
 
-export const postNewComment = (req: RequestWithUser, res: Response): void => {
-  DB.query(
-    "INSERT INTO comments (`user_id`, `post_id`, `desc`) VALUES(?, ?, ?)",
-    [req.user.id, req.body.postId, req.body.desc],
-    (err: any) => {
-      if (err) return res.status(400).send(err);
-      return res.status(200).send("success");
+// Post New Comment
+export const postNewComment = async (req: RequestWithUser, res: Response) => {
+  const { postId, desc } = req.body;
+
+  try {
+    await prisma.comments.create({
+      data: {
+        user_id: req.user?.id || -1,
+        post_id: postId,
+        desc: desc,
+      },
+    });
+
+    return res.status(200).send("success");
+  } catch (err) {
+    if (err instanceof Error) {
+      return res.status(400).send(err.message);
     }
-  );
+    return res.status(400).send("An unknown error occurred.");
+  }
 };
 
-export const getPostComments = (req: Request, res: Response): void => {
+// Get Post Comments
+export const getPostComments = async (req: Request, res: Response) => {
   const { postId } = req.params;
 
-  const query =
-    "SELECT u.name, u.id, c.desc, c.commentDate FROM comments as c JOIN users as u ON u.id = c.user_id AND c.post_id = ?";
+  try {
+    const comments = await prisma.comments.findMany({
+      where: { post_id: parseInt(postId, 10) },
+      include: {
+        users: true,
+      },
+    });
 
-  DB.query(query, [parseInt(postId, 10)], (err: any, result: any) => {
-    if (err) {
-      return res.status(400).send(err);
+    return res.status(200).send(comments);
+  } catch (err) {
+    if (err instanceof Error) {
+      return res.status(400).send(err.message);
     }
-    return res.status(200).send(result);
-  });
+    return res.status(400).send("An unknown error occurred.");
+  }
 };

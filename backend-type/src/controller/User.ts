@@ -1,86 +1,73 @@
 import { Request, Response } from "express";
 import { validateNewUser, validateUser } from "../utils/validate.js";
-import DB from "../db/db.js";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
+import { RequestWithUser } from "../typing.js";
 
 const prisma = new PrismaClient();
 
-interface User {
-  id: number;
-}
-
-interface RequestWithUser extends Request {
-  user: User;
-}
-
-export async function login(req: Request, res: Response): Promise<void> {
+// Login Function
+export async function login(req: Request, res: Response) {
   const { error } = validateUser(req.body);
 
   if (error) return res.status(400).send(error.details[0].message);
 
-  DB.query(
-    "SELECT * FROM users WHERE email = ?",
-    [req.body.email],
-    (err: any, result: { id: number; password: string }[]) => {
-      if (err) return res.status(400).send(err);
+  try {
+    const user = await prisma.users.findUnique({
+      where: { email: req.body.email },
+      select: { id: true, password: true },
+    });
 
-      if (result.length) {
-        const user = result[0];
-        const hashedPassword = user.password;
+    if (!user) return res.status(400).send("Email id not found");
 
-        bcrypt.compare(req.body.password, hashedPassword, (err, valid) => {
-          if (err) return res.status(400).send(err);
+    const valid = await bcrypt.compare(req.body.password, user.password);
 
-          if (valid) {
-            const token = jwt.sign(
-              { id: user.id },
-              process.env.JWT_PRIVATE_KEY as string,
-              { expiresIn: "24hr" }
-            );
+    if (valid) {
+      const token = jwt.sign(
+        { id: user.id },
+        process.env.JWT_PRIVATE_KEY as string,
+        { expiresIn: "24hr" }
+      );
 
-            return res
-              .cookie("x-auth-token", token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite:
-                  process.env.NODE_ENV === "production" ? "None" : "Lax",
-              })
-              .status(200)
-              .send({ id: user.id });
-          } else {
-            return res.status(401).send("Incorrect Password");
-          }
-        });
-      } else {
-        return res.status(400).send("Email id not found");
-      }
+      return res
+        .cookie("x-auth-token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        })
+        .status(200)
+        .send({ id: user.id });
+    } else {
+      return res.status(401).send("Incorrect Password");
     }
-  );
+  } catch (err) {
+    return res.status(500).send("An error occurred during login.");
+  }
 }
 
-export async function register(req: Request, res: Response): Promise<void> {
+// Register Function
+export async function register(req: Request, res: Response) {
   const { error } = validateNewUser(req.body);
 
   if (error) return res.status(400).send(error.details[0].message);
 
-  const salt = await bcrypt.genSalt(10);
-  const hash = await bcrypt.hash(req.body.password, salt);
-
-  const newUser = {
-    name: req.body.name,
-    email: req.body.email,
-    password: hash,
-    gender: req.body.gender,
-    dob: `${req.body.day} ${req.body.month} ${req.body.year}`,
-  };
-
   try {
-    const user = await prisma.user.create({ data: newUser });
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(req.body.password, salt);
+
+    const newUser = await prisma.users.create({
+      data: {
+        name: req.body.name,
+        email: req.body.email,
+        password: hash,
+        gender: req.body.gender,
+        dob: new Date(`${req.body.year}-${req.body.month}-${req.body.day}`),
+      },
+    });
 
     const token = jwt.sign(
-      { id: user.id },
+      { id: newUser.id },
       process.env.JWT_PRIVATE_KEY as string,
       { expiresIn: "24hr" }
     );
@@ -89,185 +76,201 @@ export async function register(req: Request, res: Response): Promise<void> {
       .cookie("x-auth-token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       })
       .status(200)
-      .send({ id: user.id });
+      .send({ id: newUser.id });
   } catch (err) {
-    return res.status(400).send(err.message);
+    return res.status(500).send("An error occurred during registration.");
   }
 }
 
-export async function getUserData(
-  req: RequestWithUser,
-  res: Response
-): Promise<void> {
-  const { id } = req.user;
+// Get User Data
+export async function getUserData(req: RequestWithUser, res: Response) {
+  const id = req.user?.id || -1;
 
-  const query =
-    "SELECT u.id, u.name, u.email, p.image_url FROM users u LEFT JOIN profileimages p ON u.img = p.id WHERE u.id = ?";
+  try {
+    const user = await prisma.users.findUnique({
+      where: { id },
+      include: {
+        profileimages: true,
+      },
+    });
 
-  DB.query(
-    query,
-    [id],
-    (
-      err: any,
-      result: { id: number; name: string; email: string; image_url?: string }[]
-    ) => {
-      if (err) return res.status(401).send(err);
-      if (result.length) {
-        result[0].password = "************";
-        return res.send(result[0]);
-      }
-    }
-  );
+    if (!user) return res.status(404).send("User not found");
+
+    const userData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      image_url:
+        user.profileimages.length > 0 ? user.profileimages[0].image_url : null,
+      password: "************",
+    };
+
+    return res.status(200).send(userData);
+  } catch (err) {
+    return res.status(500).send("An error occurred while fetching user data.");
+  }
 }
 
-export function updateUserInfo(req: RequestWithUser, res: Response): void {
-  const { id } = req.user;
-  const { key, value } = req.body;
+// Update User Info
+export async function updateUserInfo(req: RequestWithUser, res: Response) {
+  const id = req.user?.id || -1;
+  const { key, value }: any = req.body;
 
-  let query: string;
-  let params: any[] = [];
-
-  switch (key) {
-    case "name":
-      query = "UPDATE users SET name = ? WHERE id = ?";
-      params = [value, id];
-      break;
-    case "email":
-      query = "UPDATE users SET email = ? WHERE id = ?";
-      params = [value, id];
-      break;
-    case "password":
-      bcrypt.genSalt(10, (err, salt) => {
-        if (err) return res.status(400).send(err);
-        bcrypt.hash(value, salt, (err, hash) => {
-          if (err) return res.status(400).send(err);
-          query = "UPDATE users SET password = ? WHERE id = ?";
-          params = [hash, id];
-          DB.query(query, params, (err) => {
-            if (err) return res.status(401).send(err);
-            return res.status(200).send("Password updated Successfully.");
-          });
+  try {
+    switch (key) {
+      case "name":
+      case "email":
+      case "mobile_number":
+      case "city":
+      case "state":
+      case "country":
+        await prisma.users.update({
+          where: { id },
+          data: { [key]: value },
         });
-      });
-      return;
-    case "birthday":
-      query = "UPDATE users SET dob = STR_TO_DATE(?, '%d %M %Y') WHERE id = ?";
-      params = [value, id];
-      break;
-    case "mobile_number":
-      query = "UPDATE users SET mobile_number = ? WHERE id = ?";
-      params = [value, id];
-      break;
-    case "city":
-      query = "UPDATE users SET city = ? WHERE id = ?";
-      params = [value, id];
-      break;
-    case "state":
-      query = "UPDATE users SET state = ? WHERE id = ?";
-      params = [value, id];
-      break;
-    case "country":
-      query = "UPDATE users SET country = ? WHERE id = ?";
-      params = [value, id];
-      break;
-    default:
-      return res.status(400).send("Invalid update key.");
-  }
+        return res
+          .status(200)
+          .send(
+            `${
+              key.charAt(0).toUpperCase() + key.slice(1)
+            } updated Successfully.`
+          );
 
-  DB.query(query, params, (err: any) => {
-    if (err) return res.status(401).send(err);
+      case "password":
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(value, salt);
+        await prisma.users.update({
+          where: { id },
+          data: { password: hash },
+        });
+        return res.status(200).send("Password updated Successfully.");
+
+      case "birthday":
+        await prisma.users.update({
+          where: { id },
+          data: { dob: new Date(value) }, // Assuming value is in YYYY-MM-DD format
+        });
+        return res.status(200).send("Birthday updated Successfully.");
+
+      default:
+        return res.status(400).send("Invalid update key.");
+    }
+  } catch (err) {
     return res
-      .status(200)
-      .send(
-        `${key.charAt(0).toUpperCase() + key.slice(1)} updated Successfully.`
-      );
-  });
+      .status(500)
+      .send("An error occurred while updating user information.");
+  }
 }
 
-export function followUser(req: RequestWithUser, res: Response): void {
-  const { id } = req.user;
-  const { friendId } = req.body;
+// Follow User
+export async function followUser(req: RequestWithUser, res: Response) {
+  const id = req.user?.id || -1;
+  const { friendId }: any = req.body;
 
-  DB.query(
-    "INSERT INTO relationships (`follow_id`, `follower_id`) VALUES(?, ?)",
-    [friendId, id],
-    (err: any) => {
-      if (err) return res.status(401).send(err);
-      return res.status(200).send("DONE");
-    }
-  );
+  try {
+    await prisma.relationships.create({
+      data: {
+        follow_id: friendId,
+        follower_id: id,
+      },
+    });
+    return res.status(200).send("Followed Successfully.");
+  } catch (err) {
+    return res.status(500).send("An error occurred while following user.");
+  }
 }
 
-export function unfollowUser(req: RequestWithUser, res: Response): void {
-  const { id } = req.user;
-  const { friendId } = req.body;
+// Unfollow User
+export async function unfollowUser(req: RequestWithUser, res: Response) {
+  const id = req.user?.id || -1;
+  const { friendId }: any = req.body;
 
-  DB.query(
-    "DELETE FROM relationships WHERE follow_id = ? AND follower_id = ?",
-    [friendId, id],
-    (err: any) => {
-      if (err) return res.status(401).send(err);
-      return res.status(200).send("DONE");
-    }
-  );
+  try {
+    await prisma.relationships.deleteMany({
+      where: {
+        follow_id: friendId,
+        follower_id: id,
+      },
+    });
+    return res.status(200).send("Unfollowed Successfully.");
+  } catch (err) {
+    return res.status(500).send("An error occurred while unfollowing user.");
+  }
 }
 
-export function getFriendList(req: RequestWithUser, res: Response): void {
-  const { id } = req.user;
+// Get Friend List
+export async function getFriendList(req: RequestWithUser, res: Response) {
+  const id = req.user?.id || -1;
 
-  const query =
-    "SELECT r.follow_id, r.follower_id, u.name, u.email, u.mobile_number, u.city, pis.image_url AS profileImage " +
-    "FROM relationships r " +
-    "JOIN users u ON r.follow_id = u.id " +
-    "LEFT JOIN profileimages pis ON u.img = pis.id " +
-    "WHERE follower_id = ?";
+  try {
+    const relationships = await prisma.relationships.findMany({
+      where: { follower_id: id },
+      include: {
+        users_relationships_follow_idTousers: {
+          include: {
+            profileimages: true,
+          },
+        },
+      },
+    });
 
-  DB.query(
-    query,
-    [id],
-    (
-      err: any,
-      result: {
-        follow_id: number;
-        follower_id: number;
-        name: string;
-        email: string;
-        mobile_number?: string;
-        city?: string;
-        profileImage?: string;
-      }[]
-    ) => {
-      if (err) return res.status(401).send(err);
-      return res.status(200).send(result.length > 0 ? result : []);
-    }
-  );
+    const friendList = relationships.map((rel) => ({
+      follow_id: rel.follow_id,
+      follower_id: rel.follower_id,
+      name: rel.users_relationships_follow_idTousers.name,
+      email: rel.users_relationships_follow_idTousers.email,
+      mobile_number: rel.users_relationships_follow_idTousers.mobile_number,
+      city: rel.users_relationships_follow_idTousers.city,
+      profileImage:
+        rel.users_relationships_follow_idTousers.profileimages.length > 0
+          ? rel.users_relationships_follow_idTousers.profileimages[0].image_url
+          : null,
+    }));
+
+    return res.status(200).send(friendList);
+  } catch (err) {
+    return res
+      .status(500)
+      .send("An error occurred while fetching friend list.");
+  }
 }
 
-export function setProfilePic(req: RequestWithUser, res: Response): void {
-  const { id } = req.user;
-  const { profileImgUrl } = req.body;
+// Set Profile Picture
+export async function setProfilePic(req: RequestWithUser, res: Response) {
+  const id = req.user?.id || -1;
+  const { profileImgUrl }: any = req.body;
 
-  DB.query(
-    "INSERT INTO profileimages (`user_id`, `image_url`, `currentImg`) VALUES(?, ?, ?)",
-    [id, profileImgUrl, 1],
-    (err: any, result: { insertId: number }) => {
-      if (err) return res.status(401).send(err);
+  try {
+    // Create a new profile image record
+    const profileImage = await prisma.profileimages.create({
+      data: {
+        user_id: id,
+        image_url: profileImgUrl,
+        currentImg: true,
+      },
+    });
 
-      const query = "UPDATE users SET img = ? WHERE id = ?";
-      DB.query(query, [result.insertId, id], (err: any) => {
-        if (err) return res.status(401).send(err);
-        return res.status(200).send("Updated Successfully.");
-      });
-    }
-  );
+    // Update the user's profile image reference
+    await prisma.users.update({
+      where: { id },
+      data: { img: profileImage.id },
+    });
+
+    return res.status(200).send("Profile picture updated successfully.");
+  } catch (err) {
+    return res
+      .status(500)
+      .send("An error occurred while setting profile picture.");
+  }
 }
 
-export function logoutUser(req: Request, res: Response): void {
+// Logout User
+export function logoutUser(req: Request, res: Response) {
   return res
     .clearCookie("x-auth-token")
     .status(200)
-    .send("Logout Successfully..");
+    .send("Logout Successfully.");
 }

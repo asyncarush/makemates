@@ -10,26 +10,27 @@ datasource db {
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model comments {
   id       Int       @id @default(autoincrement())
-  users_id Int
-  posts_id Int
+  user_id Int
+  post_id Int
   datetime DateTime? @db.DateTime(0)
-  posts    posts     @relation(fields: [posts_id], references: [id], onDelete: Cascade, map: "fk_comments_posts1")
-  users    users     @relation(fields: [users_id], references: [id], onDelete: Cascade, map: "fk_comments_users1")
+  desc       String?      @db.Text
+  posts    posts     @relation(fields: [post_id], references: [id], onDelete: Cascade, map: "fk_comments_posts1")
+  users    users     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_comments_users1")
 
-  @@index([posts_id], map: "fk_comments_posts1_idx")
-  @@index([users_id], map: "fk_comments_users1_idx")
+  @@index([post_id], map: "fk_comments_posts1_idx")
+  @@index([user_id], map: "fk_comments_users1_idx")
 }
 
 model likes {
-  posts_id Int
-  users_id Int
+  post_id Int
+  user_id Int
   datetime DateTime? @db.DateTime(0)
-  posts    posts     @relation(fields: [posts_id], references: [id], onDelete: Cascade, map: "fk_likes_posts1")
-  users    users     @relation(fields: [users_id], references: [id], onDelete: Cascade, map: "fk_likes_users1")
+  posts    posts     @relation(fields: [post_id], references: [id], onDelete: Cascade, map: "fk_likes_posts1")
+  users    users     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_likes_users1")
 
-  @@id([posts_id, users_id])
-  @@index([posts_id], map: "fk_likes_posts1_idx")
-  @@index([users_id], map: "fk_likes_users1_idx")
+  @@id([post_id, user_id])
+  @@index([post_id], map: "fk_likes_posts1_idx")
+  @@index([user_id], map: "fk_likes_users1_idx")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
@@ -59,12 +60,12 @@ model posts {
 }
 
 model profileimages {
-  id         Int      @id
+  id         Int          @id @default(autoincrement())
   user_id    Int
   image_url  String   @db.VarChar(45)
   date       DateTime @default(now()) @db.DateTime(0)
   currentImg Boolean  @default(dbgenerated("b'0'")) @db.Bit(1)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_profile_image_user_id")
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id], map: "fk_user_id_idx")
 }

@@ -1,117 +1,102 @@
 import { Request, Response } from "express";
-import DB from "../db/db.ts"; // Assuming DB is a type of database client instance
+import { PrismaClient } from "@prisma/client";
+import { logger } from "../config/winston";
+import { RequestWithUser } from "../typing";
 
-interface User {
-  id: number;
-}
+const prisma = new PrismaClient();
 
-interface RequestWithUser extends Request {
-  user: User;
-}
-
-export const getUserProfile = (req: Request, res: Response): void => {
+// Get User Profile
+export const getUserProfile = async (req: Request, res: Response) => {
   const userId = req.body.id;
 
-  const query1 = `SELECT u.id, u.name, u.email, u.gender, u.dob, pi.image_url 
-    FROM users u 
-    LEFT JOIN profileimages pi ON pi.user_id = u.id 
-    WHERE u.id=? LIMIT 1;`;
+  try {
+    // Fetch user profile information
+    const userData = await prisma.users.findUnique({
+      where: { id: userId },
+      include: {
+        profileimages: true, // Adjust if the relation is named differently in Prisma schema
+      },
+    });
 
-  DB.query(
-    query1,
-    [userId],
-    (
-      err: any,
-      result: {
-        id: number;
-        name: string;
-        email: string;
-        gender: string;
-        dob: string;
-        image_url?: string;
-      }[]
-    ) => {
-      if (err) return res.status(401).send(err);
+    if (userData) {
+      // Fetch user's posts
+      const userPosts = await prisma.posts.findMany({
+        where: { user_id: userId },
+        orderBy: { date: "desc" },
+        include: {
+          post_media: true,
+          users: {
+            include: {
+              profileimages: true, // Adjust if needed
+            },
+          },
+        },
+      });
 
-      if (result.length > 0) {
-        const userData = result[0];
-
-        const query2 = `SELECT p.id AS postId, u.id, u.name, p.desc, pm.media_url, 
-        p.date, pis.image_url AS profileImage 
-        FROM posts p 
-        JOIN post_media pm ON p.id = pm.post_id 
-        JOIN users u ON u.id = p.user_id 
-        LEFT JOIN profileimages pis ON u.img = pis.id 
-        WHERE p.user_id = ? 
-        ORDER BY date DESC;`;
-
-        DB.query(
-          query2,
-          [userId],
-          (
-            err: any,
-            result: {
-              postId: number;
-              id: number;
-              name: string;
-              desc: string;
-              media_url?: string;
-              date: string;
-              profileImage?: string;
-            }[]
-          ) => {
-            if (err) return res.status(401).send(err);
-            return res.status(200).send({ userData, userPost: result });
-          }
-        );
-      } else {
-        return res.status(204).send("User not Found");
-      }
+      return res.status(200).send({ userData, userPosts });
+    } else {
+      return res.status(204).send("User not Found");
     }
-  );
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(err.message);
+      return res.status(500).send(err.message);
+    }
+    logger.error("An unknown error occurred.");
+    return res.status(500).send("An unknown error occurred.");
+  }
 };
 
-export const checkFollowed = (req: RequestWithUser, res: Response): void => {
-  console.log(req.body);
-  const { friendId } = req.body;
-  const userId = req.user.id;
+// Check if User is Followed
+export const checkFollowed = async (req: RequestWithUser, res: Response) => {
+  const { friendId }: any = req.body;
 
-  DB.query(
-    "SELECT * FROM relationships WHERE follower_id = ? AND follow_id = ?",
-    [userId, friendId],
-    (err: any, result: { follower_id: number; follow_id: number }[]) => {
-      if (err) return res.status(401).send(err);
-      if (result.length > 0) {
-        return res.status(200).send("USER_FOUND");
-      } else {
-        return res.status(200).send("USER_NOT_FOUND");
-      }
+  try {
+    const relationship = await prisma.relationships.findFirst({
+      where: {
+        follower_id: req.user?.id || -1,
+        follow_id: friendId,
+      },
+    });
+
+    if (relationship) {
+      return res.status(200).send("USER_FOUND");
+    } else {
+      return res.status(200).send("USER_NOT_FOUND");
     }
-  );
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(err.message);
+      return res.status(500).send(err.message);
+    }
+    logger.error("An unknown error occurred.");
+    return res.status(500).send("An unknown error occurred.");
+  }
 };
 
-export const searchUser = (req: Request, res: Response): void => {
+// Search User
+export const searchUser = async (req: Request, res: Response) => {
   const { keyword } = req.body;
 
-  const query = `SELECT u.id, u.name, u.city, pis.image_url AS profileImage 
-    FROM users u 
-    LEFT JOIN profileimages pis ON u.img = pis.id 
-    WHERE name LIKE ?`;
+  try {
+    const users = await prisma.users.findMany({
+      where: {
+        name: {
+          contains: keyword.toLowerCase(),
+        },
+      },
+      include: {
+        profileimages: true, // Adjust if needed
+      },
+    });
 
-  DB.query(
-    query,
-    [`%${keyword.toLowerCase()}%`],
-    (
-      err: any,
-      result: {
-        id: number;
-        name: string;
-        city: string;
-        profileImage?: string;
-      }[]
-    ) => {
-      if (err) return res.status(401).send(err);
-      return res.status(200).send(result);
+    return res.status(200).send(users);
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(err.message);
+      return res.status(500).send(err.message);
     }
-  );
+    logger.error("An unknown error occurred.");
+    return res.status(500).send("An unknown error occurred.");
+  }
 };

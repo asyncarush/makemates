@@ -1,10 +1,10 @@
-import mysql, { Connection, ConnectionConfig } from "mysql2";
+import mysql, { Connection } from "mysql2";
 import dotenv from "dotenv";
 import { logger } from "../config/winston.js";
 
 dotenv.config();
 
-const dbConfig: ConnectionConfig = {
+const dbConfig: any = {
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER || "arush",
   password: process.env.DB_PASSWORD || "Arush@123",
@@ -14,7 +14,7 @@ const dbConfig: ConnectionConfig = {
 
 const db: Connection = mysql.createConnection(dbConfig);
 
-db.connect((err: mysql.MysqlError | null) => {
+db.connect((err: mysql.QueryError | null) => {
   if (err) {
     logger.error("Database connection error:", err);
     throw err;

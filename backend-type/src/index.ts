@@ -31,6 +31,10 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+app.get("/check", (req, res) => {
+  res.send("Chill , everything is working fine");
+});
+
 // routes
 app.use("/user", User);
 app.use("/posts", Post);
