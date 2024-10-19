@@ -25,7 +25,7 @@ function Page() {
   const friendsList = useFriendList();
 
   const { currentUser, setCurrentUser }: any = useContext(AuthContext);
-  // console.log(currentUser)
+  console.log(currentUser);
 
   useEffect(() => {
     const getUserData = async () => {
@@ -50,9 +50,9 @@ function Page() {
     <>
       <div className="fixed top-[100px] w-[300px] flex flex-col gap-4">
         <div className="flex p-2 rounded-md shadow-lg bg-slate-50 items-center justify-start gap-5">
-          {currentUser.image_url !== null ? (
+          {currentUser.img !== null ? (
             <Image
-              src={currentUser.image_url}
+              src={currentUser.img}
               className="rounded-full shadow-md"
               width="40"
               height="40"

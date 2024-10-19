@@ -62,7 +62,7 @@ model posts {
 model profileimages {
   id         Int          @id @default(autoincrement())
   user_id    Int
-  image_url  String   @db.VarChar(45)
+  image_url  String   @db.VarChar(500)
   date       DateTime @default(now()) @db.DateTime(0)
   currentImg Boolean  @default(dbgenerated("b'0'")) @db.Bit(1)
   users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -88,7 +88,7 @@ model users {
   password                                       String          @db.VarChar(300)
   gender                                         String          @db.VarChar(10)
   dob                                            DateTime        @db.Date
-  img                                            Int?
+  img                                            String?         @db.VarChar(500)
   mobile_number                                  String?         @unique(map: "mobile_number_UNIQUE") @db.VarChar(20)
   country                                        String?         @db.VarChar(20)
   state                                          String?         @db.VarChar(20)

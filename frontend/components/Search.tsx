@@ -43,6 +43,7 @@ function Search() {
         <div className="w-[400px] overflow-hidden overflow-y-auto max-h-[200px] text-black flex flex-col mt-6 rounded-md h-auto bg-white/90 drop-shadow-2xl">
           {data.length > 0 &&
             data.map((user: any) => {
+              console.log(user);
               return (
                 <Link
                   key={user.id}
@@ -51,9 +52,9 @@ function Search() {
                   target="_blank"
                   className="flex gap-2 items-center p-2 hover:bg-slate-100 cursor-pointer"
                 >
-                  {user.profileImage !== null ? (
+                  {user.img !== null ? (
                     <Image
-                      src={user.profileImage}
+                      src={user.img}
                       alt="search result"
                       width="30"
                       height="40"

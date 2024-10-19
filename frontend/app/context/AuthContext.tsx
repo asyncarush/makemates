@@ -19,31 +19,29 @@ export default function AuthContextProvider({
   const userSignUp = async (inputs: SignUpInputType) => {
     toast.promise(CreateNewUser(inputs), {
       loading: "Creating New Account....",
-      success: res => {
-          // Redirect to the feed page upon successful Registration
-          router.push("/feed");
-          return `Successful`;
+      success: (res) => {
+        // Redirect to the feed page upon successful Registration
+        router.push("/feed");
+        return `Successful`;
       },
-      error: res => {
-          // Display the error message from the response data
-          return `${res.response.data}`;
+      error: (res) => {
+        // Display the error message from the response data
+        return `${res.response.data}`;
       },
-  });
+    });
   };
 
   const userLogin = async (inputs: LoginInputType) => {
     toast.promise(SignInUser(inputs), {
       loading: "Logging....",
-      success: res => {
-          // Redirect to the feed page upon successful login
-          router.push("/feed");
-          return `Login Successful`;
+      success: (res) => {
+        router.push("/feed");
+        return `Login Successful`;
       },
-      error: res => {
-          // Display the error message from the response data
-          return `${res.response.data}`;
+      error: (res) => {
+        return `${res.response.data}`;
       },
-  });
+    });
   };
 
   const userLogout = async () => {

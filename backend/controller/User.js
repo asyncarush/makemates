@@ -1,4 +1,4 @@
-import { validateNewUser, validateUser } from "../utils/validate.js";
+import { validateNewUser, validateUser } from "../utils/validate.ts";
 import DB from "../db/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";

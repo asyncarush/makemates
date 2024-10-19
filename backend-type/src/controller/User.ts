@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { validateNewUser, validateUser } from "../utils/validate.js";
+import { validateNewUser, validateUser } from "../utils/validate";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -92,9 +92,9 @@ export async function getUserData(req: RequestWithUser, res: Response) {
   try {
     const user = await prisma.users.findUnique({
       where: { id },
-      include: {
-        profileimages: true,
-      },
+      // include: {
+      //   profileimages: true,
+      // },
     });
 
     if (!user) return res.status(404).send("User not found");
@@ -103,8 +103,7 @@ export async function getUserData(req: RequestWithUser, res: Response) {
       id: user.id,
       name: user.name,
       email: user.email,
-      image_url:
-        user.profileimages.length > 0 ? user.profileimages[0].image_url : null,
+      img: user.img,
       password: "************",
     };
 
@@ -170,10 +169,13 @@ export async function followUser(req: RequestWithUser, res: Response) {
   const id = req.user?.id || -1;
   const { friendId }: any = req.body;
 
+  console.log("User Id:", id);
+  console.log("friend Id:", friendId);
+
   try {
     await prisma.relationships.create({
       data: {
-        follow_id: friendId,
+        follow_id: parseInt(friendId),
         follower_id: id,
       },
     });
@@ -240,6 +242,8 @@ export async function getFriendList(req: RequestWithUser, res: Response) {
 
 // Set Profile Picture
 export async function setProfilePic(req: RequestWithUser, res: Response) {
+  console.log("Reached here...");
+
   const id = req.user?.id || -1;
   const { profileImgUrl }: any = req.body;
 
@@ -253,17 +257,17 @@ export async function setProfilePic(req: RequestWithUser, res: Response) {
       },
     });
 
+    console.log("profileImage");
+
     // Update the user's profile image reference
     await prisma.users.update({
       where: { id },
-      data: { img: profileImage.id },
+      data: { img: profileImage.image_url },
     });
 
     return res.status(200).send("Profile picture updated successfully.");
   } catch (err) {
-    return res
-      .status(500)
-      .send("An error occurred while setting profile picture.");
+    return res.status(500).send({ error: err });
   }
 }
 

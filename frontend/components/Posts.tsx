@@ -30,15 +30,16 @@ function Posts({ userId }: { userId: number }) {
   return (
     <div className="w-full flex flex-col gap-4">
       {data.map((post: any) => {
+        // console.log(post);
         return (
           <Post
-            key={post.postId}
-            postId={post.postId}
-            userId={post.id}
-            profileImage={post.profileImage}
-            name={post.name}
+            key={post.id}
+            postId={post.id}
+            userId={post.user_id}
+            profileImage={post.users.img}
+            name={post.users.name}
             caption={post.desc}
-            mediaUrl={post.media_url}
+            mediaUrl={post.post_media[0].media_url}
             postDate={post.date}
           />
         );

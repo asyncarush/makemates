@@ -29,7 +29,7 @@ router.post("/unlike", auth, unLikeThePost);
 router.post("/like/status", auth, checkPostLikeStatus);
 
 // Add a new comment to a post
-router.post("/comments", auth, postNewComment);
+router.post("/comments/add", auth, postNewComment);
 
 // Retrieve comments for a specific post
 router.get("/comments/:postId", auth, getPostComments);

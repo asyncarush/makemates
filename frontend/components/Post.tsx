@@ -62,7 +62,7 @@ function Post({
   useEffect(() => {
     const checkLikeStatus = async function () {
       const response = await axios.post(
-        `${API_ENDPOINT}/posts/likedPost`,
+        `${API_ENDPOINT}/posts/like/status`,
         { postId },
         { withCredentials: true }
       );

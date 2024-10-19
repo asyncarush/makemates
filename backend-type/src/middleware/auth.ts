@@ -4,7 +4,7 @@ import { RequestWithUser } from "../typing";
 
 // Middleware function
 const auth = (req: RequestWithUser, res: Response, next: NextFunction) => {
-  const token = req.header("x-auth-token");
+  const token = req.cookies["x-auth-token"];
   if (!token) return res.status(401).send("Access denied.");
 
   try {

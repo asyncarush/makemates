@@ -8,20 +8,19 @@ const prisma = new PrismaClient();
 // Get User Profile
 export const getUserProfile = async (req: Request, res: Response) => {
   const userId = req.body.id;
-
+  console.log("looking for user with id : ", userId);
   try {
-    // Fetch user profile information
     const userData = await prisma.users.findUnique({
-      where: { id: userId },
-      include: {
-        profileimages: true, // Adjust if the relation is named differently in Prisma schema
-      },
+      where: { id: parseInt(userId) },
+      // include: {
+      //   profileimages: true, // Adjust if the relation is named differently in Prisma schema
+      // },
     });
 
     if (userData) {
       // Fetch user's posts
       const userPosts = await prisma.posts.findMany({
-        where: { user_id: userId },
+        where: { user_id: parseInt(userId) },
         orderBy: { date: "desc" },
         include: {
           post_media: true,

@@ -3,17 +3,19 @@
 import React, { useContext } from "react";
 import { getUserDataById } from "@/axios.config";
 import { useQuery } from "@tanstack/react-query";
+import { AuthContext } from "@/app/context/AuthContext";
+
 import UpdateName from "./_component/UpdateName";
 import UpdateBirthday from "./_component/updateBirthday";
 import UpdateEmail from "./_component/updateEmail";
 import UpdatePassword from "./_component/updatePassword";
-import UpdateMobile from "./_component/updateMobile";
 import UpdateProfilePhoto from "./_component/UpdateProfilePhoto";
 import Image from "next/image";
-import { AuthContext } from "@/app/context/AuthContext";
-import UpdateCity from "./_component/updateCity";
-import UpdateState from "./_component/updateState";
-import UpdateCountry from "./_component/updateCountry";
+
+// import UpdateMobile from "./_component/updateMobile";
+// import UpdateCity from "./_component/updateCity";
+// import UpdateState from "./_component/updateState";
+// import UpdateCountry from "./_component/updateCountry";
 
 function Page() {
   const { currentUser }: any = useContext(AuthContext);
