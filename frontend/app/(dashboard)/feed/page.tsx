@@ -5,12 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import Posts from "@/components/Posts";
 
-import { AiFillLike } from "react-icons/ai";
 import { BsMessenger } from "react-icons/bs";
-import { FaBookmark, FaUserFriends } from "react-icons/fa";
-import { TbHttpPost } from "react-icons/tb";
 import { FaUser } from "react-icons/fa";
-import FeedUploadBox from "./_components/FeedUploadBox";
 import { AuthContext } from "@/app/context/AuthContext";
 import useFriendList from "@/hooks/useFriendList";
 import {
@@ -48,29 +44,19 @@ function Page() {
 
   return currentUser ? (
     <>
+      {/* Left SideBar */}
       <div className="fixed top-[100px] w-[300px] flex flex-col gap-4">
         <div className="flex p-2 rounded-md shadow-lg bg-slate-50 items-center justify-start gap-5">
-          {currentUser.img !== null ? (
-            <Image
-              src={currentUser.img}
-              className="rounded-full shadow-md"
-              width="40"
-              height="40"
-              alt="Profile pic"
-            />
-          ) : (
-            <Image
-              src="/avatar.png"
-              className="rounded-full"
-              width="40"
-              height="40"
-              alt="Profile pic"
-            />
-          )}
-
+          <Image
+            src={currentUser.img || "/avatar.png"}
+            className="rounded-full shadow-lg object-cover"
+            alt="Profile pic"
+            width="40"
+            height="40"
+          />
           <div className="flex flex-col">
             <div className="font-semibold text-sm">{currentUser.name}</div>
-            {/* <div className="text-xs text-muted-foreground">GhostRider</div> */}
+            <div className="text-xs text-muted-foreground">GhostRider</div>
           </div>
         </div>
 
@@ -78,21 +64,47 @@ function Page() {
           <ul className="flex flex-col gap-3 w-full">
             <li className="w-full p-1 hover:bg-purple-100 rounded-md">
               <a
+                href="https://codetonic.netlify.app/chat"
+                target="_blank"
+                className="flex gap-3 items-center justify-start font-medium"
+              >
+                <BsMessenger className="text-[#003789]" /> Chat
+              </a>
+            </li>
+            <li className="w-full p-1 hover:bg-purple-100 rounded-md">
+              <a
+                href="https://codetonic.netlify.app/profile/liked_posts"
+                target="_blank"
+                className="flex gap-3 items-center justify-start font-medium"
+              >
+                <BsMessenger className="text-[#003789]" /> Liked
+              </a>
+            </li>
+            <li className="w-full p-1 hover:bg-purple-100 rounded-md">
+              <a
                 href="https://codetonic.netlify.app/login"
                 target="_blank"
                 className="flex gap-3 items-center justify-start font-medium"
               >
-                <BsMessenger className="text-[#003789]" /> Codetonic Messenger
+                <BsMessenger className="text-[#003789]" /> Favourites
+              </a>
+            </li>
+            <li className="w-full p-1 hover:bg-purple-100 rounded-md">
+              <a
+                href="https://codetonic.netlify.app/login"
+                target="_blank"
+                className="flex gap-3 items-center justify-start font-medium"
+              >
+                <BsMessenger className="text-[#003789]" /> Saved
               </a>
             </li>
           </ul>
         </div>
       </div>
-
+      {/* Middle Feed */}
       <div className="flex gap-4 flex-col w-[500px] ml-[330px]">
         <Posts userId={currentUser.id} />
       </div>
-
       <div className="w-[300px] fixed top-[100px] ml-[870px]  rounded-md h-[500px] overflow-y-auto">
         <div>
           <h4 className="font-semibold text-sky-900">Followers :</h4>
@@ -107,23 +119,13 @@ function Page() {
                     >
                       <div className="flex justify-between items-center p-2 w-full rounded-mdcursor-pointer">
                         <div className="flex gap-2 items-center">
-                          {friend.profileImage !== null ? (
-                            <Image
-                              src={friend.profileImage}
-                              width={"30"}
-                              height={"30"}
-                              alt="friendImages"
-                              className="rounded-full shadow-md"
-                            />
-                          ) : (
-                            <Image
-                              src="/avatar.png"
-                              width={"30"}
-                              height={"30"}
-                              alt="friendImages"
-                              className="rounded-full shadow-md"
-                            />
-                          )}
+                          <Image
+                            src={friend.profileImage || "/avatar.png"}
+                            className="rounded-full shadow-lg object-cover"
+                            alt="Profile pic"
+                            width="40"
+                            height="40"
+                          />
                           <span>{friend.name}</span>
                         </div>
                         <div className="mr-2 flex items-ceter">
@@ -139,24 +141,13 @@ function Page() {
                     </HoverCardTrigger>
                     <HoverCardContent className="flex flex-col text-sm mr-[400px] w-[200px]">
                       <div className="flex items-center gap-2">
-                        {friend.profileImage !== null ? (
-                          <Image
-                            src={friend.profileImage}
-                            width={"30"}
-                            height={"30"}
-                            alt="friendImages"
-                            className="rounded-full shadow-md"
-                          />
-                        ) : (
-                          <Image
-                            src="/avatar.png"
-                            width={"30"}
-                            height={"30"}
-                            alt="friendImages"
-                            className="rounded-full shadow-md"
-                          />
-                        )}
-
+                        <Image
+                          src={friend.profileImage || "/avatar.png"}
+                          className="rounded-full shadow-lg object-cover"
+                          alt="Profile pic"
+                          width="40"
+                          height="40"
+                        />
                         <span className="font-bold">{friend.name}</span>
                       </div>
                       <div className="text-xs ">Last seen 12 min ago</div>

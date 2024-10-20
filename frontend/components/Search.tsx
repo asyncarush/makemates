@@ -8,8 +8,8 @@ import { FaSearch } from "react-icons/fa";
 function Search() {
   const [keyword, setKeyword] = useState("");
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searchBox, setSearchBox] = useState(false);
+  // const [loading, setLoading] = useState(false);
+  // const [searchBox, setSearchBox] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setKeyword(e.target.value);
@@ -52,23 +52,13 @@ function Search() {
                   target="_blank"
                   className="flex gap-2 items-center p-2 hover:bg-slate-100 cursor-pointer"
                 >
-                  {user.img !== null ? (
-                    <Image
-                      src={user.img}
-                      alt="search result"
-                      width="30"
-                      height="40"
-                      className="rounded-full shadow-lg"
-                    />
-                  ) : (
-                    <Image
-                      src="/avatar.png"
-                      alt="search result"
-                      width="30"
-                      height="40"
-                      className="rounded-full shadow-lg"
-                    />
-                  )}
+                  <Image
+                    src={user.img || "/avatar.png"}
+                    alt="search result"
+                    width="30"
+                    height="40"
+                    className="rounded-full shadow-lg"
+                  />
                   <div className="flex flex-col">
                     <p className="text-sm">{user.name}</p>
                     {user.city !== null && (

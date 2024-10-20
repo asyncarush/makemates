@@ -86,7 +86,7 @@ function Page() {
         <div className="fixed top-[100px] h-[600px] w-[300px] flex flex-col gap-4 p-2 shadow-md bg-slate-50 rounded-md">
           <div className="flex flex-col gap-2 items-center justify-center">
             <Image
-              src="/avatar.png"
+              src={user.img || "/avatar.png"}
               alt="user profile image"
               width="120"
               height="120"
