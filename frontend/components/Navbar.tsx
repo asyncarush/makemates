@@ -33,7 +33,7 @@ interface navLinks {
 }
 
 function Navbar() {
-  const { userLogout } = useContext<any>(AuthContext);
+  const { currentUser, userLogout } = useContext<any>(AuthContext);
 
   const navigation = [
     {
@@ -44,18 +44,18 @@ function Navbar() {
         </Link>
       ),
     },
-    // {
-    //   name: "messenger",
-    //   Icon: (
-    //     <Link href="/chat">
-    //       <BsMessenger className="text-[#001C43] w-4 h-4" />
-    //     </Link>
-    //   ),
-    // },
-    // {
-    //   name: "notifications",
-    //   Icon: <BiSolidBell className="text-[#001C43] w-4 h-4" />,
-    // },
+    {
+      name: "messenger",
+      Icon: (
+        <Link href="/chat">
+          <BsMessenger className="text-[#001C43] w-4 h-4" />
+        </Link>
+      ),
+    },
+    {
+      name: "notifications",
+      Icon: <BiSolidBell className="text-[#001C43] w-4 h-4" />,
+    },
     {
       name: "setting",
       Icon: <FaUserAlt className="text-[#001C43] w-4 h-4" />,
@@ -66,12 +66,12 @@ function Navbar() {
               src="/avatar.png"
               className="rounded-full"
               width="50"
-              height="50"
               alt="Profile pic"
+              height="50"
               quality={"10"}
             />
             <div className="flex flex-col">
-              <div className="font-medium text-sm">Arush Sharma</div>
+              <div className="font-medium text-sm">{currentUser.name}</div>
               <div className="text-xs text-muted-foreground">GhostRider</div>
             </div>
           </div>

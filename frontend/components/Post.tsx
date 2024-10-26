@@ -171,15 +171,31 @@ function Post({
       {commentBox && <Comments postId={postId} />}
 
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] h-[500px]">
           <DialogHeader>
             <DialogTitle>Edit the Post</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="">
               <textarea
                 value={postCaption}
                 onChange={(e) => setPostCaption(e.currentTarget.value)}
                 className="w-full mt-2 p-2 border rounded-md"
               />
+              <div className="h-[300px] overflow-y-auto">
+                {mediaUrl && (
+                  <div className="relative w-full h-auto">
+                    <Image
+                      src={mediaUrl}
+                      alt="Post content"
+                      width={0} // Width set to 100% of the parent container
+                      height={0} // Allows height to scale with aspect ratio
+                      className="w-full h-auto object-contain" // Ensures proper scaling
+                      // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+                      priority={false}
+                      unoptimized={true}
+                    />
+                  </div>
+                )}
+              </div>
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 mt-4">
