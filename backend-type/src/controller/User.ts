@@ -9,6 +9,7 @@ const prisma = new PrismaClient();
 
 // Login Function
 export async function login(req: Request, res: Response) {
+  console.log("Reaching here");
   const { error } = validateUser(req.body);
 
   if (error) return res.status(400).send(error.details[0].message);
@@ -42,6 +43,7 @@ export async function login(req: Request, res: Response) {
       return res.status(401).send("Incorrect Password");
     }
   } catch (err) {
+    console.log(err);
     return res.status(500).send("An error occurred during login.");
   }
 }

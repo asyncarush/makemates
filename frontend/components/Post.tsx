@@ -1,40 +1,20 @@
 "use client";
 
-import React, { useContext, useEffect, useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { IoEllipsisVertical } from "react-icons/io5";
-import { AuthContext } from "@/app/context/AuthContext";
-import Image from "next/image";
-import { API_ENDPOINT } from "@/axios.config";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import axios from "axios";
+import Image from "next/image";
 import moment from "moment";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as unlikeIcon } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as likeIcon } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
 import { Comments } from "./Comments";
+import EditPostComponent from "./EditPost";
 
-interface PostProps {
-  caption: string;
-  mediaUrl: string;
-  postDate: string;
-  name: string;
-  profileImage: string | null;
-  postId: number;
-  userId: number;
-}
+import { PostProps } from "@/typings";
+import { API_ENDPOINT } from "@/axios.config";
+import { AuthContext } from "@/app/context/AuthContext";
 
 function Post({
   caption,
@@ -48,18 +28,20 @@ function Post({
   const { currentUser }: any = useContext(AuthContext);
   const [isPostLiked, setIsPostLiked] = useState(false);
   const [commentBox, setCommentBox] = useState(false);
-  const [postCaption, setPostCaption] = useState(caption);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [aspectRatio, setAspectRatio] = useState("56.25%"); // Default 16:9
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (mediaUrl) {
       const img = new window.Image();
       img.src = mediaUrl;
       img.onload = () => {
         const ratio = (img.height / img.width) * 100;
         setAspectRatio(`${ratio}%`);
+      };
+      img.onerror = () => {
+        console.error("Failed to load mediaUrl for aspect ratio calculation.");
+        setAspectRatio("56.25%");
       };
     }
   }, [mediaUrl]);
@@ -74,26 +56,39 @@ function Post({
       );
       setIsPostLiked(!isPostLiked);
     } catch (error: any) {
-      console.log(error.response?.data);
+      console.error(error.response?.data || error.message);
     }
   };
 
   useEffect(() => {
     const checkLikeStatus = async () => {
-      const response = await axios.post(
-        `${API_ENDPOINT}/posts/like/status`,
-        { postId },
-        { withCredentials: true }
-      );
-      setIsPostLiked(response.data);
+      try {
+        const response = await axios.post(
+          `${API_ENDPOINT}/posts/like/status`,
+          { postId },
+          { withCredentials: true }
+        );
+        setIsPostLiked(response.data);
+      } catch (error) {
+        console.error("Error checking like status:", error);
+      }
     };
     checkLikeStatus();
   }, [postId]);
 
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setIsDropdownOpen(false);
-  };
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const newFile = e.target.files?.[0];
+  //   if (!newFile) return;
+  //   const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+  //   if (!allowedTypes.includes(newFile.type)) {
+  //     return toast.error("Invalid file type. Please upload an image.");
+  //   }
+  //   if (newFile.size > 5 * 1024 * 1024) {
+  //     return toast.error("File size exceeds 5MB.");
+  //   }
+  //   setFile(newFile);
+  //   setPreviewUrl(URL.createObjectURL(newFile));
+  // };
 
   return (
     <div className="flex flex-col w-full rounded-md shadow-lg bg-slate-50">
@@ -102,8 +97,8 @@ function Post({
           <div className="relative w-10 h-10">
             <Image
               src={profileImage || "/avatar.png"}
-              className="rounded-full shadow-lg object-cover"
               alt="Profile pic"
+              className="rounded-full shadow-lg object-cover"
               fill
               sizes="40px"
             />
@@ -116,29 +111,14 @@ function Post({
           </div>
         </div>
 
-        <div className="border-none outline-none">
-          <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <IoEllipsisVertical />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {userId === currentUser.id && (
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setIsModalOpen(true);
-                    setIsDropdownOpen(false);
-                  }}
-                >
-                  Edit Post
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem>Report</DropdownMenuItem>
-              <DropdownMenuItem>Unfollow</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {userId === currentUser.id && (
+          <EditPostComponent
+            mediaUrl={mediaUrl}
+            caption={caption}
+            currentUser={currentUser}
+            userId={userId}
+          />
+        )}
       </div>
 
       <div className="relative">
@@ -169,43 +149,6 @@ function Post({
       </div>
 
       {commentBox && <Comments postId={postId} />}
-
-      <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
-        <DialogContent className="sm:max-w-[425px] h-[500px]">
-          <DialogHeader>
-            <DialogTitle>Edit the Post</DialogTitle>
-            <DialogDescription className="">
-              <textarea
-                value={postCaption}
-                onChange={(e) => setPostCaption(e.currentTarget.value)}
-                className="w-full mt-2 p-2 border rounded-md"
-              />
-              <div className="h-[300px] overflow-y-auto">
-                {mediaUrl && (
-                  <div className="relative w-full h-auto">
-                    <Image
-                      src={mediaUrl}
-                      alt="Post content"
-                      width={0} // Width set to 100% of the parent container
-                      height={0} // Allows height to scale with aspect ratio
-                      className="w-full h-auto object-contain" // Ensures proper scaling
-                      // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                      priority={false}
-                      unoptimized={true}
-                    />
-                  </div>
-                )}
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={handleModalClose}>
-              Cancel
-            </Button>
-            <Button onClick={handleModalClose}>Save Changes</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

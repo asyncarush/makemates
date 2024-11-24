@@ -30,7 +30,6 @@ function Posts({ userId }: { userId: number }) {
   return (
     <div className="w-full flex flex-col gap-4">
       {data.map((post: any) => {
-        // console.log(post);
         return (
           <Post
             key={post.id}

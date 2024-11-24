@@ -21,7 +21,9 @@ function Page() {
   const friendsList = useFriendList();
 
   const { currentUser, setCurrentUser }: any = useContext(AuthContext);
-  console.log(currentUser);
+
+  // Current User Log Here -->>> Come again here
+  // console.log(currentUser);
 
   useEffect(() => {
     const getUserData = async () => {

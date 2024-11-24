@@ -24,10 +24,19 @@ export interface AuthContextType {
   userSignUp: (inputs: SignUpInputType) => void;
   userLogin: (inputs: LoginInputType) => void; // Correct type
   userLogout: () => void;
-};
+}
 
+export interface NewComment {
+  desc: string;
+  postId: number;
+}
 
-export interface NewComment  {
-  desc : string;
-  postId : number;
+interface PostProps {
+  caption: string;
+  mediaUrl: string;
+  postDate: string;
+  name: string;
+  profileImage: string | null;
+  postId: number;
+  userId: number;
 }
