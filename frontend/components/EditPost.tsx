@@ -1,12 +1,5 @@
 import React, { useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-import { app } from "@/firebase";
 import toast from "react-hot-toast";
 
 import { Progress } from "./ui/progress";
@@ -41,29 +34,62 @@ import Image from "next/image";
  * @param {Object} props - Component props
  * @param {string} props.caption - The initial caption text for the post
  * @param {string} props.mediaUrl - The initial media URL for the post
+ * @param {Function} props.onSuccess - Optional callback function called after successful upload
+ * @param {Function} props.onError - Optional callback function called on upload failure
+ *
+ * @state
+ * @property {boolean} isDropdownOpen - Controls the dropdown menu visibility
+ * @property {boolean} isModalOpen - Controls the modal dialog visibility
+ * @property {FileList | null} files - Currently selected files for upload
+ * @property {string} desc - Post description/caption text
+ * @property {string[]} previewUrls - Array of URLs for image previews
+ * @property {boolean} uploadState - Indicates if an upload is in progress
+ * @property {number | null} uploadProgress - Current upload progress percentage
  *
  * Features:
  * - Multiple image upload with preview
- * - Firebase storage integration
- * - Progress tracking for uploads
- * - File validation (size and type)
+ * - MinIO storage integration via REST API
+ * - Real-time upload progress tracking
+ * - File validation (JPEG, PNG, max 5MB)
  * - Toast notifications for user feedback
+ * - Responsive image preview
  *
  * @example
  * ```tsx
- * <EditPostComponent caption="Initial caption" mediaUrl="https://example.com/image.jpg" />
+ * <EditPostComponent
+ *   caption="Initial caption"
+ *   mediaUrl="https://example.com/image.jpg"
+ *   onSuccess={() => console.log('Upload successful')}
+ *   onError={(error) => console.error('Upload failed:', error)}
+ * />
  * ```
  */
-export const EditPostComponent = (props: any) => {
+interface UploadResponse {
+  url: string;
+}
+
+interface EditPostProps {
+  caption: string;
+  mediaUrl: string;
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}
+
+export const EditPostComponent = ({
+  caption,
+  mediaUrl,
+  onSuccess,
+  onError,
+}: EditPostProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
 
   const [files, setFiles] = useState<FileList | null>(null);
-  const [desc, setDesc] = useState<string>(props.caption);
+  const [desc, setDesc] = useState<string>(caption);
 
-  const [previewUrls, setPreviewUrls] = useState<string[]>([props.mediaUrl]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([mediaUrl]);
 
   const [uploadState, setUploadState] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -80,13 +106,19 @@ export const EditPostComponent = (props: any) => {
   };
 
   const mutation = useMutation<NewPost, Error, NewPost>({
-    mutationFn: (newPost: NewPost) => {
-      return axios.post(`${API_ENDPOINT}/posts`, newPost, {
+    mutationFn: async (newPost: NewPost) => {
+      const response = await axios.post<NewPost>(`${API_ENDPOINT}/posts`, newPost, {
         withCredentials: true,
       });
+      return response.data;
     },
     onSuccess: () => {
       queryclient.invalidateQueries({ queryKey: ["newPost"] });
+      onSuccess?.();
+    },
+    onError: (error: Error) => {
+      console.error("Post creation failed:", error);
+      onError?.(error);
     },
   });
 
@@ -94,54 +126,66 @@ export const EditPostComponent = (props: any) => {
    * Handles the upload of post content including images and description
    *
    * @param {React.FormEvent} e - Form submission event
-   * @throws {Error} When file upload to Firebase fails
+   * @throws {Error} When file upload to MinIO fails
+   * @returns {Promise<void>}
+   *
+   * Process:
+   * 1. Validates file selection
+   * 2. Creates FormData for each file
+   * 3. Uploads files to MinIO via REST API
+   * 4. Tracks upload progress
+   * 5. Updates post with returned URLs
+   * 6. Cleans up after upload
    */
   const handleUploadPost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!files || files.length === 0) return toast.error("No files selected!");
 
-    const storage = getStorage(app);
-    const uploadPromises = Array.from(files).map(async (file) => {
-      const fileName = file.name + Date.now();
-      const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-
-      return new Promise((resolve, reject) => {
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            setUploadState(true);
-            const progress =
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setUploadProgress(progress);
-          },
-          (error) => {
-            console.error(error);
-            toast.error(`Upload failed for ${file.name}`);
-            reject(error);
-          },
-          async () => {
-            try {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(downloadURL);
-            } catch (error) {
-              reject(error);
-            }
-          }
-        );
-      });
-    });
-
     try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const fileName = `${Date.now()}-${file.name}`;
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("fileName", fileName);
+
+        try {
+          setUploadState(true);
+          const response = await axios.post<UploadResponse>(
+            `${API_ENDPOINT}/upload`,
+            formData,
+            {
+              withCredentials: true,
+              onUploadProgress: (progressEvent) => {
+                if (progressEvent.total) {
+                  const progress =
+                    (progressEvent.loaded / progressEvent.total) * 100;
+                  setUploadProgress(progress);
+                }
+              },
+            }
+          );
+
+          return response.data.url;
+        } catch (error) {
+          console.error("Upload error:", error);
+          const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+          toast.error(`Upload failed for ${file.name}: ${errorMessage}`);
+          throw error;
+        }
+      });
+
       const downloadURLs = await Promise.all(uploadPromises);
       setUploadState(false);
       setUploadProgress(null);
-      mutation.mutate({ desc, imgUrl: downloadURLs.join(",") });
+      
+      await mutation.mutateAsync({ desc, imgUrl: downloadURLs.join(",") });
       closeButton.current?.click();
       clearFileInput();
     } catch (error) {
       console.error("Upload failed:", error);
-      toast.error("Failed to upload some files");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      toast.error(`Failed to upload files: ${errorMessage}`);
+      onError?.(error instanceof Error ? error : new Error("Upload failed"));
     }
   };
 
@@ -149,10 +193,17 @@ export const EditPostComponent = (props: any) => {
    * Handles the selection of multiple image files
    *
    * @param {React.ChangeEvent<HTMLInputElement>} e - File input change event
-   * @validates
-   * - File types (JPEG, PNG)
-   * - File size (max 5MB)
-   * @generates Preview URLs for selected images
+   * @returns {(() => void) | undefined} Cleanup function for preview URLs
+   *
+   * Validation:
+   * - File types: JPEG, PNG only
+   * - File size: Maximum 5MB per file
+   * - Empty selection check
+   *
+   * Features:
+   * - Creates preview URLs for selected images
+   * - Maintains existing previews when adding more images
+   * - Automatically cleans up preview URLs on unmount
    */
   const handleMultipleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -205,7 +256,12 @@ export const EditPostComponent = (props: any) => {
 
   /**
    * Clears the file input and resets related states
-   * Removes preview URLs and cleans up object URLs
+   *
+   * Actions:
+   * - Resets files state to null
+   * - Clears preview URLs array
+   * - Resets file input element value
+   * - Cleans up object URLs to prevent memory leaks
    */
   const clearFileInput = () => {
     setFiles(null);
@@ -219,9 +275,14 @@ export const EditPostComponent = (props: any) => {
     }
   };
 
+  /**
+   * Triggers the file input click event for adding more media
+   *
+   * @param {React.MouseEvent<HTMLButtonElement>} e - Button click event
+   * @description Programmatically triggers the hidden file input to open file selection dialog
+   */
   const handleAddMedia = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    console.log("Add More Images");
     addMediaInput.current?.click();
   };
 
