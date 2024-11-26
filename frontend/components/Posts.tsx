@@ -29,7 +29,7 @@ function Posts({ userId }: { userId: number }) {
 
   return (
     <div className="w-full flex flex-col gap-4">
-      {data.map((post: any) => {
+      {data.reverse().map((post: any) => {
         return (
           <Post
             key={post.id}

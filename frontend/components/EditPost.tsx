@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getDownloadURL,
@@ -32,7 +32,28 @@ import { IoEllipsisVertical } from "react-icons/io5";
 import { NewPost } from "@/typings";
 import axios from "axios";
 import { Button } from "./ui/button";
+import Image from "next/image";
 
+/**
+ * EditPostComponent - A React component for editing and creating posts with image uploads
+ *
+ * @component
+ * @param {Object} props - Component props
+ * @param {string} props.caption - The initial caption text for the post
+ * @param {string} props.mediaUrl - The initial media URL for the post
+ *
+ * Features:
+ * - Multiple image upload with preview
+ * - Firebase storage integration
+ * - Progress tracking for uploads
+ * - File validation (size and type)
+ * - Toast notifications for user feedback
+ *
+ * @example
+ * ```tsx
+ * <EditPostComponent caption="Initial caption" mediaUrl="https://example.com/image.jpg" />
+ * ```
+ */
 export const EditPostComponent = (props: any) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,16 +61,13 @@ export const EditPostComponent = (props: any) => {
   const formRef = useRef<HTMLFormElement>(null);
 
   const [files, setFiles] = useState<FileList | null>(null);
-  const [desc, setDesc] = useState<string>("anything");
+  const [desc, setDesc] = useState<string>(props.caption);
 
-  const [previewUrls, setPreviewUrls] = useState<string[]>([
-    "https://placehold.co/600x400/png",
-  ]);
-
-  console.log(props);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([props.mediaUrl]);
 
   const [uploadState, setUploadState] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+
   const closeButton = useRef<HTMLButtonElement>(null);
 
   const addMediaInput = useRef<HTMLInputElement>(null);
@@ -72,41 +90,127 @@ export const EditPostComponent = (props: any) => {
     },
   });
 
+  /**
+   * Handles the upload of post content including images and description
+   *
+   * @param {React.FormEvent} e - Form submission event
+   * @throws {Error} When file upload to Firebase fails
+   */
   const handleUploadPost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!files) return toast.error("No file selected!");
-    const storage = getStorage(app);
-    const fileName = file.name + Date.now();
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    if (!files || files.length === 0) return toast.error("No files selected!");
 
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        setUploadState(true);
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setUploadProgress(progress);
-      },
-      (error) => {
-        console.error(error);
-        toast.error("Upload failed.");
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          setUploadState(false);
-          setUploadProgress(null);
-          mutation.mutate({ desc, imgUrl: downloadURL });
-          closeButton.current?.click();
-          clearFileInput();
-        });
-      }
-    );
+    const storage = getStorage(app);
+    const uploadPromises = Array.from(files).map(async (file) => {
+      const fileName = file.name + Date.now();
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      return new Promise((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            setUploadState(true);
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error(error);
+            toast.error(`Upload failed for ${file.name}`);
+            reject(error);
+          },
+          async () => {
+            try {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(downloadURL);
+            } catch (error) {
+              reject(error);
+            }
+          }
+        );
+      });
+    });
+
+    try {
+      const downloadURLs = await Promise.all(uploadPromises);
+      setUploadState(false);
+      setUploadProgress(null);
+      mutation.mutate({ desc, imgUrl: downloadURLs.join(",") });
+      closeButton.current?.click();
+      clearFileInput();
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error("Failed to upload some files");
+    }
   };
 
+  /**
+   * Handles the selection of multiple image files
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} e - File input change event
+   * @validates
+   * - File types (JPEG, PNG)
+   * - File size (max 5MB)
+   * @generates Preview URLs for selected images
+   */
+  const handleMultipleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const selectedFiles = e.target.files;
+
+    if (!selectedFiles || selectedFiles.length === 0) {
+      toast.error("Please select files");
+      return;
+    }
+
+    const arrayOfFileList = Array.from(selectedFiles);
+
+    // Validate file types and sizes
+    const validFileTypes = ["image/jpeg", "image/png"];
+    const maxFileSize = 5 * 1024 * 1024; // 5MB
+
+    const invalidFiles = arrayOfFileList.filter(
+      (file) => !validFileTypes.includes(file.type) || file.size > maxFileSize
+    );
+
+    if (invalidFiles.length > 0) {
+      toast.error(
+        "Some files are invalid. Please only upload images under 5MB."
+      );
+      return;
+    }
+
+    setFiles(selectedFiles);
+
+    // Create and add new preview URLs
+    const newPreviewUrls = arrayOfFileList.map((file) =>
+      URL.createObjectURL(file)
+    );
+
+    // Update preview URLs while maintaining the existing ones
+    setPreviewUrls((prev) => {
+      // If we already have preview URLs, add the new ones
+      if (prev.length > 0) {
+        return [...prev, ...newPreviewUrls];
+      }
+      // If no existing preview URLs, just use the new ones
+      return newPreviewUrls;
+    });
+
+    // Clean up old preview URLs when component unmounts
+    return () => {
+      newPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  };
+
+  /**
+   * Clears the file input and resets related states
+   * Removes preview URLs and cleans up object URLs
+   */
   const clearFileInput = () => {
     setFiles(null);
     setPreviewUrls([]);
+
     if (formRef.current) {
       const fileInput = formRef.current.querySelector(
         'input[type="file"]'
@@ -117,31 +221,8 @@ export const EditPostComponent = (props: any) => {
 
   const handleAddMedia = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-
     console.log("Add More Images");
     addMediaInput.current?.click();
-  };
-
-  const handleMultipleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    // e.stopPropagation();
-    if (e.target.files) {
-      if (e.target.files?.length < 0) {
-        toast.error("Please select the files");
-      }
-      setFiles(e.target.files);
-
-      console.log("Uploaded files : ", files);
-
-      // Now create previewUrls for each
-      if (files) {
-        const arraysOffile = Object.entries(files);
-
-        arraysOffile.map((file) =>
-          setPreviewUrls((prev) => [...prev, URL.createObjectURL(files[1])])
-        );
-      }
-    }
   };
 
   return (
@@ -187,25 +268,30 @@ export const EditPostComponent = (props: any) => {
               multiple={true}
             />
 
-            {/* {previewUrl && (
-                <div className="relative w-full mt-4">
-                  <Image
-                    src={previewUrl}
-                    alt="preview-image"
-                    width={100}
-                    height={100}
-                    unoptimized={true}
-                    className="w-full rounded-md"
-                  />
-                  <div
-                    className="absolute p-2 bg-white rounded-full right-2 top-2 cursor-pointer"
-                    onClick={clearFileInput}
-                  >
-                    X
-                  </div>
-                </div>
-              )} */}
-
+            {previewUrls.length > 0 && (
+              <div className="h-[400px] overflow-auto mb-5">
+                {previewUrls.map((mediaUrl) => {
+                  return (
+                    <div key={mediaUrl} className="relative w-full mt-4">
+                      <Image
+                        src={mediaUrl}
+                        alt="preview-image"
+                        width={100}
+                        height={100}
+                        unoptimized={true}
+                        className="w-full rounded-md"
+                      />
+                      <div
+                        className="absolute p-2 bg-white rounded-full right-2 top-2 cursor-pointer"
+                        onClick={clearFileInput}
+                      >
+                        X
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
             {uploadState && (
               <div className="w-full flex flex-col justify-center">
                 <span className="text-center font-medium">

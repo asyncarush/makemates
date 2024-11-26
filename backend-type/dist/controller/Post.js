@@ -47,8 +47,20 @@ exports.addPost = addPost;
 const getUserPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.params;
     try {
+        // get all the followers list
+        const followers = yield prisma.relationships.findMany({
+            where: { follower_id: parseInt(userId) },
+        });
+        const followersId = followers.map((item) => item.follow_id);
+        // get all posts whoes post's user id are in followersId
+        // console.log("Follower Id : ", followersId);
         const posts = yield prisma.posts.findMany({
-            where: { user_id: parseInt(userId, 10) },
+            where: {
+                OR: [
+                    { user_id: { in: followersId } }, // Posts by followed users
+                    { user_id: parseInt(userId, 10) }, // Your own posts
+                ],
+            },
             orderBy: { date: "desc" },
             include: {
                 post_media: true,
@@ -59,6 +71,7 @@ const getUserPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             },
         });
+        console.log("all posts : ", posts);
         return res.status(200).send(posts);
     }
     catch (err) {

@@ -18,7 +18,7 @@ router.post("/unlike", auth_1.default, Post_1.unLikeThePost);
 // Check if a post is liked by the user
 router.post("/like/status", auth_1.default, Post_1.checkPostLikeStatus);
 // Add a new comment to a post
-router.post("/comments", auth_1.default, Post_1.postNewComment);
+router.post("/comments/add", auth_1.default, Post_1.postNewComment);
 // Retrieve comments for a specific post
 router.get("/comments/:postId", auth_1.default, Post_1.getPostComments);
 exports.default = router;
