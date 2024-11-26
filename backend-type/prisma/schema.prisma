@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -12,84 +12,84 @@ model comments {
   id       Int       @id @default(autoincrement())
   user_id Int
   post_id Int
-  datetime DateTime? @db.DateTime(0)
+  datetime DateTime? @db.Timestamp
   desc       String?      @db.Text
   posts    posts     @relation(fields: [post_id], references: [id], onDelete: Cascade, map: "fk_comments_posts1")
   users    users     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_comments_users1")
 
-  @@index([post_id], map: "fk_comments_posts1_idx")
-  @@index([user_id], map: "fk_comments_users1_idx")
+  @@index([post_id], map: "comments_post_id_idx")
+  @@index([user_id], map: "comments_user_id_idx")
 }
 
 model likes {
   post_id Int
   user_id Int
-  datetime DateTime? @db.DateTime(0)
+  datetime DateTime? @db.Timestamp
   posts    posts     @relation(fields: [post_id], references: [id], onDelete: Cascade, map: "fk_likes_posts1")
   users    users     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_likes_users1")
 
   @@id([post_id, user_id])
-  @@index([post_id], map: "fk_likes_posts1_idx")
-  @@index([user_id], map: "fk_likes_users1_idx")
+  @@index([post_id], map: "likes_post_id_idx")
+  @@index([user_id], map: "likes_user_id_idx")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model post_media {
   id        Int    @id @default(autoincrement())
   post_id   Int
-  media_url String @db.VarChar(300)
+  media_url String @db.Text
   user_id   Int
   posts     posts  @relation(fields: [post_id], references: [id], onDelete: Cascade, map: "fk_post_media_posts1")
   users     users  @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_post_media_users1")
 
-  @@index([post_id], map: "fk_post_media_posts1_idx")
-  @@index([user_id], map: "fk_post_media_users1_idx")
+  @@index([post_id], map: "post_media_post_id_idx")
+  @@index([user_id], map: "post_media_user_id_idx")
 }
 
 model posts {
   id         Int          @id @default(autoincrement())
   user_id    Int
-  date       DateTime     @default(now()) @db.DateTime(0)
+  date       DateTime     @default(now()) @db.Timestamp
   desc       String?      @db.Text
   comments   comments[]
   likes      likes[]
   post_media post_media[]
   users      users        @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_user_id")
 
-  @@index([user_id], map: "fk_user_id_idx")
+  @@index([user_id], map: "posts_users_user_id_idx")
 }
 
 model profileimages {
   id         Int          @id @default(autoincrement())
   user_id    Int
-  image_url  String   @db.VarChar(500)
-  date       DateTime @default(now()) @db.DateTime(0)
-  currentImg Boolean  @default(dbgenerated("b'0'")) @db.Bit(1)
+  image_url  String   @db.Text
+  date       DateTime @default(now()) @db.Timestamp
+  currentImg Boolean  @default(false)
   users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@index([user_id], map: "fk_user_id_idx")
+  @@index([user_id], map: "profileimages_user_id_idx")
 }
 
 model relationships {
   follow_id                              Int
   follower_id                            Int
-  date                                   String? @db.VarChar(45)
+  date                                   String? @db.Text
   users_relationships_follow_idTousers   users   @relation("relationships_follow_idTousers", fields: [follow_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_follow_id")
   users_relationships_follower_idTousers users   @relation("relationships_follower_idTousers", fields: [follower_id], references: [id], onDelete: Cascade, map: "fk_follower_id")
 
   @@id([follow_id, follower_id])
-  @@index([follower_id], map: "fk_follower_id_idx")
+  @@index([follower_id], map: "relationships_follower_id_idx")
 }
 
 model users {
   id                                             Int             @id @default(autoincrement())
   name                                           String          @db.VarChar(50)
-  email                                          String          @unique(map: "email_UNIQUE") @db.VarChar(45)
-  password                                       String          @db.VarChar(300)
+  email                                          String          @unique @db.VarChar(45)
+  password                                       String          @db.Text
   gender                                         String          @db.VarChar(10)
   dob                                            DateTime        @db.Date
-  img                                            String?         @db.VarChar(500)
-  mobile_number                                  String?         @unique(map: "mobile_number_UNIQUE") @db.VarChar(20)
+  img                                            String?         @db.Text
+  mobile_number                                  String?         @unique @db.VarChar(20)
   country                                        String?         @db.VarChar(20)
   state                                          String?         @db.VarChar(20)
   city                                           String?         @db.VarChar(20)

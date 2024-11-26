@@ -3,6 +3,7 @@ import { Request } from "express";
 import * as multer from "multer";
 
 import { minioConfig } from "../config/minio.config";
+
 /**
  * Interface for file upload request
  */
@@ -24,7 +25,7 @@ export class MinioServiceError extends Error {
  * MinIO client instance configuration
  */
 const minioClient = new Client({
-  endPoint: minioConfig.endpoint,
+  endPoint: minioConfig.endpoint.replace(/^https?:\/\//, ''), // Remove protocol if present
   port: minioConfig.port,
   useSSL: minioConfig.useSSL,
   accessKey: minioConfig.accessKey,
@@ -68,8 +69,8 @@ const BUCKET_NAME = "posts";
  *
  * @param {Express.Multer.File} file - The file to upload from multer
  * @param {string} fileName - The name to save the file as
- * @returns {Promise<string>} Presigned URL for the uploaded file
- * @throws {MinioServiceError} When upload or URL generation fails
+ * @returns {Promise<string>} Public URL for the uploaded file
+ * @throws {MinioServiceError} When upload fails
  */
 export const uploadFile = async (
   file: Express.Multer.File,
@@ -77,6 +78,12 @@ export const uploadFile = async (
 ): Promise<string> => {
   if (!file || !file.buffer) {
     throw new MinioServiceError("Invalid file provided");
+  }
+
+  // Validate file type
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!allowedMimeTypes.includes(file.mimetype)) {
+    throw new MinioServiceError(`Invalid file type. Allowed types: ${allowedMimeTypes.join(', ')}`);
   }
 
   try {
@@ -94,16 +101,16 @@ export const uploadFile = async (
       metadata
     );
 
-    // Generate presigned URL for the uploaded object
-    const url = await minioClient.presignedGetObject(
-      BUCKET_NAME,
-      fileName,
-      24 * 60 * 60 // 24 hours expiry
-    );
+    // Construct the public URL
+    const protocol = minioConfig.useSSL ? 'https' : 'http';
+    const url = `${protocol}://${minioConfig.endpoint}:${minioConfig.port}/${BUCKET_NAME}/${fileName}`;
 
     return url;
-  } catch (error) {
-    console.error("MinIO upload error:", error);
-    throw new MinioServiceError("Failed to upload file to MinIO", error);
+  } catch (error: any) {
+    console.error('MinIO upload error:', error);
+    throw new MinioServiceError(
+      `Failed to upload file: ${error.message || 'Unknown error'}`,
+      error
+    );
   }
 };

@@ -51,7 +51,6 @@ export async function login(req: Request, res: Response) {
 // Register Function
 export async function register(req: Request, res: Response) {
   const { error } = validateNewUser(req.body);
-
   if (error) return res.status(400).send(error.details[0].message);
 
   try {
@@ -68,6 +67,7 @@ export async function register(req: Request, res: Response) {
       },
     });
 
+    console.log("newUser", newUser);
     const token = jwt.sign(
       { id: newUser.id },
       process.env.JWT_PRIVATE_KEY as string,
@@ -83,7 +83,7 @@ export async function register(req: Request, res: Response) {
       .status(200)
       .send({ id: newUser.id });
   } catch (err) {
-    return res.status(500).send("An error occurred during registration.");
+    return res.status(500).send(err);
   }
 }
 

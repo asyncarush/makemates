@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 export const minioConfig = {
   endpoint: process.env.MINIO_ENDPOINT || "localhost",
   port: parseInt(process.env.MINIO_PORT || "9000"),
