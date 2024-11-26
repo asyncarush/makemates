@@ -10,6 +10,7 @@ import { logger } from "./config/winston";
 import dotenv from "dotenv";
 import compression from "compression";
 import helmet from "helmet";
+import upload from "./routes/upload.routes";
 
 const app: Application = express();
 dotenv.config();
@@ -31,7 +32,7 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get("/check", (req, res) => {
+app.get("/health", (req, res) => {
   res.send("Chill , everything is working fine");
 });
 
@@ -39,6 +40,7 @@ app.get("/check", (req, res) => {
 app.use("/user", User);
 app.use("/posts", Post);
 app.use("/search", Search);
+app.use("/", upload);
 
 const PORT: number = parseInt(process.env.PORT || "2000", 10);
 

@@ -17,13 +17,6 @@ import {
 } from "@/components/ui/dialog";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { app } from "@/firebase.js";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { NewPost } from "@/typings";
 import { IoIosAddCircle } from "react-icons/io";
@@ -55,41 +48,66 @@ function FeedUploadBox() {
 
   const handleUploadPost = async (e: React.FormEvent) => {
     e.preventDefault();
-    new Compressor(file, {
-      quality: 0.2,
-      success(result: any) {
-        const storage = getStorage(app);
-        const fileName =
-          result.name + Date.now() + "." + result.type.split("/")[1];
-        const storageRef = ref(storage, fileName);
-        const uploadTask = uploadBytesResumable(storageRef, result);
+    
+    if (!file) {
+      toast.error("Please select a file to upload");
+      return;
+    }
 
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            setUploadState(true);
-            const progress =
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setUploadProgress(progress);
-          },
-          (error) => {
-            console.log(error);
-          },
-          () => {
-            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-              setUploadState(false);
-              setUploadProgress(null);
-              clearFileInput();
-              mutation.mutate({ desc, imgUrl: downloadURL });
-              closeButton.current?.click();
-            });
+    try {
+      new Compressor(file, {
+        quality: 0.2,
+        async success(result: any) {
+          setUploadState(true);
+          
+          // Create FormData with the compressed file
+          const formData = new FormData();
+          const fileName = result.name + Date.now() + "." + result.type.split("/")[1];
+          formData.append("file", result, fileName);
+          
+          try {
+            // Upload file to MinIO through backend API
+            const uploadResponse = await axios.post(
+              `${API_ENDPOINT}/upload`,
+              formData,
+              {
+                withCredentials: true,
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+                onUploadProgress: (progressEvent) => {
+                  const progress = progressEvent.total
+                    ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                    : 0;
+                  setUploadProgress(progress);
+                },
+              }
+            );
+
+            // Get the URL from the response
+            const imageUrl = uploadResponse.data.url;
+            
+            // Clear the form and reset states
+            setUploadState(false);
+            setUploadProgress(null);
+            clearFileInput();
+            
+            // Create the post with the image URL
+            mutation.mutate({ desc, imgUrl: imageUrl });
+            closeButton.current?.click();
+          } catch (error: any) {
+            setUploadState(false);
+            setUploadProgress(null);
+            toast.error("Failed to upload image: " + error.message);
           }
-        );
-      },
-      error(err) {
-        toast.error(err.message);
-      },
-    });
+        },
+        error(err) {
+          toast.error(err.message);
+        },
+      });
+    } catch (error: any) {
+      toast.error("Error processing image: " + error.message);
+    }
   };
 
   const clearFileInput = () => {
