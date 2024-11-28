@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 // Get User Profile
 export const getUserProfile = async (req: Request, res: Response) => {
   const userId = req.body.id;
-  console.log("looking for user with id : ", userId);
+  // console.log("looking for user with id : ", userId);
   try {
     const userData = await prisma.users.findUnique({
       where: { id: parseInt(userId) },

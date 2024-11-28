@@ -14,23 +14,27 @@ interface RequestWithUser extends Request {
 
 // Add Post
 export const addPost = async (req: RequestWithUser, res: Response) => {
-  const { desc, imgUrl } = req.body;
-
+  const { desc, imgUrls } = req.body;
   try {
     const post = await prisma.posts.create({
       data: {
         user_id: req.user?.id || -1,
-        desc: desc,
+        desc,
       },
     });
 
-    await prisma.post_media.create({
-      data: {
-        post_id: post.id,
-        media_url: imgUrl,
-        user_id: req.user?.id || -1,
-      },
-    });
+    const urls = JSON.parse(imgUrls);
+    await Promise.all(
+      urls.map((url: string) =>
+        prisma.post_media.create({
+          data: {
+            post_id: post.id,
+            media_url: url,
+            user_id: req.user?.id || -1,
+          },
+        })
+      )
+    );
 
     return res.status(200).send("Post uploaded...");
   } catch (err) {
@@ -75,7 +79,7 @@ export const getUserPosts = async (req: Request, res: Response) => {
       },
     });
 
-    console.log("all posts : ", posts);
+    // console.log("all posts : ", posts);
 
     return res.status(200).send(posts);
   } catch (err) {

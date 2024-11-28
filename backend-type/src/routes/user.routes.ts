@@ -9,15 +9,14 @@ import {
   getFriendList,
   setProfilePic,
   logoutUser,
-} from "../controller/User";
+} from "../controllers/user.controller";
+
 import auth from "../middleware/auth";
 
 const router: Router = Router();
-
 router.post("/register", register);
 router.post("/login", login);
 router.get("/logout", auth, logoutUser);
-
 router.post("/update", auth, updateUserInfo);
 router.post("/follow", auth, followUser);
 router.post("/unfollow", auth, unfollowUser);

@@ -7,7 +7,7 @@ import {
   checkPostLikeStatus,
   postNewComment,
   getPostComments,
-} from "../controller/Post";
+} from "../controllers/post.controller";
 
 import auth from "../middleware/auth";
 

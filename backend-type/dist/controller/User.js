@@ -80,6 +80,7 @@ function register(req, res) {
                     dob: new Date(`${req.body.year}-${req.body.month}-${req.body.day}`),
                 },
             });
+            console.log("newUser", newUser);
             const token = jsonwebtoken_1.default.sign({ id: newUser.id }, process.env.JWT_PRIVATE_KEY, { expiresIn: "24hr" });
             return res
                 .cookie("x-auth-token", token, {
@@ -91,7 +92,7 @@ function register(req, res) {
                 .send({ id: newUser.id });
         }
         catch (err) {
-            return res.status(500).send("An error occurred during registration.");
+            return res.status(500).send(err);
         }
     });
 }

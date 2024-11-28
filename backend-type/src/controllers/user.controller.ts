@@ -67,7 +67,7 @@ export async function register(req: Request, res: Response) {
       },
     });
 
-    console.log("newUser", newUser);
+    // console.log("newUser", newUser);
     const token = jwt.sign(
       { id: newUser.id },
       process.env.JWT_PRIVATE_KEY as string,
@@ -171,8 +171,8 @@ export async function followUser(req: RequestWithUser, res: Response) {
   const id = req.user?.id || -1;
   const { friendId }: any = req.body;
 
-  console.log("User Id:", id);
-  console.log("friend Id:", friendId);
+  // console.log("User Id:", id);
+  // console.log("friend Id:", friendId);
 
   try {
     await prisma.relationships.create({
@@ -244,7 +244,7 @@ export async function getFriendList(req: RequestWithUser, res: Response) {
 
 // Set Profile Picture
 export async function setProfilePic(req: RequestWithUser, res: Response) {
-  console.log("Reached here...");
+  // console.log("Reached here...");
 
   const id = req.user?.id || -1;
   const { profileImgUrl }: any = req.body;
@@ -259,7 +259,7 @@ export async function setProfilePic(req: RequestWithUser, res: Response) {
       },
     });
 
-    console.log("profileImage");
+    // console.log("profileImage");
 
     // Update the user's profile image reference
     await prisma.users.update({

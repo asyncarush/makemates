@@ -11,7 +11,7 @@ function UpdatePassword({ value }: { value: string }) {
   const [error, setError] = useState<any>(null);
   const nameRef = useRef<HTMLParagraphElement>(null);
 
-  console.log(defaultValue);
+  // console.log(defaultValue);
   const handleUpdate = async () => {
     try {
       const response = await axios.post(

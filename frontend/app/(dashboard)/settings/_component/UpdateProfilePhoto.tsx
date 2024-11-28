@@ -99,7 +99,7 @@ function UpdateProfilePhoto({ value }: { value: string }) {
   // };
 
   const uploadProfilePicture = async () => {
-    console.log("Image After Crop : ", imgAfterCrop);
+    // console.log("Image After Crop : ", imgAfterCrop);
 
     const res = await fetch(imgAfterCrop);
     const blob = await res.blob();

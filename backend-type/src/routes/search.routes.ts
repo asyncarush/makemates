@@ -3,7 +3,7 @@ import {
   checkFollowed,
   getUserProfile,
   searchUser,
-} from "../controller/Search";
+} from "../controllers/search.controller";
 import auth from "../middleware/auth";
 
 const router: Router = Router();

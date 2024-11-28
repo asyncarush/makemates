@@ -13,7 +13,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogFooter,
   DialogClose,
   DialogTitle,
@@ -27,57 +26,20 @@ import axios from "axios";
 import { Button } from "./ui/button";
 import Image from "next/image";
 
-/**
- * EditPostComponent - A React component for editing and creating posts with image uploads
- *
- * @component
- * @param {Object} props - Component props
- * @param {string} props.caption - The initial caption text for the post
- * @param {string} props.mediaUrl - The initial media URL for the post
- * @param {Function} props.onSuccess - Optional callback function called after successful upload
- * @param {Function} props.onError - Optional callback function called on upload failure
- *
- * @state
- * @property {boolean} isDropdownOpen - Controls the dropdown menu visibility
- * @property {boolean} isModalOpen - Controls the modal dialog visibility
- * @property {FileList | null} files - Currently selected files for upload
- * @property {string} desc - Post description/caption text
- * @property {string[]} previewUrls - Array of URLs for image previews
- * @property {boolean} uploadState - Indicates if an upload is in progress
- * @property {number | null} uploadProgress - Current upload progress percentage
- *
- * Features:
- * - Multiple image upload with preview
- * - MinIO storage integration via REST API
- * - Real-time upload progress tracking
- * - File validation (JPEG, PNG, max 5MB)
- * - Toast notifications for user feedback
- * - Responsive image preview
- *
- * @example
- * ```tsx
- * <EditPostComponent
- *   caption="Initial caption"
- *   mediaUrl="https://example.com/image.jpg"
- *   onSuccess={() => console.log('Upload successful')}
- *   onError={(error) => console.error('Upload failed:', error)}
- * />
- * ```
- */
 interface UploadResponse {
   url: string;
 }
 
 interface EditPostProps {
   caption: string;
-  mediaUrl: string;
+  mediaUrls: string[];
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }
 
 export const EditPostComponent = ({
   caption,
-  mediaUrl,
+  mediaUrls,
   onSuccess,
   onError,
 }: EditPostProps) => {
@@ -89,7 +51,7 @@ export const EditPostComponent = ({
   const [files, setFiles] = useState<FileList | null>(null);
   const [desc, setDesc] = useState<string>(caption);
 
-  const [previewUrls, setPreviewUrls] = useState<string[]>([mediaUrl]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>(mediaUrls);
 
   const [uploadState, setUploadState] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -107,9 +69,13 @@ export const EditPostComponent = ({
 
   const mutation = useMutation<NewPost, Error, NewPost>({
     mutationFn: async (newPost: NewPost) => {
-      const response = await axios.post<NewPost>(`${API_ENDPOINT}/posts`, newPost, {
-        withCredentials: true,
-      });
+      const response = await axios.post<NewPost>(
+        `${API_ENDPOINT}/posts`,
+        newPost,
+        {
+          withCredentials: true,
+        }
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -122,21 +88,6 @@ export const EditPostComponent = ({
     },
   });
 
-  /**
-   * Handles the upload of post content including images and description
-   *
-   * @param {React.FormEvent} e - Form submission event
-   * @throws {Error} When file upload to MinIO fails
-   * @returns {Promise<void>}
-   *
-   * Process:
-   * 1. Validates file selection
-   * 2. Creates FormData for each file
-   * 3. Uploads files to MinIO via REST API
-   * 4. Tracks upload progress
-   * 5. Updates post with returned URLs
-   * 6. Cleans up after upload
-   */
   const handleUploadPost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!files || files.length === 0) return toast.error("No files selected!");
@@ -168,7 +119,8 @@ export const EditPostComponent = ({
           return response.data.url;
         } catch (error) {
           console.error("Upload error:", error);
-          const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error occurred";
           toast.error(`Upload failed for ${file.name}: ${errorMessage}`);
           throw error;
         }
@@ -177,34 +129,19 @@ export const EditPostComponent = ({
       const downloadURLs = await Promise.all(uploadPromises);
       setUploadState(false);
       setUploadProgress(null);
-      
-      await mutation.mutateAsync({ desc, imgUrl: downloadURLs.join(",") });
+
+      await mutation.mutateAsync({ desc, imgUrls: downloadURLs.join(",") });
       closeButton.current?.click();
       clearFileInput();
     } catch (error) {
       console.error("Upload failed:", error);
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
       toast.error(`Failed to upload files: ${errorMessage}`);
       onError?.(error instanceof Error ? error : new Error("Upload failed"));
     }
   };
 
-  /**
-   * Handles the selection of multiple image files
-   *
-   * @param {React.ChangeEvent<HTMLInputElement>} e - File input change event
-   * @returns {(() => void) | undefined} Cleanup function for preview URLs
-   *
-   * Validation:
-   * - File types: JPEG, PNG only
-   * - File size: Maximum 5MB per file
-   * - Empty selection check
-   *
-   * Features:
-   * - Creates preview URLs for selected images
-   * - Maintains existing previews when adding more images
-   * - Automatically cleans up preview URLs on unmount
-   */
   const handleMultipleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     const selectedFiles = e.target.files;

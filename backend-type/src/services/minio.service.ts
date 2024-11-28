@@ -1,15 +1,6 @@
 import { Client } from "minio";
-import { Request } from "express";
-import * as multer from "multer";
 
 import { minioConfig } from "../config/minio.config";
-
-/**
- * Interface for file upload request
- */
-export interface FileUploadRequest extends Request {
-  file: Express.Multer.File;
-}
 
 /**
  * Custom error class for MinIO service errors
@@ -25,7 +16,7 @@ export class MinioServiceError extends Error {
  * MinIO client instance configuration
  */
 const minioClient = new Client({
-  endPoint: minioConfig.endpoint.replace(/^https?:\/\//, ''), // Remove protocol if present
+  endPoint: minioConfig.endpoint.replace(/^https?:\/\//, ""), // Remove protocol if present
   port: minioConfig.port,
   useSSL: minioConfig.useSSL,
   accessKey: minioConfig.accessKey,
@@ -72,6 +63,7 @@ const BUCKET_NAME = "posts";
  * @returns {Promise<string>} Public URL for the uploaded file
  * @throws {MinioServiceError} When upload fails
  */
+
 export const uploadFile = async (
   file: Express.Multer.File,
   fileName: string
@@ -81,9 +73,11 @@ export const uploadFile = async (
   }
 
   // Validate file type
-  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const allowedMimeTypes = ["image/jpeg", "image/png"];
   if (!allowedMimeTypes.includes(file.mimetype)) {
-    throw new MinioServiceError(`Invalid file type. Allowed types: ${allowedMimeTypes.join(', ')}`);
+    throw new MinioServiceError(
+      `Invalid file type. Allowed types: ${allowedMimeTypes.join(", ")}`
+    );
   }
 
   try {
@@ -102,14 +96,14 @@ export const uploadFile = async (
     );
 
     // Construct the public URL
-    const protocol = minioConfig.useSSL ? 'https' : 'http';
+    const protocol = minioConfig.useSSL ? "https" : "http";
     const url = `${protocol}://${minioConfig.endpoint}:${minioConfig.port}/${BUCKET_NAME}/${fileName}`;
 
     return url;
   } catch (error: any) {
-    console.error('MinIO upload error:', error);
+    console.error("MinIO upload error:", error);
     throw new MinioServiceError(
-      `Failed to upload file: ${error.message || 'Unknown error'}`,
+      `Failed to upload file: ${error.message || "Unknown error"}`,
       error
     );
   }

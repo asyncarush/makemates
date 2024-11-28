@@ -14,6 +14,7 @@ import {
   DialogFooter,
   DialogTrigger,
   DialogClose,
+  DialogTitle,
 } from "@/components/ui/dialog";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -24,9 +25,10 @@ import { API_ENDPOINT } from "@/axios.config";
 
 function FeedUploadBox() {
   const [desc, setDesc] = useState<string>("");
-  const [file, setFile] = useState<any>();
+  const [files, setFiles] = useState<FileList | null>(null);
 
-  const [previewUrl, setPreviewUrl] = useState<string | StaticImport>("");
+  const [previewUrls, setPreviewUrls] = useState<string[] | null>(null);
+
   const [uploadState, setUploadState] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
@@ -48,85 +50,141 @@ function FeedUploadBox() {
 
   const handleUploadPost = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!file) {
-      toast.error("Please select a file to upload");
-      return;
-    }
+    console.log("Uploading files: ", files);
+    if (!files || files.length === 0) return toast.error("No files selected!");
 
+    const compressedFiles = await Promise.all(
+      Array.from(files).map(
+        (file) =>
+          new Promise((resolve, reject) => {
+            new Compressor(file, {
+              quality: 0.2,
+              success(result) {
+                resolve(result);
+              },
+              error(err) {
+                reject(err);
+                toast.error(err.message);
+              },
+            });
+          })
+      )
+    );
+
+    // Create FormData with the compressed file
+    let formData = new FormData();
+
+    compressedFiles.forEach((file: any) => {
+      const fileExtension = file.type.split("/")[1] || "jpg";
+      const fileName = `image_${Date.now()}.${fileExtension}`;
+      formData.append("post_images", file, fileName);
+    });
+
+    console.log("uploading files to minio");
     try {
-      new Compressor(file, {
-        quality: 0.2,
-        async success(result: any) {
-          setUploadState(true);
-          
-          // Create FormData with the compressed file
-          const formData = new FormData();
-          const fileName = result.name + Date.now() + "." + result.type.split("/")[1];
-          formData.append("file", result, fileName);
-          
-          try {
-            // Upload file to MinIO through backend API
-            const uploadResponse = await axios.post(
-              `${API_ENDPOINT}/upload`,
-              formData,
-              {
-                withCredentials: true,
-                headers: {
-                  "Content-Type": "multipart/form-data",
-                },
-                onUploadProgress: (progressEvent) => {
-                  const progress = progressEvent.total
-                    ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
-                    : 0;
-                  setUploadProgress(progress);
-                },
-              }
-            );
+      // Upload file to MinIO through backend API
+      const uploadResponse: any = await axios.post(
+        `${API_ENDPOINT}/upload`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (progressEvent) => {
+            const progress = progressEvent.total
+              ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              : 0;
+            setUploadProgress(progress);
+          },
+        }
+      );
 
-            // Get the URL from the response
-            const imageUrl = uploadResponse.data.url;
-            
-            // Clear the form and reset states
-            setUploadState(false);
-            setUploadProgress(null);
-            clearFileInput();
-            
-            // Create the post with the image URL
-            mutation.mutate({ desc, imgUrl: imageUrl });
-            closeButton.current?.click();
-          } catch (error: any) {
-            setUploadState(false);
-            setUploadProgress(null);
-            toast.error("Failed to upload image: " + error.message);
-          }
-        },
-        error(err) {
-          toast.error(err.message);
-        },
-      });
+      // Get the URL from the response
+      const imageUrl = uploadResponse.data.urls;
+
+      //print the imageurl
+      // console.log("Image URL: ", imageUrl);
+
+      // Clear the form and reset states
+      setUploadState(false);
+      setUploadProgress(null);
+      clearFileInput();
+
+      const postData = {
+        desc: desc,
+        imgUrls: JSON.stringify(imageUrl),
+      };
+      console.log("Post Data: ", postData);
+
+      // Create the post with the image URL
+      mutation.mutate(postData);
+      closeButton.current?.click();
     } catch (error: any) {
-      toast.error("Error processing image: " + error.message);
-    }
-  };
-
-  const clearFileInput = () => {
-    setDesc("");
-    setFile(undefined);
-    setPreviewUrl("");
-    if (formRef.current) {
-      const fileInput: any =
-        formRef.current.querySelector('input[type="file"]');
-      if (fileInput) fileInput.value = "";
+      setUploadState(false);
+      setUploadProgress(null);
+      toast.error("Failed to upload image: " + error.message);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newFile = e.target.files ? e.target.files[0] : undefined;
-    setFile(newFile);
-    if (newFile) {
-      const newPreviewUrl = URL.createObjectURL(newFile);
-      setPreviewUrl(newPreviewUrl);
+    e.preventDefault();
+    const selectedFiles = e.target.files;
+
+    if (!selectedFiles || selectedFiles.length === 0) {
+      toast.error("Please select files");
+      return;
+    }
+
+    const arrayOfFileList = Array.from(selectedFiles);
+
+    // Validate file types and sizes
+    const validFileTypes = ["image/jpeg", "image/png"];
+    const maxFileSize = 5 * 1024 * 1024; // 5MB
+
+    const invalidFiles = arrayOfFileList.filter(
+      (file) => !validFileTypes.includes(file.type) || file.size > maxFileSize
+    );
+
+    if (invalidFiles.length > 0) {
+      toast.error(
+        "Some files are invalid. Please only upload images under 5MB."
+      );
+      return;
+    }
+
+    setFiles(selectedFiles);
+
+    // Create and add new preview URLs
+    const newPreviewUrls = arrayOfFileList.map((file) =>
+      URL.createObjectURL(file)
+    );
+
+    // Update preview URLs while maintaining the existing ones
+    setPreviewUrls((prev) => {
+      // If we already have preview URLs, add the new ones
+      if (prev && prev.length > 0) {
+        return [...prev, ...newPreviewUrls];
+      }
+      // If no existing preview URLs, just use the new ones
+      return newPreviewUrls;
+    });
+
+    // Clean up old preview URLs when component unmounts
+    return () => {
+      newPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  };
+
+  const clearFileInput = () => {
+    setFiles(null);
+    setPreviewUrls([]);
+
+    if (formRef.current) {
+      const fileInput = formRef.current.querySelector(
+        'input[type="file"]'
+      ) as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
     }
   };
 
@@ -138,8 +196,12 @@ function FeedUploadBox() {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <form ref={formRef} onSubmit={(e) => handleUploadPost(e)}>
-          <h3 className="font-medium text-2xl">Share new Post</h3>
+        <DialogTitle>Share new Post</DialogTitle>
+        <form
+          ref={formRef}
+          onSubmit={(e) => handleUploadPost(e)}
+          encType="multipart/form-data"
+        >
           <textarea
             rows={3}
             cols={60}
@@ -151,18 +213,19 @@ function FeedUploadBox() {
 
           <div className="border-1 border-slate-100">
             <div className="max-h-[200px] overflow-y-auto">
-              {file && (
-                <Image
-                  alt="preview-image"
-                  src={previewUrl}
-                  width="50"
-                  height="50"
-                  quality="50"
-                  className="w-full rounded-md"
-                />
-              )}
+              {previewUrls &&
+                previewUrls.map((url, index) => (
+                  <Image
+                    key={index}
+                    src={url}
+                    alt="preview"
+                    width={100}
+                    height={100}
+                  />
+                ))}
             </div>
             <input
+              multiple={true}
               type="file"
               name="postImage"
               onChange={handleFileChange}

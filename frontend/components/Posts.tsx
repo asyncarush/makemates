@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Post from "./Post";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { PostInterface } from "@/typings";
 
 function Posts({ userId }: { userId: number }) {
   const { isPending, isError, data, error }: any = useQuery({
@@ -29,16 +30,21 @@ function Posts({ userId }: { userId: number }) {
 
   return (
     <div className="w-full flex flex-col gap-4">
-      {data.reverse().map((post: any) => {
+      {data.reverse().map((post: PostInterface) => {
+        const mediaUrls =
+          post.post_media && post.post_media.length > 0
+            ? post.post_media.map((media: any) => media.media_url)
+            : [];
+
         return (
           <Post
             key={post.id}
             postId={post.id}
             userId={post.user_id}
-            profileImage={post.users.img}
-            name={post.users.name}
+            profileImage={post.users?.img || null}
+            name={post.users?.name || "Unknown User"}
             caption={post.desc}
-            mediaUrl={post.post_media[0].media_url}
+            mediaUrls={mediaUrls}
             postDate={post.date}
           />
         );

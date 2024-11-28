@@ -19,7 +19,7 @@ import { AuthContext } from "@/app/context/AuthContext";
 function Post({
   caption,
   name,
-  mediaUrl,
+  mediaUrls,
   postDate,
   profileImage,
   postId,
@@ -28,23 +28,28 @@ function Post({
   const { currentUser }: any = useContext(AuthContext);
   const [isPostLiked, setIsPostLiked] = useState(false);
   const [commentBox, setCommentBox] = useState(false);
-
-  const [aspectRatio, setAspectRatio] = useState("56.25%"); // Default 16:9
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [aspectRatios, setAspectRatios] = useState<string[]>([]);
 
   useEffect(() => {
-    if (mediaUrl) {
-      const img = new window.Image();
-      img.src = mediaUrl;
-      img.onload = () => {
-        const ratio = (img.height / img.width) * 100;
-        setAspectRatio(`${ratio}%`);
-      };
-      img.onerror = () => {
-        console.error("Failed to load mediaUrl for aspect ratio calculation.");
-        setAspectRatio("56.25%");
-      };
+    if (mediaUrls && mediaUrls.length > 0) {
+      Promise.all(
+        mediaUrls.map((url) => {
+          return new Promise<string>((resolve) => {
+            const img = new window.Image();
+            img.src = url;
+            img.onload = () => {
+              const ratio = (img.height / img.width) * 100;
+              resolve(`${ratio}%`);
+            };
+            img.onerror = () => {
+              resolve("56.25%"); // Default 16:9 ratio
+            };
+          });
+        })
+      ).then(setAspectRatios);
     }
-  }, [mediaUrl]);
+  }, [mediaUrls]);
 
   const handlePostLike = async () => {
     try {
@@ -76,20 +81,6 @@ function Post({
     checkLikeStatus();
   }, [postId]);
 
-  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const newFile = e.target.files?.[0];
-  //   if (!newFile) return;
-  //   const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
-  //   if (!allowedTypes.includes(newFile.type)) {
-  //     return toast.error("Invalid file type. Please upload an image.");
-  //   }
-  //   if (newFile.size > 5 * 1024 * 1024) {
-  //     return toast.error("File size exceeds 5MB.");
-  //   }
-  //   setFile(newFile);
-  //   setPreviewUrl(URL.createObjectURL(newFile));
-  // };
-
   return (
     <div className="flex flex-col w-full rounded-md shadow-lg bg-slate-50">
       <div className="w-full flex pr-4 pt-4 p-2">
@@ -101,6 +92,7 @@ function Post({
               className="rounded-full shadow-lg object-cover"
               fill
               sizes="40px"
+              loading="lazy"
             />
           </div>
           <div className="flex flex-col">
@@ -111,29 +103,53 @@ function Post({
           </div>
         </div>
 
-        {userId === currentUser.id && (
+        {/* {userId === currentUser.id && (
           <EditPostComponent
-            mediaUrl={mediaUrl}
+            mediaUrls={mediaUrls}
             caption={caption}
             currentUser={currentUser}
             userId={userId}
           />
-        )}
+        )} */}
       </div>
 
       <div className="relative">
         <div className="text-sm p-2">{caption}</div>
-        <div className="relative w-full" style={{ paddingBottom: aspectRatio }}>
-          <Image
-            src={mediaUrl}
-            alt="Post content"
-            fill
-            className="object-contain"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-            priority={false}
-            unoptimized={true}
-          />
-        </div>
+        {mediaUrls &&
+          mediaUrls.length > 0 &&
+          aspectRatios[currentImageIndex] && (
+            <div className="relative">
+              <div
+                className="relative w-full"
+                style={{ paddingBottom: aspectRatios[currentImageIndex] }}
+              >
+                <Image
+                  src={mediaUrls[currentImageIndex]}
+                  alt={`Post content ${currentImageIndex + 1}`}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+                  loading="lazy"
+                  quality={75}
+                />
+              </div>
+              {mediaUrls.length > 1 && (
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                  {mediaUrls.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`w-2 h-2 rounded-full ${
+                        index === currentImageIndex
+                          ? "bg-blue-500"
+                          : "bg-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
       </div>
 
       <div className="flex p-2 gap-2">
