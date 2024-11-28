@@ -46,7 +46,7 @@ const takePGBackup = async (): Promise<void> => {
     if (stderr) {
       console.error("Backup warning:", stderr);
     }
-    console.log(`Backup created successfully at: ${backupFile}`);
+    console.log(`DB Backup created successfully at: ${backupFile}`);
     if (stdout) {
       console.log("Backup output:", stdout);
     }
