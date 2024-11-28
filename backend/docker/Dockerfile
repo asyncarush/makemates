@@ -19,21 +19,22 @@ COPY . .
 # Generate Prisma client (if needed)
 RUN npx prisma generate
 
-# Stage 2: Create the final production image
+# Build the application
+RUN npm run build
+
+# Stage 2: Create the production image
 FROM node:18-slim
 
-# Install only serve and pm2 globally
-RUN npm install -g serve pm2
-
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Copy production node_modules and application code from the builder stage
+# Copy built assets from builder stage
+COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app .
+COPY --from=builder /app/package*.json ./
 
-# Expose the port your application will run on
+# Expose the port the app runs on
 EXPOSE 3000
 
-# Use PM2 to start the application in production mode
-CMD ["pm2-runtime", "start", "index.js"]
+# Command to run the application
+CMD ["npm", "start"]
