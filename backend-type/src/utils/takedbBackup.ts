@@ -14,7 +14,6 @@ if (!process.env.DATABASE_URL) {
   console.error("Error: DATABASE_URL is not defined in .env file");
   process.exit(1);
 }
-
 const databaseUrl = new URL(process.env.DATABASE_URL!);
 
 const username = databaseUrl.username;
