@@ -8,7 +8,7 @@ const AuthContextProvider = dynamic(() => import("./context/AuthContext.tsx"), {
   ssr: false,
 });
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: "Makemates",

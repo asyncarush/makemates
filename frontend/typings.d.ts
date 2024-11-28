@@ -10,7 +10,7 @@ export interface SignUpInputType {
 
 export interface NewPost {
   desc: string;
-  imgUrl: string;
+  imgUrls: string;
 }
 
 export interface LoginInputType {
@@ -33,10 +33,24 @@ export interface NewComment {
 
 interface PostProps {
   caption: string;
-  mediaUrl: string;
-  postDate: string;
   name: string;
+  mediaUrls: string[];
+  postDate: string;
   profileImage: string | null;
   postId: number;
   userId: number;
+}
+
+export interface PostInterface {
+  id: number;
+  user_id: number;
+  users?: {
+    img?: string;
+    name?: string;
+  };
+  desc: string;
+  post_media?: Array<{
+    media_url: string;
+  }>;
+  date: string;
 }

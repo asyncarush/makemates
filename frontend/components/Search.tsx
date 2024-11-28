@@ -43,7 +43,7 @@ function Search() {
         <div className="w-[400px] overflow-hidden overflow-y-auto max-h-[200px] text-black flex flex-col mt-6 rounded-md h-auto bg-white/90 drop-shadow-2xl">
           {data.length > 0 &&
             data.map((user: any) => {
-              console.log(user);
+              // console.log(user);
               return (
                 <Link
                   key={user.id}
