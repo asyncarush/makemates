@@ -2,12 +2,15 @@
 
 import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
+import Head from "next/head";
+
+import { Button } from "@/components/ui/button";
+
+import { AuthContext } from "@/app/context/AuthContext";
+import { AuthContextType } from "@/typings";
+
 import Signup from "./_component/signup";
 import InputWithLabel from "./_component/InputWithLabel";
-import { Button } from "@/components/ui/button";
-import { AuthContextType } from "@/typings";
-import { AuthContext } from "@/app/context/AuthContext";
-import Head from "next/head";
 
 function Login() {
   const [inputs, setInputs] = useState({

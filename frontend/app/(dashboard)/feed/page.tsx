@@ -3,19 +3,20 @@
 import React, { useContext, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Posts from "@/components/Posts";
+import axios from "axios";
 
 import { BsMessenger } from "react-icons/bs";
 import { FaUser } from "react-icons/fa";
-import { AuthContext } from "@/app/context/AuthContext";
-import useFriendList from "@/hooks/useFriendList";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import axios from "axios";
+
 import { API_ENDPOINT } from "@/axios.config";
+import { AuthContext } from "@/app/context/AuthContext";
+import useFriendList from "@/hooks/useFriendList";
+import Posts from "@/components/Posts";
 
 function Page() {
   const friendsList = useFriendList();

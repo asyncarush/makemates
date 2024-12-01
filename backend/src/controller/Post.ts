@@ -1,19 +1,5 @@
-/**
- * @fileoverview Controller for handling post-related operations including
- * creation, modification, deletion, and interaction with posts.
- */
-
-// Core Express types
 import { Request, Response } from "express";
-
-// Database client
 import { PrismaClient } from "@prisma/client";
-
-// Custom types and interfaces
-import { RequestWithUser } from "../typing";
-
-
-// Logger
 import { logger } from "../config/winston";
 
 const prisma = new PrismaClient();
@@ -22,35 +8,29 @@ interface User {
   id: number;
 }
 
+interface RequestWithUser extends Request {
+  user?: User;
+}
+
 // Add Post
-/**
- * Creates a new post with the provided description and image URLs.
- * 
- * @param {RequestWithUser} req - The incoming request with user information.
- * @param {Response} res - The outgoing response.
- */
 export const addPost = async (req: RequestWithUser, res: Response) => {
   const { desc, imgUrls } = req.body;
+
   try {
     const post = await prisma.posts.create({
       data: {
         user_id: req.user?.id || -1,
-        desc,
+        desc: desc,
       },
     });
 
-    const urls = JSON.parse(imgUrls);
-    await Promise.all(
-      urls.map((url: string) =>
-        prisma.post_media.create({
-          data: {
-            post_id: post.id,
-            media_url: url,
-            user_id: req.user?.id || -1,
-          },
-        })
-      )
-    );
+    await prisma.post_media.create({
+      data: {
+        post_id: post.id,
+        media_url: imgUrls,
+        user_id: req.user?.id || -1,
+      },
+    });
 
     return res.status(200).send("Post uploaded...");
   } catch (err) {
@@ -63,13 +43,48 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
   }
 };
 
+export const editPost = async (req: RequestWithUser, res: Response) => {
+  const { postId, desc, imgUrls } = req.body;
+
+  try {
+    await prisma.posts.update({
+      where: {
+        id: postId,
+      },
+      data: {
+        desc: desc,
+      },
+    });
+
+    // now update post_media
+    const postMedia = await prisma.post_media.findFirst({
+      where: { post_id: parseInt(postId, 10) },
+      select: { id: true },
+    });
+
+    if (postMedia) {
+      await prisma.post_media.update({
+        where: {
+          id: postMedia.id,
+        },
+        data: {
+          media_url: imgUrls,
+        },
+      });
+    }
+
+    return res.status(200).send("Post Saved...");
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(err.message);
+      return res.status(500).send(err.message);
+    }
+    logger.error("An unknown error occurred.");
+    return res.status(500).send("An unknown error occurred.");
+  }
+};
+
 // Get User Posts
-/**
- * Retrieves a list of posts for the specified user, including their own posts and posts from users they follow.
- * 
- * @param {Request} req - The incoming request.
- * @param {Response} res - The outgoing response.
- */
 export const getUserPosts = async (req: Request, res: Response) => {
   const { userId } = req.params;
 
@@ -101,7 +116,7 @@ export const getUserPosts = async (req: Request, res: Response) => {
       },
     });
 
-    // console.log("all posts : ", posts);
+    console.log("all posts : ", posts);
 
     return res.status(200).send(posts);
   } catch (err) {
@@ -115,12 +130,6 @@ export const getUserPosts = async (req: Request, res: Response) => {
 };
 
 // Like the Post
-/**
- * Creates a new like for the specified post.
- * 
- * @param {RequestWithUser} req - The incoming request with user information.
- * @param {Response} res - The outgoing response.
- */
 export const likeThePost = async (req: RequestWithUser, res: Response) => {
   const { postId } = req.body;
 
@@ -144,12 +153,6 @@ export const likeThePost = async (req: RequestWithUser, res: Response) => {
 };
 
 // Unlike the Post
-/**
- * Deletes the like for the specified post.
- * 
- * @param {RequestWithUser} req - The incoming request with user information.
- * @param {Response} res - The outgoing response.
- */
 export const unLikeThePost = async (req: RequestWithUser, res: Response) => {
   const { postId } = req.body;
 
@@ -173,12 +176,6 @@ export const unLikeThePost = async (req: RequestWithUser, res: Response) => {
 };
 
 // Check Post Like Status
-/**
- * Checks if the user has liked the specified post.
- * 
- * @param {RequestWithUser} req - The incoming request with user information.
- * @param {Response} res - The outgoing response.
- */
 export const checkPostLikeStatus = async (
   req: RequestWithUser,
   res: Response
@@ -205,12 +202,6 @@ export const checkPostLikeStatus = async (
 };
 
 // Post New Comment
-/**
- * Creates a new comment for the specified post.
- * 
- * @param {RequestWithUser} req - The incoming request with user information.
- * @param {Response} res - The outgoing response.
- */
 export const postNewComment = async (req: RequestWithUser, res: Response) => {
   const { postId, desc } = req.body;
 
@@ -233,12 +224,6 @@ export const postNewComment = async (req: RequestWithUser, res: Response) => {
 };
 
 // Get Post Comments
-/**
- * Retrieves a list of comments for the specified post.
- * 
- * @param {Request} req - The incoming request.
- * @param {Response} res - The outgoing response.
- */
 export const getPostComments = async (req: Request, res: Response) => {
   const { postId } = req.params;
 

@@ -1,20 +1,8 @@
-/**
- * @fileoverview Controller handling all user-related operations including
- * authentication, profile management, and social interactions.
- */
-
-// Core Express types
 import { Request, Response } from "express";
-
-// Database and authentication
+import { validateNewUser, validateUser } from "../utils/validate";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
-// Validation utilities
-import { validateNewUser, validateUser } from "../utils/validate";
-
-// Custom types
 import { RequestWithUser } from "../typing.js";
 
 const prisma = new PrismaClient();
@@ -79,7 +67,7 @@ export async function register(req: Request, res: Response) {
       },
     });
 
-    // console.log("newUser", newUser);
+    console.log("newUser", newUser);
     const token = jwt.sign(
       { id: newUser.id },
       process.env.JWT_PRIVATE_KEY as string,
@@ -183,8 +171,8 @@ export async function followUser(req: RequestWithUser, res: Response) {
   const id = req.user?.id || -1;
   const { friendId }: any = req.body;
 
-  // console.log("User Id:", id);
-  // console.log("friend Id:", friendId);
+  console.log("User Id:", id);
+  console.log("friend Id:", friendId);
 
   try {
     await prisma.relationships.create({
@@ -256,7 +244,7 @@ export async function getFriendList(req: RequestWithUser, res: Response) {
 
 // Set Profile Picture
 export async function setProfilePic(req: RequestWithUser, res: Response) {
-  // console.log("Reached here...");
+  console.log("Reached here...");
 
   const id = req.user?.id || -1;
   const { profileImgUrl }: any = req.body;
@@ -271,7 +259,7 @@ export async function setProfilePic(req: RequestWithUser, res: Response) {
       },
     });
 
-    // console.log("profileImage");
+    console.log("profileImage");
 
     // Update the user's profile image reference
     await prisma.users.update({

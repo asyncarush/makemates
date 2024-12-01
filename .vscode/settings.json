@@ -1,0 +1,18 @@
+{
+    "editor.tokenColorCustomizations": {
+        "comments": "#7CFF7C",  // Bright green comments
+        "textMateRules": [
+            {
+                "scope": [
+                    "comment",
+                    "comment.block",
+                    "comment.block.documentation",
+                    "comment.line"
+                ],
+                "settings": {
+                    "foreground": "#8e0808"  // Bright green for all types of comments
+                }
+            }
+        ]
+    }
+}

@@ -1,5 +1,15 @@
-import { Response, NextFunction } from "express";
+/**
+ * @fileoverview Authentication middleware for protecting routes.
+ * Verifies JWT tokens and attaches user information to requests.
+ */
+
+// Core Express types
+import { Request, Response, NextFunction } from "express";
+
+// Authentication
 import jwt from "jsonwebtoken";
+
+// Custom types
 import { RequestWithUser } from "../typing";
 
 // Middleware function

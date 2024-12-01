@@ -1,13 +1,14 @@
 import React, { FormEvent, useContext, useRef, useState } from "react";
-import InputWithLabel from "./InputWithLabel";
-import Select from "./Select";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
-import { useRouter } from "next/navigation";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+
+import { AuthContext } from "@/app/context/AuthContext";
 import { AuthContextType, SignUpInputType } from "@/typings";
 import { CreateNewUser } from "@/axios.config";
-import { AuthContext } from "@/app/context/AuthContext";
-import { Button } from "@/components/ui/button";
+
+import InputWithLabel from "./InputWithLabel";
+import Select from "./Select";
 
 function Signup() {
   const { userSignUp }: any = useContext<AuthContextType | null>(AuthContext);

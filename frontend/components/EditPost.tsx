@@ -21,27 +21,17 @@ import {
 import { API_ENDPOINT } from "@/axios.config";
 
 import { IoEllipsisVertical } from "react-icons/io5";
-import { NewPost } from "@/typings";
+import { EditPost, EditPostProps, NewPost, UploadResponse } from "@/typings";
 import axios from "axios";
 import { Button } from "./ui/button";
 import Image from "next/image";
-
-interface UploadResponse {
-  url: string;
-}
-
-interface EditPostProps {
-  caption: string;
-  mediaUrls: string[];
-  onSuccess?: () => void;
-  onError?: (error: Error) => void;
-}
 
 export const EditPostComponent = ({
   caption,
   mediaUrls,
   onSuccess,
   onError,
+  postId,
 }: EditPostProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,7 +41,9 @@ export const EditPostComponent = ({
   const [files, setFiles] = useState<FileList | null>(null);
   const [desc, setDesc] = useState<string>(caption);
 
-  const [previewUrls, setPreviewUrls] = useState<string[]>(mediaUrls);
+  const [previewUrls, setPreviewUrls] = useState<string[]>(
+    JSON.parse(mediaUrls)
+  );
 
   const [uploadState, setUploadState] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -67,10 +59,10 @@ export const EditPostComponent = ({
     setIsDropdownOpen(false);
   };
 
-  const mutation = useMutation<NewPost, Error, NewPost>({
-    mutationFn: async (newPost: NewPost) => {
-      const response = await axios.post<NewPost>(
-        `${API_ENDPOINT}/posts`,
+  const mutation = useMutation<EditPost, Error, EditPost>({
+    mutationFn: async (newPost: EditPost) => {
+      const response = await axios.post<EditPost>(
+        `${API_ENDPOINT}/posts/edit`,
         newPost,
         {
           withCredentials: true,
@@ -96,11 +88,14 @@ export const EditPostComponent = ({
       const uploadPromises = Array.from(files).map(async (file) => {
         const fileName = `${Date.now()}-${file.name}`;
         const formData = new FormData();
-        formData.append("file", file);
-        formData.append("fileName", fileName);
+        // formData.append("file", file);
+        // formData.append("fileName", fileName);
+
+        formData.append("post_images", file, fileName);
 
         try {
           setUploadState(true);
+
           const response = await axios.post<UploadResponse>(
             `${API_ENDPOINT}/upload`,
             formData,
@@ -116,7 +111,8 @@ export const EditPostComponent = ({
             }
           );
 
-          return response.data.url;
+          const newImages = response.data.urls;
+          return newImages;
         } catch (error) {
           console.error("Upload error:", error);
           const errorMessage =
@@ -127,11 +123,22 @@ export const EditPostComponent = ({
       });
 
       const downloadURLs = await Promise.all(uploadPromises);
+
       setUploadState(false);
       setUploadProgress(null);
 
-      await mutation.mutateAsync({ desc, imgUrls: downloadURLs.join(",") });
+      const postData = {
+        postId,
+        desc,
+        imgUrls: JSON.stringify([...mediaUrls, ...downloadURLs.flat()]),
+      };
+
+      console.log("Post Data: ", postData);
+
+      // Create the post with the image URL
+      mutation.mutate(postData);
       closeButton.current?.click();
+
       clearFileInput();
     } catch (error) {
       console.error("Upload failed:", error);

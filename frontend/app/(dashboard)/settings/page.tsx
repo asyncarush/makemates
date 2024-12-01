@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useContext } from "react";
-import { getUserDataById } from "@/axios.config";
+import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
+
+import { getUserDataById } from "@/axios.config";
 import { AuthContext } from "@/app/context/AuthContext";
 
 import UpdateName from "./_component/UpdateName";
@@ -10,7 +12,6 @@ import UpdateBirthday from "./_component/updateBirthday";
 import UpdateEmail from "./_component/updateEmail";
 import UpdatePassword from "./_component/updatePassword";
 import UpdateProfilePhoto from "./_component/UpdateProfilePhoto";
-import Image from "next/image";
 
 // import UpdateMobile from "./_component/updateMobile";
 // import UpdateCity from "./_component/updateCity";

@@ -30,11 +30,12 @@ function Post({
   const [commentBox, setCommentBox] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [aspectRatios, setAspectRatios] = useState<string[]>([]);
+  const urls = typeof mediaUrls === 'string' ? JSON.parse(mediaUrls) : mediaUrls;
 
   useEffect(() => {
-    if (mediaUrls && mediaUrls.length > 0) {
+    if (urls && urls.length > 0) {
       Promise.all(
-        mediaUrls.map((url) => {
+        urls.map((url:string) => {
           return new Promise<string>((resolve) => {
             const img = new window.Image();
             img.src = url;
@@ -49,7 +50,7 @@ function Post({
         })
       ).then(setAspectRatios);
     }
-  }, [mediaUrls]);
+  }, [urls]);
 
   const handlePostLike = async () => {
     try {
@@ -103,20 +104,20 @@ function Post({
           </div>
         </div>
 
-        {/* {userId === currentUser.id && (
+        {userId === currentUser.id && (
           <EditPostComponent
-            mediaUrls={mediaUrls}
+            mediaUrls={urls}
             caption={caption}
-            currentUser={currentUser}
             userId={userId}
+            postId={postId}
           />
-        )} */}
+        )}
       </div>
 
       <div className="relative">
         <div className="text-sm p-2">{caption}</div>
-        {mediaUrls &&
-          mediaUrls.length > 0 &&
+        {urls &&
+          urls.length > 0 &&
           aspectRatios[currentImageIndex] && (
             <div className="relative">
               <div
@@ -124,7 +125,7 @@ function Post({
                 style={{ paddingBottom: aspectRatios[currentImageIndex] }}
               >
                 <Image
-                  src={mediaUrls[currentImageIndex]}
+                  src={urls[currentImageIndex]}
                   alt={`Post content ${currentImageIndex + 1}`}
                   fill
                   className="object-contain"
@@ -133,9 +134,9 @@ function Post({
                   quality={75}
                 />
               </div>
-              {mediaUrls.length > 1 && (
+              {urls.length > 1 && (
                 <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-                  {mediaUrls.map((_, index) => (
+                  {urls.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}

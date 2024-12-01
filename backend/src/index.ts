@@ -1,15 +1,29 @@
+/**
+ * @fileoverview Main application entry point.
+ * Initializes Express server with middleware and routes.
+ */
+
+// Core dependencies
 import express, { Application } from "express";
+import dotenv from "dotenv";
+
+// Security middleware
 import cors from "cors";
+import helmet from "helmet";
+import cookieParser from "cookie-parser";
+
+// Utility middleware
+import compression from "compression";
 import bodyParser from "body-parser";
 import morgan from "morgan";
+
+// Logging configuration
+import { logger } from "./config/winston";
+
+// Route definitions
 import User from "./routes/user.routes";
 import Post from "./routes/post.routes";
 import Search from "./routes/search.routes";
-import cookieParser from "cookie-parser";
-import { logger } from "./config/winston";
-import dotenv from "dotenv";
-import compression from "compression";
-import helmet from "helmet";
 import upload from "./routes/upload.routes";
 
 const app: Application = express();

@@ -1,6 +1,16 @@
-import { Client } from "minio";
+/**
+ * @fileoverview Service for handling file operations with MinIO object storage.
+ * Provides utilities for uploading, downloading, and managing files.
+ */
 
+// MinIO client and types
+import { Client, BucketItemFromList } from "minio";
+
+// Configuration
 import { minioConfig } from "../config/minio.config";
+
+// Logging
+import { logger } from "../config/winston";
 
 /**
  * Custom error class for MinIO service errors

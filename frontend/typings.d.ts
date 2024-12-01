@@ -13,6 +13,12 @@ export interface NewPost {
   imgUrls: string;
 }
 
+export interface EditPost {
+  desc: string;
+  imgUrls: string;
+  postId: number;
+}
+
 export interface LoginInputType {
   email: string;
   password: string;
@@ -34,7 +40,7 @@ export interface NewComment {
 interface PostProps {
   caption: string;
   name: string;
-  mediaUrls: string[];
+  mediaUrls: string[] | string;  // Can be either a string (JSON) or array of strings
   postDate: string;
   profileImage: string | null;
   postId: number;
@@ -53,4 +59,19 @@ export interface PostInterface {
     media_url: string;
   }>;
   date: string;
+}
+
+interface UploadResponse {
+  urls: string[];
+  success: boolean;
+  message: string;
+}
+
+interface EditPostProps {
+  caption: string;
+  mediaUrls: string[];
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+  userId: number;
+  postId: number;
 }

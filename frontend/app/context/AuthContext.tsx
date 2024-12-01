@@ -1,10 +1,11 @@
 "use client";
 
 import { createContext, useEffect, useState } from "react";
-import { CreateNewUser, SignInUser, LogOutUser } from "@/axios.config";
-import { AuthContextType, LoginInputType, SignUpInputType } from "@/typings";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+
+import { CreateNewUser, SignInUser, LogOutUser } from "@/axios.config";
+import { AuthContextType, LoginInputType, SignUpInputType } from "@/typings";
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
