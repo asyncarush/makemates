@@ -41,8 +41,7 @@ export const EditPostComponent = ({
   const [files, setFiles] = useState<FileList | null>(null);
   const [desc, setDesc] = useState<string>(caption);
 
-  const [previewUrls, setPreviewUrls] = useState<string[]>(
-    JSON.parse(mediaUrls)
+  const [previewUrls, setPreviewUrls] = useState<string[]>(mediaUrls
   );
 
   const [uploadState, setUploadState] = useState(false);

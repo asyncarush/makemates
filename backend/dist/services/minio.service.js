@@ -1,4 +1,8 @@
 "use strict";
+/**
+ * @fileoverview Service for handling file operations with MinIO object storage.
+ * Provides utilities for uploading, downloading, and managing files.
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -10,7 +14,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.uploadFile = exports.MinioServiceError = void 0;
+// MinIO client and types
 const minio_1 = require("minio");
+// Configuration
 const minio_config_1 = require("../config/minio.config");
 /**
  * Custom error class for MinIO service errors
@@ -27,7 +33,7 @@ exports.MinioServiceError = MinioServiceError;
  * MinIO client instance configuration
  */
 const minioClient = new minio_1.Client({
-    endPoint: minio_config_1.minioConfig.endpoint.replace(/^https?:\/\//, ''), // Remove protocol if present
+    endPoint: minio_config_1.minioConfig.endpoint.replace(/^https?:\/\//, ""), // Remove protocol if present
     port: minio_config_1.minioConfig.port,
     useSSL: minio_config_1.minioConfig.useSSL,
     accessKey: minio_config_1.minioConfig.accessKey,
@@ -75,9 +81,9 @@ const uploadFile = (file, fileName) => __awaiter(void 0, void 0, void 0, functio
         throw new MinioServiceError("Invalid file provided");
     }
     // Validate file type
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedMimeTypes = ["image/jpeg", "image/png"];
     if (!allowedMimeTypes.includes(file.mimetype)) {
-        throw new MinioServiceError(`Invalid file type. Allowed types: ${allowedMimeTypes.join(', ')}`);
+        throw new MinioServiceError(`Invalid file type. Allowed types: ${allowedMimeTypes.join(", ")}`);
     }
     try {
         // Upload file to MinIO with metadata
@@ -87,13 +93,13 @@ const uploadFile = (file, fileName) => __awaiter(void 0, void 0, void 0, functio
         };
         yield minioClient.putObject(BUCKET_NAME, fileName, file.buffer, file.size, metadata);
         // Construct the public URL
-        const protocol = minio_config_1.minioConfig.useSSL ? 'https' : 'http';
+        const protocol = minio_config_1.minioConfig.useSSL ? "https" : "http";
         const url = `${protocol}://${minio_config_1.minioConfig.endpoint}:${minio_config_1.minioConfig.port}/${BUCKET_NAME}/${fileName}`;
         return url;
     }
     catch (error) {
-        console.error('MinIO upload error:', error);
-        throw new MinioServiceError(`Failed to upload file: ${error.message || 'Unknown error'}`, error);
+        console.error("MinIO upload error:", error);
+        throw new MinioServiceError(`Failed to upload file: ${error.message || "Unknown error"}`, error);
     }
 });
 exports.uploadFile = uploadFile;

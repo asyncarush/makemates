@@ -1,4 +1,8 @@
 "use strict";
+/**
+ * @fileoverview Controller for handling post-related operations including
+ * creation, modification, deletion, and interaction with posts.
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -9,28 +13,40 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPostComments = exports.postNewComment = exports.checkPostLikeStatus = exports.unLikeThePost = exports.likeThePost = exports.getUserPosts = exports.editPost = exports.addPost = void 0;
+exports.getPostComments = exports.postNewComment = exports.checkPostLikeStatus = exports.unLikeThePost = exports.likeThePost = exports.getUserPosts = exports.addPost = void 0;
+// Database client
 const client_1 = require("@prisma/client");
+// Logger
 const winston_1 = require("../config/winston");
 const prisma = new client_1.PrismaClient();
 // Add Post
+/**
+ * Creates a new post with the provided description and image URLs.
+ *
+ * @param {RequestWithUser} req - The incoming request with user information.
+ * @param {Response} res - The outgoing response.
+ */
 const addPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a;
     const { desc, imgUrls } = req.body;
     try {
         const post = yield prisma.posts.create({
             data: {
                 user_id: ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) || -1,
-                desc: desc,
+                desc,
             },
         });
-        yield prisma.post_media.create({
-            data: {
-                post_id: post.id,
-                media_url: imgUrls,
-                user_id: ((_b = req.user) === null || _b === void 0 ? void 0 : _b.id) || -1,
-            },
-        });
+        const urls = JSON.parse(imgUrls);
+        yield Promise.all(urls.map((url) => {
+            var _a;
+            return prisma.post_media.create({
+                data: {
+                    post_id: post.id,
+                    media_url: url,
+                    user_id: ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) || -1,
+                },
+            });
+        }));
         return res.status(200).send("Post uploaded...");
     }
     catch (err) {
@@ -43,45 +59,13 @@ const addPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.addPost = addPost;
-const editPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { postId, desc, imgUrls } = req.body;
-    try {
-        yield prisma.posts.update({
-            where: {
-                id: postId,
-            },
-            data: {
-                desc: desc,
-            },
-        });
-        // now update post_media
-        const postMedia = yield prisma.post_media.findFirst({
-            where: { post_id: parseInt(postId, 10) },
-            select: { id: true },
-        });
-        if (postMedia) {
-            yield prisma.post_media.update({
-                where: {
-                    id: postMedia.id,
-                },
-                data: {
-                    media_url: imgUrls,
-                },
-            });
-        }
-        return res.status(200).send("Post Saved...");
-    }
-    catch (err) {
-        if (err instanceof Error) {
-            winston_1.logger.error(err.message);
-            return res.status(500).send(err.message);
-        }
-        winston_1.logger.error("An unknown error occurred.");
-        return res.status(500).send("An unknown error occurred.");
-    }
-});
-exports.editPost = editPost;
 // Get User Posts
+/**
+ * Retrieves a list of posts for the specified user, including their own posts and posts from users they follow.
+ *
+ * @param {Request} req - The incoming request.
+ * @param {Response} res - The outgoing response.
+ */
 const getUserPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.params;
     try {
@@ -109,7 +93,7 @@ const getUserPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             },
         });
-        console.log("all posts : ", posts);
+        // console.log("all posts : ", posts);
         return res.status(200).send(posts);
     }
     catch (err) {
@@ -123,6 +107,12 @@ const getUserPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 });
 exports.getUserPosts = getUserPosts;
 // Like the Post
+/**
+ * Creates a new like for the specified post.
+ *
+ * @param {RequestWithUser} req - The incoming request with user information.
+ * @param {Response} res - The outgoing response.
+ */
 const likeThePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { postId } = req.body;
@@ -146,6 +136,12 @@ const likeThePost = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.likeThePost = likeThePost;
 // Unlike the Post
+/**
+ * Deletes the like for the specified post.
+ *
+ * @param {RequestWithUser} req - The incoming request with user information.
+ * @param {Response} res - The outgoing response.
+ */
 const unLikeThePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { postId } = req.body;
@@ -169,6 +165,12 @@ const unLikeThePost = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.unLikeThePost = unLikeThePost;
 // Check Post Like Status
+/**
+ * Checks if the user has liked the specified post.
+ *
+ * @param {RequestWithUser} req - The incoming request with user information.
+ * @param {Response} res - The outgoing response.
+ */
 const checkPostLikeStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { postId } = req.body;
@@ -192,6 +194,12 @@ const checkPostLikeStatus = (req, res) => __awaiter(void 0, void 0, void 0, func
 });
 exports.checkPostLikeStatus = checkPostLikeStatus;
 // Post New Comment
+/**
+ * Creates a new comment for the specified post.
+ *
+ * @param {RequestWithUser} req - The incoming request with user information.
+ * @param {Response} res - The outgoing response.
+ */
 const postNewComment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { postId, desc } = req.body;
@@ -214,6 +222,12 @@ const postNewComment = (req, res) => __awaiter(void 0, void 0, void 0, function*
 });
 exports.postNewComment = postNewComment;
 // Get Post Comments
+/**
+ * Retrieves a list of comments for the specified post.
+ *
+ * @param {Request} req - The incoming request.
+ * @param {Response} res - The outgoing response.
+ */
 const getPostComments = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { postId } = req.params;
     try {

@@ -16,7 +16,7 @@ const prisma = new client_1.PrismaClient();
 // Get User Profile
 const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.body.id;
-    console.log("looking for user with id : ", userId);
+    // console.log("looking for user with id : ", userId);
     try {
         const userData = yield prisma.users.findUnique({
             where: { id: parseInt(userId) },

@@ -1,8 +1,13 @@
 "use strict";
+/**
+ * @fileoverview Authentication middleware for protecting routes.
+ * Verifies JWT tokens and attaches user information to requests.
+ */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// Authentication
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 // Middleware function
 const auth = (req, res, next) => {

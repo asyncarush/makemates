@@ -12,32 +12,30 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.uploadFileController = void 0;
 const minio_service_1 = require("../services/minio.service");
 const uploadFileController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                error: 'No file uploaded'
-            });
-        }
-        const fileName = `${Date.now()}-${req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-        const url = yield (0, minio_service_1.uploadFile)(req.file, fileName);
-        res.json({
-            success: true,
-            url
-        });
-    }
-    catch (error) {
-        console.error('Upload error:', error);
-        if (error instanceof minio_service_1.MinioServiceError) {
-            return res.status(400).json({
-                success: false,
-                error: error.message
-            });
-        }
-        res.status(500).json({
+    // Ensure files exist and is an array
+    if (!req.files || req.files.length === 0) {
+        return res.status(400).json({
             success: false,
-            error: 'Internal server error while uploading file'
+            error: "No file uploaded",
         });
     }
+    // Use Array.from to ensure it's an array
+    const files = Array.isArray(req.files)
+        ? req.files
+        : req.files
+            ? Object.values(req.files).flat()
+            : [];
+    // Use .map or .forEach as needed
+    const urls = yield Promise.all(files.map((file) => __awaiter(void 0, void 0, void 0, function* () {
+        const fileName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+        // Your file upload logic here
+        return Promise.resolve((0, minio_service_1.uploadFile)(file, fileName));
+    })));
+    console.log("All images url :", urls);
+    res.json({
+        success: true,
+        message: "Files uploaded successfully",
+        urls,
+    });
 });
 exports.uploadFileController = uploadFileController;

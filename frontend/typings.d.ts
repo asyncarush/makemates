@@ -40,7 +40,7 @@ export interface NewComment {
 interface PostProps {
   caption: string;
   name: string;
-  mediaUrls: string[] | string;  // Can be either a string (JSON) or array of strings
+  mediaUrls: string[];  // Can be either a string (JSON) or array of strings
   postDate: string;
   profileImage: string | null;
   postId: number;
