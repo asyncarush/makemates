@@ -16,6 +16,8 @@ interface RequestWithUser extends Request {
 export const addPost = async (req: RequestWithUser, res: Response) => {
   const { desc, imgUrls } = req.body;
 
+  console.log("imgUrls : ", imgUrls);
+
   try {
     const post = await prisma.posts.create({
       data: {
@@ -27,7 +29,7 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
     await prisma.post_media.create({
       data: {
         post_id: post.id,
-        media_url: imgUrls,
+        media_url: JSON.stringify(imgUrls),
         user_id: req.user?.id || -1,
       },
     });
@@ -44,33 +46,53 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
 };
 
 export const editPost = async (req: RequestWithUser, res: Response) => {
-  const { postId, desc, imgUrls } = req.body;
+  const { desc, imgUrls } = req.body;
+  const { postId } = req.params;
+
+  console.log("Received postId:", postId);
+  console.log("Received imgUrls:", imgUrls);
+  console.log("Type of imgUrls:", typeof imgUrls);
+
+  const parsedPostId = parseInt(postId, 10);
+  if (isNaN(parsedPostId)) {
+    return res.status(400).send("Invalid post ID");
+  }
 
   try {
-    await prisma.posts.update({
+    // First update the post
+    const updatedPost = await prisma.posts.update({
       where: {
-        id: postId,
+        id: parsedPostId,
+        user_id: req.user?.id || -1,
       },
       data: {
         desc: desc,
       },
     });
 
-    // now update post_media
-    const postMedia = await prisma.post_media.findFirst({
-      where: { post_id: parseInt(postId, 10) },
-      select: { id: true },
-    });
+    console.log("Updated post:", updatedPost);
 
-    if (postMedia) {
-      await prisma.post_media.update({
-        where: {
-          id: postMedia.id,
-        },
-        data: {
-          media_url: imgUrls,
-        },
-      });
+    if (!updatedPost) {
+      return res.status(404).send("Post not found");
+    }
+
+    // Parse imgUrls if it's a string
+    const imageUrlsArray =
+      typeof imgUrls === "string" ? JSON.parse(imgUrls) : imgUrls;
+    console.log("Processing imageUrlsArray:", imageUrlsArray);
+
+    // Create new media entries
+    if (Array.isArray(imageUrlsArray)) {
+      for (let imgs of imageUrlsArray) {
+        console.log("Creating media entry for:", imgs);
+        await prisma.post_media.create({
+          data: {
+            post_id: parsedPostId,
+            media_url: imgs,
+            user_id: req.user?.id || -1,
+          },
+        });
+      }
     }
 
     return res.status(200).send("Post Saved...");

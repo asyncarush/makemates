@@ -103,9 +103,6 @@ function FeedUploadBox() {
       // Get the URL from the response
       const imageUrl = uploadResponse.data.urls;
 
-      //print the imageurl
-      // console.log("Image URL: ", imageUrl);
-
       // Clear the form and reset states
       setUploadState(false);
       setUploadProgress(null);
@@ -115,6 +112,7 @@ function FeedUploadBox() {
         desc: desc,
         imgUrls: JSON.stringify(imageUrl),
       };
+
       console.log("Post Data: ", postData);
 
       // Create the post with the image URL
