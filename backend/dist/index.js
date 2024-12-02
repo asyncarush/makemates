@@ -40,7 +40,7 @@ app.use((0, cookie_parser_1.default)());
 app.use(body_parser_1.default.urlencoded({ extended: false }));
 app.use(body_parser_1.default.json());
 app.get("/health", (req, res) => {
-    res.send("Chill , everything is working fine");
+    res.status(200).send("Chill , everything is working fine");
 });
 // routes
 app.use("/user", user_routes_1.default);

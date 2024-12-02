@@ -1,11 +1,11 @@
 import axios from "axios";
 import { LoginInputType, SignUpInputType } from "./typings";
 
-export const API_ENDPOINT = process.env.NEXT_PUBLIC_API_ENDPOINT;
+export const API_ENDPOINT = process.env.NEXT_PUBLIC_API_ENDPOINT || "http://192.168.49.2:30006";
 
 export async function CreateNewUser(inputData: SignUpInputType) {
   const response = await axios.post(
-    API_ENDPOINT + "/user/register",
+    `${API_ENDPOINT}/user/register`,
     inputData,
     { withCredentials: true }
   );
@@ -13,28 +13,29 @@ export async function CreateNewUser(inputData: SignUpInputType) {
 }
 
 export async function SignInUser(inputData: LoginInputType) {
-  const response = await axios.post(API_ENDPOINT + "/user/login", inputData, {
+  console.log("Making login request to:", `${API_ENDPOINT}/user/login`);
+  const response = await axios.post(`${API_ENDPOINT}/user/login`, inputData, {
     withCredentials: true,
   });
   return response.data;
 }
+
 export async function getUserDataById() {
-  const { data } = await axios.get(API_ENDPOINT + "/user/me", {
+  const { data } = await axios.get(`${API_ENDPOINT}/user/me`, {
     withCredentials: true,
   });
   return data;
 }
 
 export async function fetchUserPosts(userId: any) {
-  const { data } = await axios.get(API_ENDPOINT + "/posts/" + userId, {
+  const { data } = await axios.get(`${API_ENDPOINT}/posts/${userId}`, {
     withCredentials: true,
   });
-
   return data;
 }
 
 export async function LogOutUser() {
-  const { data } = await axios.get(API_ENDPOINT + "/user/logout", {
+  const { data } = await axios.get(`${API_ENDPOINT}/user/logout`, {
     withCredentials: true,
   });
 

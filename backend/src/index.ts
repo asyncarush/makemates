@@ -31,8 +31,14 @@ dotenv.config();
 
 app.use(
   cors({
-    origin: ["https://makemates-2024.vercel.app", "http://localhost:3000"],
+    origin: [
+      "https://makemates-2024.vercel.app",
+      "http://localhost:3000",
+      "http://192.168.49.2:30005"
+    ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
   })
 );
 
@@ -47,7 +53,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.get("/health", (req, res) => {
-  res.send("Chill , everything is working fine");
+  res.status(200).send("Chill , everything is working fine");
 });
 
 // routes

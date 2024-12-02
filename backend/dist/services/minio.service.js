@@ -33,7 +33,7 @@ exports.MinioServiceError = MinioServiceError;
  * MinIO client instance configuration
  */
 const minioClient = new minio_1.Client({
-    endPoint: minio_config_1.minioConfig.endpoint.replace(/^https?:\/\//, ""), // Remove protocol if present
+    endPoint: minio_config_1.minioConfig.endpoint,
     port: minio_config_1.minioConfig.port,
     useSSL: minio_config_1.minioConfig.useSSL,
     accessKey: minio_config_1.minioConfig.accessKey,

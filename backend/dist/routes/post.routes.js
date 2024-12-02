@@ -13,7 +13,7 @@ router.get("/:userId", auth_1.default, post_controller_1.getUserPosts);
 // Add a new post
 router.post("/", auth_1.default, post_controller_1.addPost);
 // Edit a post
-router.post("/edit", auth_1.default, Post_1.editPost);
+router.post("/edit/:postId", auth_1.default, Post_1.editPost);
 // Like a post
 router.post("/like", auth_1.default, post_controller_1.likeThePost);
 // Unlike a post

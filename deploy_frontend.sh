@@ -16,12 +16,29 @@ if [ $? -ne 0 ]; then
 fi  
 echo "Docker Login success"
 
+echo "Starting frontend deployment..."
 
+# Navigate to frontend directory
 cd frontend
-docker build -t xsarush0856/makemates-frontend -f ./frontend/Dockerfile . || echo "Docker Build failed"
-docker push xsarush0856/makemates-frontend || echo "Docker Push failed"
+
+# Build the Docker image
+echo "Building frontend Docker image..."
+docker build -t xsarush0856/makemates-frontend .
+
+# Push the image to Docker Hub
+echo "Pushing image to Docker Hub..."
+docker push xsarush0856/makemates-frontend
+
+# Go back to root directory for helm deployment
+cd ..
+
+# Deploy using Helm
+echo "Deploying using Helm..."
+helm upgrade --install makemates-frontend ./helm-charts/frontend/ -n makemates \
+  --set image.repository="xsarush0856/makemates-frontend" \
+  --set image.tag="latest" || echo "Deployment failed"
+
+echo "Frontend deployment completed!"
 echo "Frontend pushed successfully"
 
-kubectl set image deployment/makemates-frontend frontend=xsarush0856/makemates-frontend -n makemates || echo "Deployment failed"
 echo "Deployment successful"
-

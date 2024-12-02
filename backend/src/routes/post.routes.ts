@@ -7,10 +7,10 @@ import {
   checkPostLikeStatus,
   postNewComment,
   getPostComments,
+  editPost
 } from "../controllers/post.controller";
 
 import auth from "../middleware/auth";
-import { editPost } from "../controller/Post";
 
 const router: Router = Router();
 

@@ -1,26 +1,37 @@
-FROM node:18-alpine3.19 AS build
+# Build stage
+FROM node:20-alpine AS builder
 
-WORKDIR /makemates-frontend
+# Set working directory
+WORKDIR /app
 
+# Copy package files from frontend directory
 COPY package*.json ./
 
-RUN npm install
+# Install dependencies
+RUN npm ci && npm install -g npm@10.9.1
 
+# Copy the rest of the frontend application code
 COPY . .
 
+# Build the application
 RUN npm run build
 
-FROM node:22-alpine3.19
+# Production stage
+FROM node:20-alpine AS runner
 
-WORKDIR /makemates-frontend
+WORKDIR /app
 
-# Copy the necessary files from the build stage
-COPY --from=build /makemates-frontend/.next ./.next
-COPY --from=build /makemates-frontend/node_modules ./node_modules
-COPY --from=build /makemates-frontend/package.json ./package.json
-COPY --from=build /makemates-frontend/public ./public
+# Copy necessary files from builder
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
+# Expose the port the app runs on
 EXPOSE 3000
 
-# Start the Next.js application
-CMD ["npm", "start"]
+# Set environment variables
+ENV PORT 3000
+ENV NODE_ENV production
+
+# Start the application
+CMD ["node", "server.js"]

@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import "dotenv/config";
 
 export const minioConfig = {
   endpoint: process.env.MINIO_ENDPOINT || "localhost",
@@ -6,4 +6,5 @@ export const minioConfig = {
   useSSL: process.env.MINIO_USE_SSL === "true",
   accessKey: process.env.MINIO_ACCESS_KEY || "minioadmin",
   secretKey: process.env.MINIO_SECRET_KEY || "minioadmin",
+  forcePathStyle: true
 };

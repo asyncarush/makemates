@@ -39,13 +39,13 @@ export async function login(req: Request, res: Response) {
     if (valid) {
       const token = jwt.sign(
         { id: user.id },
-        process.env.JWT_PRIVATE_KEY as string,
+        process.env.JWT_PRIVATE_KEY as string || "jwt-secret-key",
         { expiresIn: "24hr" }
       );
 
       return res
         .cookie("x-auth-token", token, {
-          httpOnly: true,
+          httpOnly: false,
           secure: process.env.NODE_ENV === "production",
           sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         })
@@ -89,7 +89,7 @@ export async function register(req: Request, res: Response) {
     return res
       .cookie("x-auth-token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: false,
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       })
       .status(200)
@@ -147,8 +147,7 @@ export async function updateUserInfo(req: RequestWithUser, res: Response) {
         return res
           .status(200)
           .send(
-            `${
-              key.charAt(0).toUpperCase() + key.slice(1)
+            `${key.charAt(0).toUpperCase() + key.slice(1)
             } updated Successfully.`
           );
 
