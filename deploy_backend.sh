@@ -18,9 +18,9 @@ echo "Docker Login success"
 
 
 cd backend
-docker build --no-cache -t xsarush0856/makemates-backend -f ./docker/Dockerfile .
-docker push xsarush0856/makemates-backend
+docker build -t xsarush0856/makemates-backend:latest -f ./docker/Dockerfile .
+docker push xsarush0856/makemates-backend:latest
 echo "Backend pushed successfully"
 
-helm upgrade --install makemates-backend ../helm-charts/backend/ -n makemates --set image.repository="xsarush0856/makemates-backend" --set image.tag="latest" || echo "Deployment failed"
+helm upgrade --install makemates-backend ../helm-charts/backend/ -n makemates --set image.repository="xsarush0856/makemates-backend" --set image.tag="latest"
 echo "Deployment successful"

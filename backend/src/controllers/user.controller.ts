@@ -46,8 +46,10 @@ export async function login(req: Request, res: Response) {
       return res
         .cookie("x-auth-token", token, {
           httpOnly: false,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          secure: false,        
+          sameSite: "lax",
+          domain: "192.168.49.2",  // Minikube IP
+          path: "/",
         })
         .status(200)
         .send({ id: user.id });

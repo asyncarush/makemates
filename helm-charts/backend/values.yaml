@@ -30,9 +30,9 @@ env:
   - name: JWT_PRIVATE_KEY
     value: "secret-key"
   - name: MINIO_ENDPOINT
-    value: "my-release-minio"
+    value: "192.168.49.2"
   - name: MINIO_PORT
-    value: "9000"
+    value: "32184"
   - name: MINIO_USE_SSL
     value: "false"
   - name: MINIO_ACCESS_KEY

@@ -34,11 +34,13 @@ app.use(
     origin: [
       "https://makemates-2024.vercel.app",
       "http://localhost:3000",
-      "http://192.168.49.2:30005"
+      "http://192.168.49.2:30005",
+      "http://192.168.49.2:30006"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
+    exposedHeaders: ["Set-Cookie"],
   })
 );
 
