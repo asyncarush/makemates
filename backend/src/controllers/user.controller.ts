@@ -43,14 +43,23 @@ export async function login(req: Request, res: Response) {
         { expiresIn: "24hr" }
       );
 
-      return res
-        .cookie("x-auth-token", token, {
+      const cookieOptions = process.env.NODE_ENV === "production"
+        ? {
           httpOnly: false,
           secure: false,        
-          sameSite: "lax",
+          sameSite: "lax" as const,
           domain: "192.168.49.2",  // Minikube IP
           path: "/",
-        })
+        }: {
+          httpOnly: true,
+          secure: false,        
+          sameSite: "lax" as const,
+          path: "/",
+        };
+
+
+      return res
+        .cookie("x-auth-token", token, cookieOptions)
         .status(200)
         .send({ id: user.id });
     } else {
@@ -88,12 +97,22 @@ export async function register(req: Request, res: Response) {
       { expiresIn: "24hr" }
     );
 
+    const cookieOptions = process.env.NODE_ENV === "production"
+        ? {
+          httpOnly: false,
+          secure: false,        
+          sameSite: "lax" as const,
+          domain: "192.168.49.2",  // Minikube IP
+          path: "/",
+        }: {
+          httpOnly: true,
+          secure: false,        
+          sameSite: "lax" as const,
+          path: "/",
+        };
+      
     return res
-      .cookie("x-auth-token", token, {
-        httpOnly: true,
-        secure: false,
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      })
+      .cookie("x-auth-token", token, cookieOptions)
       .status(200)
       .send({ id: newUser.id });
   } catch (err) {
