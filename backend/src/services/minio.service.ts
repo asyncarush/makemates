@@ -26,11 +26,20 @@ export class MinioServiceError extends Error {
  * MinIO client instance configuration
  */
 const minioClient = new Client({
-  endPoint: minioConfig.endpoint.replace(/^https?:\/\//, ""), // Remove protocol if present
+  endPoint: minioConfig.endpoint,
   port: minioConfig.port,
   useSSL: minioConfig.useSSL,
   accessKey: minioConfig.accessKey,
   secretKey: minioConfig.secretKey,
+  pathStyle: minioConfig.forcePathStyle,
+});
+
+// Add debug logging
+logger.info("Initializing MinIO client with config:", {
+  endpoint: minioConfig.endpoint,
+  port: minioConfig.port,
+  useSSL: minioConfig.useSSL,
+  pathStyle: minioConfig.forcePathStyle,
 });
 
 const BUCKET_NAME = "posts";

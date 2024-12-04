@@ -3,6 +3,10 @@ set -e
 
 echo "Deploying backend...."
 
+# Configure docker to use minikube's Docker daemon
+echo "Configuring Docker to use Minikube's Docker daemon..."
+eval $(minikube docker-env)
+
 echo "Logging into the docker registry..."
 
 DOCKER_PASSWORD=Docker@2402
@@ -16,11 +20,29 @@ if [ $? -ne 0 ]; then
 fi  
 echo "Docker Login success"
 
+# Generate a timestamp for unique tag
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+IMAGE_TAG="v_${TIMESTAMP}"
 
 cd backend
-docker build -t xsarush0856/makemates-backend -f ./docker/Dockerfile . || echo "Docker Build failed"
-docker push xsarush0856/makemates-backend || echo "Docker Push failed"
+echo "Building image with tag: ${IMAGE_TAG}"
+docker build -t xsarush0856/makemates-backend:${IMAGE_TAG} -f ./docker/Dockerfile .
+docker push xsarush0856/makemates-backend:${IMAGE_TAG}
 echo "Backend pushed successfully"
 
-kubectl set image deployment/makemates-backend backend=xsarush0856/makemates-backend -n makemates || echo "Deployment failed"
+# Delete existing pods to force update
+echo "Deleting existing pods..."
+kubectl delete pods -n makemates -l app=makemates-backend --grace-period=0 --force || true
+
+# Deploy with new image tag
+echo "Deploying new version..."
+helm upgrade --install makemates-backend ../helm-charts/backend/ -n makemates \
+    --set image.repository="xsarush0856/makemates-backend" \
+    --set image.tag="${IMAGE_TAG}" \
+    --set image.pullPolicy="Always"
+
+# Wait for new pod to be ready
+echo "Waiting for new pod to be ready..."
+kubectl wait --for=condition=ready pod -l app=makemates-backend -n makemates --timeout=120s
+
 echo "Deployment successful"

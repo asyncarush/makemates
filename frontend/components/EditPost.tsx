@@ -41,8 +41,7 @@ export const EditPostComponent = ({
   const [files, setFiles] = useState<FileList | null>(null);
   const [desc, setDesc] = useState<string>(caption);
 
-  const [previewUrls, setPreviewUrls] = useState<string[]>(mediaUrls
-  );
+  const [previewUrls, setPreviewUrls] = useState<string[]>(mediaUrls);
 
   const [uploadState, setUploadState] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -61,8 +60,11 @@ export const EditPostComponent = ({
   const mutation = useMutation<EditPost, Error, EditPost>({
     mutationFn: async (newPost: EditPost) => {
       const response = await axios.post<EditPost>(
-        `${API_ENDPOINT}/posts/edit`,
-        newPost,
+        `${API_ENDPOINT}/posts/edit/${postId}`,
+        {
+          desc: newPost.desc,
+          imgUrls: newPost.imgUrls,
+        },
         {
           withCredentials: true,
         }
@@ -87,8 +89,6 @@ export const EditPostComponent = ({
       const uploadPromises = Array.from(files).map(async (file) => {
         const fileName = `${Date.now()}-${file.name}`;
         const formData = new FormData();
-        // formData.append("file", file);
-        // formData.append("fileName", fileName);
 
         formData.append("post_images", file, fileName);
 
@@ -127,15 +127,14 @@ export const EditPostComponent = ({
       setUploadProgress(null);
 
       const postData = {
-        postId,
         desc,
-        imgUrls: JSON.stringify([...mediaUrls, ...downloadURLs.flat()]),
+        imgUrls: JSON.stringify(downloadURLs.flat()),
       };
 
       console.log("Post Data: ", postData);
 
       // Create the post with the image URL
-      mutation.mutate(postData);
+      mutation.mutate(postData as EditPost);
       closeButton.current?.click();
 
       clearFileInput();

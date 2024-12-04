@@ -11,11 +11,12 @@ const nextConfig = {
       {
         protocol: "http",
         hostname: "192.168.49.2",
-        port: "30210",
+        port: "32184",
       },
     ],
   },
   reactStrictMode: false,
+  output: "standalone",
 };
 
 module.exports = nextConfig;

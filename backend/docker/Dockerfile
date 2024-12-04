@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install only production dependencies
-RUN npm install --only=production
+RUN npm install --only=production && npm install -g npm@10.9.1
 
 # Install dev dependencies separately for tools like Prisma
 RUN npm install --only=dev
@@ -16,7 +16,8 @@ RUN npm install --only=dev
 # Copy the rest of the application source code to the container
 COPY . .
 
-# Generate Prisma client (if needed)
+# Generate Prisma client with correct binary target
+ENV PRISMA_CLI_BINARY_TARGETS=debian-openssl-1.1.x
 RUN npx prisma generate
 
 # Build the application
@@ -25,6 +26,9 @@ RUN npm run build
 # Stage 2: Create the production image
 FROM node:18-slim
 
+# Install OpenSSL
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 # Set the working directory
 WORKDIR /app
 
@@ -32,9 +36,14 @@ WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/prisma ./prisma
+
+# Set environment variables
+ENV PORT=2000
+ENV NODE_ENV=production
 
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE 2000
 
 # Command to run the application
-CMD ["npm", "start"]
+CMD ["node", "./dist/index.js"]

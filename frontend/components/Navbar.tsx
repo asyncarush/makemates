@@ -117,6 +117,7 @@ function Navbar() {
         </Link>
         <FeedUploadBox />
       </div>
+      <Search />
       <div className="flex-1 flex items-center justify-center">
         <NavigationMenu>
           <NavigationMenuList className="flex gap-8 ">
@@ -135,7 +136,6 @@ function Navbar() {
           </NavigationMenuList>
         </NavigationMenu>
       </div>
-      <Search />
     </div>
   );
 }
