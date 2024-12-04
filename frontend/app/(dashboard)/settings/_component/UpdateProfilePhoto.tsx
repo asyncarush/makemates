@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext, useState } from "react";
+import { useRouter } from "next/navigation";
 import FileInput from "./FileInput";
 
 import {
@@ -30,11 +31,12 @@ import { API_ENDPOINT } from "@/axios.config";
 import { AuthContext } from "@/app/context/AuthContext";
 
 function UpdateProfilePhoto({ value }: { value: string }) {
-  const { currentUser }: any = useContext(AuthContext);
+  const { currentUser, setCurrentUser }: any = useContext(AuthContext);
 
   const [image, setImage] = useState<any>("");
   const [currentPage, setCurrentPage] = useState("choose-img");
   const [imgAfterCrop, setImgAfterCrop] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -43,7 +45,7 @@ function UpdateProfilePhoto({ value }: { value: string }) {
   const [uploadState, setUploadState] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
-  const closeButton = useRef<HTMLButtonElement>(null);
+  const router = useRouter();
 
   // Invoked when new image file is selected
   const onImageSelected = (selectedImg: any) => {
@@ -94,64 +96,77 @@ function UpdateProfilePhoto({ value }: { value: string }) {
     setCroppedArea(croppedAreaPixels);
   };
 
-  // const onAspectRatioChange = (event: any) => {
-  //   setAspectRatio(event.target.value);
-  // };
-
   const uploadProfilePicture = async () => {
-    // console.log("Image After Crop : ", imgAfterCrop);
-
     const res = await fetch(imgAfterCrop);
     const blob = await res.blob();
 
+    let formData = new FormData();
+
     new Compressor(blob, {
       quality: 0.6,
-      success(result: any) {
-        const storage = getStorage(app);
-        const fileName =
-          currentUser.id +
-          Date.now().toString() +
-          "." +
-          result.type.split("/")[1];
-        const storageRef = ref(storage, fileName);
-        const uploadTask = uploadBytesResumable(storageRef, result);
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            setUploadState(true);
-            const progress =
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setUploadProgress(progress);
-          },
-          (error) => {
-            console.log(error);
-          },
-          () => {
-            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-              setUploadState(false);
-              setUploadProgress(null);
-              console.log("Download Url : ", downloadURL);
+      async success(result: any) {
+        const fileExtension = result.type.split("/")[1] || "jpg";
+        const fileName = `profile_pic_${Date.now()}-${
+          currentUser.name
+        }.${fileExtension}`;
 
-              axios
-                .post(
-                  `${API_ENDPOINT}/user/setProfilePic`,
-                  {
-                    profileImgUrl: downloadURL,
-                  },
-                  { withCredentials: true }
-                )
-                .then(() => {
-                  toast.success("Profile Image Successfully Updated.");
-                  onCropCancel();
-                  closeButton.current?.click();
-                })
-                .catch(() => {
-                  toast.error("Something went wrong!!");
-                  closeButton.current?.click();
-                });
-            });
-          }
-        );
+        formData.append("profileImage", result, fileName);
+
+        try {
+          setUploadState(true);
+          const uploadResponse: any = await axios.post(
+            `${API_ENDPOINT}/upload/profileImage`,
+            formData,
+            {
+              withCredentials: true,
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+              onUploadProgress: (progressEvent) => {
+                const progress = progressEvent.total
+                  ? Math.round(
+                      (progressEvent.loaded * 100) / progressEvent.total
+                    )
+                  : 0;
+                setUploadProgress(progress);
+              },
+            }
+          );
+
+          const imageUrl = uploadResponse.data.url;
+
+          await axios.post(
+            `${API_ENDPOINT}/user/setProfilePic`,
+            {
+              profileImgUrl: imageUrl,
+            },
+            { withCredentials: true }
+          );
+
+          // Update the currentUser in context and localStorage
+          const updatedUser = {
+            ...currentUser,
+            img: imageUrl,
+          };
+          setCurrentUser(updatedUser);
+          window.localStorage.setItem(
+            "currentUser",
+            JSON.stringify(updatedUser)
+          );
+
+          toast.success("Profile Image Successfully Updated.");
+          onCropCancel();
+          setIsOpen(false);
+          router.refresh();
+
+          // Clear states
+          setUploadState(false);
+          setUploadProgress(null);
+        } catch (error: any) {
+          setUploadState(false);
+          setUploadProgress(null);
+          toast.error("Failed to upload image: " + error.message);
+        }
       },
       error(err) {
         toast.error(err.message);
@@ -161,9 +176,11 @@ function UpdateProfilePhoto({ value }: { value: string }) {
 
   return (
     <div className="flex flex-col">
-      <Dialog>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline">Change Photo</Button>
+          <Button variant="outline" onClick={() => setIsOpen(true)}>
+            Change Photo
+          </Button>
         </DialogTrigger>
         <DialogContent className="w-auto">
           <DialogHeader>
@@ -258,11 +275,13 @@ function UpdateProfilePhoto({ value }: { value: string }) {
                 >
                   Crop
                 </Button>
-                <DialogClose asChild>
-                  <Button ref={closeButton} variant={"destructive"} size={"sm"}>
-                    Cancel
-                  </Button>
-                </DialogClose>
+                <Button
+                  variant={"destructive"}
+                  size={"sm"}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Cancel
+                </Button>
               </div>
             )}
           </DialogFooter>
