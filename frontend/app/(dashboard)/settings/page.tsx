@@ -38,23 +38,13 @@ function Page() {
     <div className="w-full flex justify-center bg-slate-200 rounded-md shadow-lg">
       <div className="w-[500px] ">
         <div className="flex justify-center my-4">
-          {currentUser.img !== null ? (
-            <Image
-              src={currentUser.img}
-              className="rounded-full shadow-md"
-              width="100"
-              height="100"
-              alt="Profile pic"
-            />
-          ) : (
-            <Image
-              src="/avatar.png"
+          <Image
+              src={currentUser.img || "/avatar.png"}
               className="rounded-full"
               width="40"
               height="40"
               alt="Profile pic"
             />
-          )}
         </div>
         <UpdateProfilePhoto value={data.img} />
         <UpdateName value={data.name} />
