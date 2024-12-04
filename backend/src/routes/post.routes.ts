@@ -7,10 +7,10 @@ import {
   checkPostLikeStatus,
   postNewComment,
   getPostComments,
+  editPost
 } from "../controllers/post.controller";
 
 import auth from "../middleware/auth";
-import { editPost } from "../controller/Post";
 
 const router: Router = Router();
 
@@ -21,7 +21,7 @@ router.get("/:userId", auth, getUserPosts);
 router.post("/", auth, addPost);
 
 // Edit a post
-router.post("/edit", auth, editPost);
+router.post("/edit/:postId", auth, editPost);
 
 // Like a post
 router.post("/like", auth, likeThePost);

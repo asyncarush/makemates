@@ -103,9 +103,6 @@ function FeedUploadBox() {
       // Get the URL from the response
       const imageUrl = uploadResponse.data.urls;
 
-      //print the imageurl
-      // console.log("Image URL: ", imageUrl);
-
       // Clear the form and reset states
       setUploadState(false);
       setUploadProgress(null);
@@ -115,6 +112,7 @@ function FeedUploadBox() {
         desc: desc,
         imgUrls: JSON.stringify(imageUrl),
       };
+
       console.log("Post Data: ", postData);
 
       // Create the post with the image URL
@@ -215,13 +213,16 @@ function FeedUploadBox() {
             <div className="max-h-[200px] overflow-y-auto">
               {previewUrls &&
                 previewUrls.map((url, index) => (
-                  <Image
-                    key={index}
-                    src={url}
-                    alt="preview"
-                    width={100}
-                    height={100}
-                  />
+                  <div key={index} className="relative w-full h-[200px] my-2">
+                    <Image
+                      src={url}
+                      alt={`preview-${index}`}
+                      className="object-contain rounded-lg"
+                      fill
+                      loading="lazy"
+                      // priority={index === 0}
+                    />
+                  </div>
                 ))}
             </div>
             <input
