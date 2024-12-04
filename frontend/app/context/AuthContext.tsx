@@ -22,6 +22,7 @@ export default function AuthContextProvider({
       loading: "Creating New Account....",
       success: (res) => {
         // Redirect to the feed page upon successful Registration
+        router.refresh(); // Client-side refresh
         router.push("/feed");
         return `Successful`;
       },
@@ -36,6 +37,7 @@ export default function AuthContextProvider({
     toast.promise(SignInUser(inputs), {
       loading: "Logging....",
       success: (res) => {
+        router.refresh(); // Client-side refresh
         router.push("/feed");
         return `Login Successful`;
       },
