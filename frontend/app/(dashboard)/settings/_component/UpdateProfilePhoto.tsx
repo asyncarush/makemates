@@ -110,7 +110,7 @@ function UpdateProfilePhoto({ value }: { value: string }) {
           currentUser.name
         }.${fileExtension}`;
 
-        formData.append("profileImage", result, fileName);
+        formData.append("profile_image", result, fileName);
 
         try {
           setUploadState(true);

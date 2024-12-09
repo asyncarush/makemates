@@ -36,7 +36,7 @@ export const uploadFileController = async (
       )}`;
 
       // Your file upload logic here
-      return Promise.resolve(uploadFile(file, fileName));
+      return uploadFile(file, fileName);
     })
   );
 
@@ -45,5 +45,29 @@ export const uploadFileController = async (
     success: true,
     message: "Files uploaded successfully",
     urls,
+  });
+};
+
+export const uploadProfilePicture = async (req: Request, res: Response) => {
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: "File not found!!",
+    });
+  }
+
+  console.log("Profile Picture", req.file);
+
+  const fileName = `profile-pc-${Date.now()}-${req.file.originalname}`;
+
+  console.log("Filename : ", fileName);
+
+  // this will save the file in MiniBucket
+  const url = await uploadFile(req.file, fileName);
+
+  res.status(200).json({
+    success: true,
+    message: "ProfilePic uploaded",
+    url,
   });
 };
