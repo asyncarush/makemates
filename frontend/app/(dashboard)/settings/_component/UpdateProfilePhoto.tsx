@@ -5,7 +5,6 @@ import FileInput from "./FileInput";
 
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 
 import Cropper from "react-easy-crop";
+
 import {
   getDownloadURL,
   getStorage,

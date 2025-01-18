@@ -48,13 +48,23 @@ function login(req, res) {
                 return res.status(400).send("Email id not found");
             const valid = yield bcrypt_1.default.compare(req.body.password, user.password);
             if (valid) {
-                const token = jsonwebtoken_1.default.sign({ id: user.id }, process.env.JWT_PRIVATE_KEY, { expiresIn: "24hr" });
+                const token = jsonwebtoken_1.default.sign({ id: user.id }, process.env.JWT_PRIVATE_KEY || "jwt-secret-key", { expiresIn: "24hr" });
+                const cookieOptions = process.env.NODE_ENV === "production"
+                    ? {
+                        httpOnly: false,
+                        secure: false,
+                        sameSite: "lax",
+                        domain: "192.168.49.2", // Minikube IP
+                        path: "/",
+                    }
+                    : {
+                        httpOnly: true,
+                        secure: false,
+                        sameSite: "lax",
+                        path: "/",
+                    };
                 return res
-                    .cookie("x-auth-token", token, {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
-                    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-                })
+                    .cookie("x-auth-token", token, cookieOptions)
                     .status(200)
                     .send({ id: user.id });
             }
@@ -88,12 +98,22 @@ function register(req, res) {
             });
             // console.log("newUser", newUser);
             const token = jsonwebtoken_1.default.sign({ id: newUser.id }, process.env.JWT_PRIVATE_KEY, { expiresIn: "24hr" });
+            const cookieOptions = process.env.NODE_ENV === "production"
+                ? {
+                    httpOnly: false,
+                    secure: false,
+                    sameSite: "lax",
+                    domain: "192.168.49.2", // Minikube IP
+                    path: "/",
+                }
+                : {
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: "lax",
+                    path: "/",
+                };
             return res
-                .cookie("x-auth-token", token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-            })
+                .cookie("x-auth-token", token, cookieOptions)
                 .status(200)
                 .send({ id: newUser.id });
         }

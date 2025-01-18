@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadFileController = void 0;
+exports.uploadProfilePicture = exports.uploadFileController = void 0;
 const minio_service_1 = require("../services/minio.service");
 const uploadFileController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // Ensure files exist and is an array
@@ -29,7 +29,7 @@ const uploadFileController = (req, res) => __awaiter(void 0, void 0, void 0, fun
     const urls = yield Promise.all(files.map((file) => __awaiter(void 0, void 0, void 0, function* () {
         const fileName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
         // Your file upload logic here
-        return Promise.resolve((0, minio_service_1.uploadFile)(file, fileName));
+        return (0, minio_service_1.uploadFile)(file, fileName);
     })));
     console.log("All images url :", urls);
     res.json({
@@ -39,3 +39,22 @@ const uploadFileController = (req, res) => __awaiter(void 0, void 0, void 0, fun
     });
 });
 exports.uploadFileController = uploadFileController;
+const uploadProfilePicture = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!req.file) {
+        return res.status(400).json({
+            success: false,
+            message: "File not found!!",
+        });
+    }
+    console.log("Profile Picture", req.file);
+    const fileName = `profile-pc-${Date.now()}-${req.file.originalname}`;
+    console.log("Filename : ", fileName);
+    // this will save the file in MiniBucket
+    const url = yield (0, minio_service_1.uploadFile)(req.file, fileName);
+    res.status(200).json({
+        success: true,
+        message: "ProfilePic uploaded",
+        url,
+    });
+});
+exports.uploadProfilePicture = uploadProfilePicture;

@@ -18,6 +18,8 @@ exports.uploadFile = exports.MinioServiceError = void 0;
 const minio_1 = require("minio");
 // Configuration
 const minio_config_1 = require("../config/minio.config");
+// Logging
+const winston_1 = require("../config/winston");
 /**
  * Custom error class for MinIO service errors
  */
@@ -38,6 +40,14 @@ const minioClient = new minio_1.Client({
     useSSL: minio_config_1.minioConfig.useSSL,
     accessKey: minio_config_1.minioConfig.accessKey,
     secretKey: minio_config_1.minioConfig.secretKey,
+    pathStyle: minio_config_1.minioConfig.forcePathStyle,
+});
+// Add debug logging
+winston_1.logger.info("Initializing MinIO client with config:", {
+    endpoint: minio_config_1.minioConfig.endpoint,
+    port: minio_config_1.minioConfig.port,
+    useSSL: minio_config_1.minioConfig.useSSL,
+    pathStyle: minio_config_1.minioConfig.forcePathStyle,
 });
 const BUCKET_NAME = "posts";
 /**

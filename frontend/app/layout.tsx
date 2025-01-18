@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 
 /**
  * Root layout component that provides the basic structure for all pages
- * 
+ *
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - Child components to render
  */

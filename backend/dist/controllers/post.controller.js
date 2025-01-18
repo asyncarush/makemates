@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPostComments = exports.postNewComment = exports.checkPostLikeStatus = exports.unLikeThePost = exports.likeThePost = exports.getUserPosts = exports.addPost = void 0;
+exports.getPostComments = exports.postNewComment = exports.checkPostLikeStatus = exports.unLikeThePost = exports.likeThePost = exports.getUserPosts = exports.editPost = exports.addPost = void 0;
 // Database client
 const client_1 = require("@prisma/client");
 // Logger
@@ -59,6 +59,60 @@ const addPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.addPost = addPost;
+const editPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    const { desc, imgUrls } = req.body;
+    const { postId } = req.params;
+    console.log("Received postId:", postId);
+    console.log("Received imgUrls:", imgUrls);
+    console.log("Type of imgUrls:", typeof imgUrls);
+    const parsedPostId = parseInt(postId, 10);
+    if (isNaN(parsedPostId)) {
+        return res.status(400).send("Invalid post ID");
+    }
+    try {
+        // First update the post
+        const updatedPost = yield prisma.posts.update({
+            where: {
+                id: parsedPostId,
+                user_id: ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) || -1,
+            },
+            data: {
+                desc: desc,
+            },
+        });
+        console.log("Updated post:", updatedPost);
+        if (!updatedPost) {
+            return res.status(404).send("Post not found");
+        }
+        // Parse imgUrls if it's a string
+        const imageUrlsArray = typeof imgUrls === "string" ? JSON.parse(imgUrls) : imgUrls;
+        console.log("Processing imageUrlsArray:", imageUrlsArray);
+        // Create new media entries
+        if (Array.isArray(imageUrlsArray)) {
+            for (let imgs of imageUrlsArray) {
+                console.log("Creating media entry for:", imgs);
+                yield prisma.post_media.create({
+                    data: {
+                        post_id: parsedPostId,
+                        media_url: imgs,
+                        user_id: ((_b = req.user) === null || _b === void 0 ? void 0 : _b.id) || -1,
+                    },
+                });
+            }
+        }
+        return res.status(200).send("Post Saved...");
+    }
+    catch (err) {
+        if (err instanceof Error) {
+            winston_1.logger.error(err.message);
+            return res.status(500).send(err.message);
+        }
+        winston_1.logger.error("An unknown error occurred.");
+        return res.status(500).send("An unknown error occurred.");
+    }
+});
+exports.editPost = editPost;
 // Get User Posts
 /**
  * Retrieves a list of posts for the specified user, including their own posts and posts from users they follow.

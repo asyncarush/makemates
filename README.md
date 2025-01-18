@@ -191,6 +191,15 @@ MINIO_SECRET_KEY=your-secret-key
 4. Push to the branch (\`git push origin feature/amazing-feature\`)
 5. Open a Pull Request
 
+## UI Improvement
+
+[ ] Improve commenting
+
+## upcoming features
+
+[ ] caption suggestions
+[ ] Real time chat feature
+
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

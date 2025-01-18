@@ -39,24 +39,25 @@ export async function login(req: Request, res: Response) {
     if (valid) {
       const token = jwt.sign(
         { id: user.id },
-        process.env.JWT_PRIVATE_KEY as string || "jwt-secret-key",
+        (process.env.JWT_PRIVATE_KEY as string) || "jwt-secret-key",
         { expiresIn: "24hr" }
       );
 
-      const cookieOptions = process.env.NODE_ENV === "production"
-        ? {
-          httpOnly: false,
-          secure: false,        
-          sameSite: "lax" as const,
-          domain: "192.168.49.2",  // Minikube IP
-          path: "/",
-        }: {
-          httpOnly: true,
-          secure: false,        
-          sameSite: "lax" as const,
-          path: "/",
-        };
-
+      const cookieOptions =
+        process.env.NODE_ENV === "production"
+          ? {
+              httpOnly: false,
+              secure: false,
+              sameSite: "lax" as const,
+              domain: "192.168.49.2", // Minikube IP
+              path: "/",
+            }
+          : {
+              httpOnly: true,
+              secure: false,
+              sameSite: "lax" as const,
+              path: "/",
+            };
 
       return res
         .cookie("x-auth-token", token, cookieOptions)
@@ -97,20 +98,22 @@ export async function register(req: Request, res: Response) {
       { expiresIn: "24hr" }
     );
 
-    const cookieOptions = process.env.NODE_ENV === "production"
+    const cookieOptions =
+      process.env.NODE_ENV === "production"
         ? {
-          httpOnly: false,
-          secure: false,        
-          sameSite: "lax" as const,
-          domain: "192.168.49.2",  // Minikube IP
-          path: "/",
-        }: {
-          httpOnly: true,
-          secure: false,        
-          sameSite: "lax" as const,
-          path: "/",
-        };
-      
+            httpOnly: false,
+            secure: false,
+            sameSite: "lax" as const,
+            domain: "192.168.49.2", // Minikube IP
+            path: "/",
+          }
+        : {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax" as const,
+            path: "/",
+          };
+
     return res
       .cookie("x-auth-token", token, cookieOptions)
       .status(200)
@@ -168,7 +171,8 @@ export async function updateUserInfo(req: RequestWithUser, res: Response) {
         return res
           .status(200)
           .send(
-            `${key.charAt(0).toUpperCase() + key.slice(1)
+            `${
+              key.charAt(0).toUpperCase() + key.slice(1)
             } updated Successfully.`
           );
 

@@ -16,7 +16,7 @@ const prisma = new client_1.PrismaClient();
 // Get User Profile
 const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.body.id;
-    // console.log("looking for user with id : ", userId);
+    console.log("looking for user with id : ", userId);
     try {
         const userData = yield prisma.users.findUnique({
             where: { id: parseInt(userId) },
@@ -85,26 +85,29 @@ exports.checkFollowed = checkFollowed;
 // Search User
 const searchUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { keyword } = req.body;
+    console.log("Searching for keyword:", keyword);
     try {
+        if (!keyword || keyword.trim() === "") {
+            return res.status(200).send([]);
+        }
         const users = yield prisma.users.findMany({
             where: {
                 name: {
                     contains: keyword.toLowerCase(),
+                    mode: "insensitive",
                 },
             },
             include: {
-                profileimages: true, // Adjust if needed
+                profileimages: true,
             },
+            take: 10, // Limit results to 10 users
         });
+        console.log("Found users:", users.length);
         return res.status(200).send(users);
     }
     catch (err) {
-        if (err instanceof Error) {
-            winston_1.logger.error(err.message);
-            return res.status(500).send(err.message);
-        }
-        winston_1.logger.error("An unknown error occurred.");
-        return res.status(500).send("An unknown error occurred.");
+        console.error("Search error:", err);
+        return res.status(500).send({ error: "Error searching for users" });
     }
 });
 exports.searchUser = searchUser;

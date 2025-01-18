@@ -9,4 +9,5 @@ const upload_controller_1 = require("../controllers/upload.controller");
 const router = (0, express_1.Router)();
 const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
 router.post("/upload", upload.array("post_images"), upload_controller_1.uploadFileController);
+router.post("/upload/profileImage", upload.single("profile_image"), upload_controller_1.uploadProfilePicture);
 exports.default = router;
