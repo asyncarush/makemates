@@ -194,7 +194,10 @@ function FeedUploadBox() {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogTitle>Share new Post</DialogTitle>
+        <DialogTitle className="flex justify-between">
+          <div>Share new Post</div>
+          <div></div>
+        </DialogTitle>
         <form
           ref={formRef}
           onSubmit={(e) => handleUploadPost(e)}
