@@ -1,32 +1,33 @@
-#! /usr/bin/bash
+#!/bin/bash
+
+# Exit on any error
 set -e
 
 echo "Deploying backend...."
 
 # Configure docker to use minikube's Docker daemon
 echo "Configuring Docker to use Minikube's Docker daemon..."
-eval $(minikube docker-env)
+eval $(minikube -p minikube docker-env)
 
 echo "Logging into the docker registry..."
 
-DOCKER_PASSWORD=Docker@2402
-DOCKER_USERNAME=xsarush0856
+# DOCKER_PASSWORD=Docker@2402
+# DOCKER_USERNAME=xsarush0856
 
-docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD > /dev/null 2>&1
+# docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 
 if [ $? -ne 0 ]; then
     echo "Docker Login failed"
     exit 1
-fi  
+fi
+
 echo "Docker Login success"
 
-# Generate a timestamp for unique tag
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-IMAGE_TAG="v_${TIMESTAMP}"
+IMAGE_TAG="v_$(date +%Y%m%d_%H%M%S)"
 
 cd backend
 echo "Building image with tag: ${IMAGE_TAG}"
-docker build -t xsarush0856/makemates-backend:${IMAGE_TAG} -f ./docker/Dockerfile .
+docker build -t xsarush0856/makemates-backend:${IMAGE_TAG} -f docker/Dockerfile .
 docker push xsarush0856/makemates-backend:${IMAGE_TAG}
 echo "Backend pushed successfully"
 
