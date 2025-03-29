@@ -74,7 +74,9 @@ export async function login(req: Request, res: Response) {
 
 // Register Function
 export async function register(req: Request, res: Response) {
+  console.log("Reaching here- register");
   const { error } = validateNewUser(req.body);
+
   if (error) return res.status(400).send(error.details[0].message);
 
   try {
@@ -108,12 +110,12 @@ export async function register(req: Request, res: Response) {
             path: "/",
           }
         : {
-            httpOnly: true,
+            httpOnly: false,
             secure: false,
             sameSite: "lax" as const,
             path: "/",
           };
-
+    console.log(cookieOptions);
     return res
       .cookie("x-auth-token", token, cookieOptions)
       .status(200)

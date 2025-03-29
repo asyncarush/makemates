@@ -81,6 +81,7 @@ function login(req, res) {
 // Register Function
 function register(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
+        console.log("Reaching here- register");
         const { error } = (0, validate_1.validateNewUser)(req.body);
         if (error)
             return res.status(400).send(error.details[0].message);
@@ -107,11 +108,12 @@ function register(req, res) {
                     path: "/",
                 }
                 : {
-                    httpOnly: true,
+                    httpOnly: false,
                     secure: false,
                     sameSite: "lax",
                     path: "/",
                 };
+            console.log(cookieOptions);
             return res
                 .cookie("x-auth-token", token, cookieOptions)
                 .status(200)

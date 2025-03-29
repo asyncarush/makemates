@@ -34,7 +34,7 @@ function Post({
   useEffect(() => {
     if (mediaUrls && mediaUrls.length > 0) {
       Promise.all(
-        mediaUrls.map((url:string) => {
+        mediaUrls.map((url: string) => {
           return new Promise<string>((resolve) => {
             const img = new window.Image();
             img.src = url;

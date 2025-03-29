@@ -26,16 +26,17 @@ import Post from "./routes/post.routes";
 import Search from "./routes/search.routes";
 import upload from "./routes/upload.routes";
 
+import checkConnection from "./db/db";
+
 const app: Application = express();
 dotenv.config();
 
 app.use(
   cors({
     origin: [
-      "https://makemates-2024.vercel.app",
       "http://localhost:3000",
-      "http://192.168.49.2:30005",
-      "http://192.168.49.2:30006"
+      "http://127.0.0.1:9000",
+      "http://192.168.49.2:30006",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -54,18 +55,31 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get("/health", (req, res) => {
-  res.status(200).send("Chill , everything is working fine");
-});
-
 // routes
 app.use("/user", User);
 app.use("/posts", Post);
 app.use("/search", Search);
 app.use("/", upload);
 
+app.get("/health", (req, res) => {
+  res.status(200).send("Chill , everything is working fine");
+});
+
+// check the if db is been initialized
+
 const PORT: number = parseInt(process.env.PORT || "2000", 10);
 
-app.listen(PORT, () => {
-  logger.info(`Server listening on ${PORT}`);
-});
+async function startServer() {
+  //check db connection here
+  // check minio connection here
+
+  try {
+    app.listen(PORT, () => {
+      logger.info(`Server listening on ${PORT}`);
+    });
+  } catch (err) {
+    logger.error(err);
+  }
+}
+
+startServer();

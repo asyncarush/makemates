@@ -18,7 +18,7 @@ global:
   ##   - myRegistryKeySecretName
   ##
   imagePullSecrets: []
-  defaultStorageClass: ""
+  defaultStorageClass: "standard"
   storageClass: ""
   ## Security parameters
   ##
@@ -75,7 +75,7 @@ extraDeploy: []
 image:
   registry: docker.io
   repository: bitnami/minio
-  tag: 2025.1.20-debian-12-r0
+  tag: 2025.3.12-debian-12-r0
   digest: ""
   ## Specify a imagePullPolicy
   ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -102,7 +102,7 @@ image:
 clientImage:
   registry: docker.io
   repository: bitnami/minio-client
-  tag: 2025.1.17-debian-12-r0
+  tag: 2025.3.12-debian-12-r0
   digest: ""
 ## @param mode MinIO&reg; server mode (`standalone` or `distributed`)
 ## ref: https://docs.minio.io/docs/distributed-minio-quickstart-guide
@@ -116,7 +116,7 @@ auth:
   rootUser: admin
   ## @param auth.rootPassword Password for MinIO&reg; root user
   ##
-  rootPassword: "minio"
+  rootPassword: "Admin@123"
   ## @param auth.existingSecret Use existing secret for credentials details (`auth.rootUser` and `auth.rootPassword` will be ignored and picked up from this secret).
   ##
   existingSecret: ""
@@ -745,7 +745,7 @@ sidecars: []
 service:
   ## @param service.type MinIO&reg; service type
   ##
-  type: ClusterIP
+  type: NodePort
   ## @param service.ports.api MinIO&reg; API service port
   ## @param service.ports.console MinIO&reg; Console service port
   ##
@@ -800,7 +800,7 @@ service:
 ingress:
   ## @param ingress.enabled Enable ingress controller resource for MinIO Console
   ##
-  enabled: true
+  enabled: false
   ## @param ingress.apiVersion Force Ingress API version (automatically detected if not set)
   ##
   apiVersion: ""
@@ -811,7 +811,7 @@ ingress:
   ingressClassName: ""
   ## @param ingress.hostname Default host for the ingress resource
   ##
-  hostname: minio-ui.makemates.local
+  hostname: minio.local
   ## @param ingress.path The Path to MinIO&reg;. You may need to set this to '/*' in order to use this with ALB ingress controllers.
   ##
   path: /
@@ -908,7 +908,7 @@ ingress:
 apiIngress:
   ## @param apiIngress.enabled Enable ingress controller resource for MinIO API
   ##
-  enabled: true
+  enabled: false
   ## @param apiIngress.apiVersion Force Ingress API version (automatically detected if not set)
   ##
   apiVersion: ""
@@ -919,7 +919,7 @@ apiIngress:
   ingressClassName: ""
   ## @param apiIngress.hostname Default host for the ingress resource
   ##
-  hostname: minio-api.makemates.local
+  hostname: minio.local
   ## @param apiIngress.path The Path to MinIO&reg;. You may need to set this to '/*' in order to use this with ALB ingress controllers.
   ##
   path: /
@@ -1079,7 +1079,7 @@ persistence:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  storageClass: "standard"
+  storageClass: ""
   ## @param persistence.mountPath Data volume mount path
   ##
   mountPath: /bitnami/minio/data
@@ -1121,7 +1121,7 @@ volumePermissions:
   image:
     registry: docker.io
     repository: bitnami/os-shell
-    tag: 12-debian-12-r35
+    tag: 12-debian-12-r39
     digest: ""
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.

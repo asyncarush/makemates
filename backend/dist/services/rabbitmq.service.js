@@ -23,6 +23,7 @@ class RabbitMQStream extends stream_service_1.default {
             return Promise.resolve();
         });
     }
+    //ssds
     consumeMessage(channel, callback) {
         return Promise.resolve();
     }
