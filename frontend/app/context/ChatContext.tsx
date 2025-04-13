@@ -8,7 +8,7 @@ interface ChatContextType {
   socketRef: React.MutableRefObject<Socket | null>;
 }
 
-const ChatContext = createContext<ChatContextType | null>(null);
+export const ChatContext = createContext<ChatContextType | null>(null);
 
 export const useChatContext = () => useContext(ChatContext);
 

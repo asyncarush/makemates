@@ -28,6 +28,7 @@ import User from "./routes/user.routes";
 import Post from "./routes/post.routes";
 import Search from "./routes/search.routes";
 import upload from "./routes/upload.routes";
+import chat from "./routes/chat.routes";
 
 dotenv.config();
 
@@ -98,6 +99,7 @@ app.use("/user", User);
 app.use("/posts", Post);
 app.use("/search", Search);
 app.use("/", upload);
+app.use("/chat", chat);
 
 app.get("/health", (req, res) => {
   res.status(200).send("Chill , everything is working fine");
