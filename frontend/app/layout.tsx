@@ -21,6 +21,10 @@ const AuthContextProvider = dynamic(() => import("./context/AuthContext.tsx"), {
   ssr: false,
 });
 
+const ChatContextProvider = dynamic(() => import("./context/ChatContext.tsx"), {
+  ssr: false,
+});
+
 // Font configuration
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
@@ -54,8 +58,10 @@ export default function RootLayout({
 
       <body className={`${inter.className} bg-slate-100`}>
         <AuthContextProvider>
-          <Toaster position="bottom-center" />
-          {children}
+          <ChatContextProvider>
+            <Toaster position="bottom-center" />
+            {children}
+          </ChatContextProvider>
         </AuthContextProvider>
       </body>
     </html>
