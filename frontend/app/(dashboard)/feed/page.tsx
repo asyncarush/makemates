@@ -23,9 +23,6 @@ function Page() {
 
   const { currentUser, setCurrentUser }: any = useContext(AuthContext);
 
-  // Current User Log Here -->>> Come again here
-  // console.log(currentUser);
-
   useEffect(() => {
     const getUserData = async () => {
       const { data } = await axios.get(`${API_ENDPOINT}/user/me`, {
@@ -70,48 +67,50 @@ function Page() {
         <div className="flex p-2 bg-slate-50 rounded-md shadow-lg tems-center justify-start gap-5">
           <ul className="flex flex-col gap-3 w-full">
             <li className="w-full p-1 hover:bg-purple-100 rounded-md">
-              <a
-                href="https://codetonic.netlify.app/chat"
+              <Link
+                href="/chat"
                 target="_blank"
                 className="flex gap-3 items-center justify-start font-medium"
               >
                 <BsMessenger className="text-[#003789]" /> Chat
-              </a>
+              </Link>
             </li>
             <li className="w-full p-1 hover:bg-purple-100 rounded-md">
-              <a
+              <Link
                 href="https://codetonic.netlify.app/profile/liked_posts"
                 target="_blank"
                 className="flex gap-3 items-center justify-start font-medium"
               >
                 <BsMessenger className="text-[#003789]" /> Liked
-              </a>
+              </Link>
             </li>
             <li className="w-full p-1 hover:bg-purple-100 rounded-md">
-              <a
+              <Link
                 href="https://codetonic.netlify.app/login"
                 target="_blank"
                 className="flex gap-3 items-center justify-start font-medium"
               >
                 <BsMessenger className="text-[#003789]" /> Favourites
-              </a>
+              </Link>
             </li>
             <li className="w-full p-1 hover:bg-purple-100 rounded-md">
-              <a
+              <Link
                 href="https://codetonic.netlify.app/login"
                 target="_blank"
                 className="flex gap-3 items-center justify-start font-medium"
               >
                 <BsMessenger className="text-[#003789]" /> Saved
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
       </div>
+
       {/* Middle Feed */}
       <div className="flex gap-4 flex-col w-[500px] ml-[330px]">
         <Posts userId={currentUser?.id} />
       </div>
+
       <div className="w-[300px] fixed top-[100px] ml-[870px]  rounded-md h-[500px] overflow-y-auto">
         <div>
           <h4 className="font-semibold text-sky-900">Followers :</h4>

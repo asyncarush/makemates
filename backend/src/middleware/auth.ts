@@ -16,7 +16,7 @@ import { RequestWithUser } from "../typing";
 const auth = (req: RequestWithUser, res: Response, next: NextFunction) => {
   // Get token from cookies or Authorization header
   let token = req.cookies["x-auth-token"];
-  
+
   // Check Authorization header if no cookie token
   const authHeader = req.header("Authorization");
   if (!token && authHeader && authHeader.startsWith("Bearer ")) {
@@ -25,7 +25,6 @@ const auth = (req: RequestWithUser, res: Response, next: NextFunction) => {
 
   // Only log cookies for debugging if needed
   if (process.env.NODE_ENV === "development") {
-    console.log("Request cookies:", req.cookies);
     console.log("Auth header:", authHeader);
     console.log("Auth token present:", Boolean(token));
   }
