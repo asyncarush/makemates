@@ -43,26 +43,22 @@ export async function login(req: Request, res: Response) {
         { expiresIn: "24hr" }
       );
 
-      const cookieOptions =
-        process.env.NODE_ENV === "production"
-          ? {
-              httpOnly: false,
-              secure: false,
-              sameSite: "lax" as const,
-              domain: "192.168.49.2", // Minikube IP
-              path: "/",
-            }
-          : {
-              httpOnly: true,
-              secure: false,
-              sameSite: "lax" as const,
-              path: "/",
-            };
+      // Secure cookie configuration
+      const cookieOptions = {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax" as const,
+        path: "/",
+        maxAge: 24 * 60 * 60 * 1000,
+        domain: undefined,
+        partitioned: false,
+        priority: "medium" as const,
+      };
 
-      return res
-        .cookie("x-auth-token", token, cookieOptions)
-        .status(200)
-        .send({ id: user.id });
+      console.log("Setting auth cookie with options:", cookieOptions);
+
+      res.cookie("x-auth-token", token, cookieOptions);
+      return res.status(200).send({ id: user.id, token: token });
     } else {
       return res.status(401).send("Incorrect Password");
     }
@@ -100,26 +96,22 @@ export async function register(req: Request, res: Response) {
       { expiresIn: "24hr" }
     );
 
-    const cookieOptions =
-      process.env.NODE_ENV === "production"
-        ? {
-            httpOnly: false,
-            secure: false,
-            sameSite: "lax" as const,
-            domain: "192.168.49.2", // Minikube IP
-            path: "/",
-          }
-        : {
-            httpOnly: false,
-            secure: false,
-            sameSite: "lax" as const,
-            path: "/",
-          };
-    console.log(cookieOptions);
-    return res
-      .cookie("x-auth-token", token, cookieOptions)
-      .status(200)
-      .send({ id: newUser.id });
+    // Secure cookie configuration
+    const cookieOptions = {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax" as const,
+      path: "/",
+      maxAge: 24 * 60 * 60 * 1000,
+      domain: undefined,
+      partitioned: false,
+      priority: "medium" as const,
+    };
+
+    console.log("Setting auth cookie with options:", cookieOptions);
+
+    res.cookie("x-auth-token", token, cookieOptions);
+    return res.status(200).send({ id: newUser.id, token: token });
   } catch (err) {
     return res.status(500).send(err);
   }

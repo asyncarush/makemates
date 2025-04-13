@@ -39,9 +39,11 @@ function Page() {
   }, [setCurrentUser]);
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && currentUser.name) {
       const firstName = currentUser.name.split(" ")[0];
       document.title = firstName + "'s feed";
+    } else {
+      document.title = "Feed";
     }
   }, [currentUser]);
 
@@ -51,14 +53,16 @@ function Page() {
       <div className="fixed top-[100px] w-[300px] flex flex-col gap-4">
         <div className="flex p-2 rounded-md shadow-lg bg-slate-50 items-center justify-start gap-5">
           <Image
-            src={currentUser.img || "/avatar.png"}
+            src={currentUser?.img || "/avatar.png"}
             className="rounded-full shadow-lg object-cover"
             alt="Profile pic"
             width="40"
             height="40"
           />
           <div className="flex flex-col">
-            <div className="font-semibold text-sm">{currentUser.name}</div>
+            <div className="font-semibold text-sm">
+              {currentUser?.name || "User"}
+            </div>
             <div className="text-xs text-muted-foreground">GhostRider</div>
           </div>
         </div>
@@ -106,7 +110,7 @@ function Page() {
       </div>
       {/* Middle Feed */}
       <div className="flex gap-4 flex-col w-[500px] ml-[330px]">
-        <Posts userId={currentUser.id} />
+        <Posts userId={currentUser?.id} />
       </div>
       <div className="w-[300px] fixed top-[100px] ml-[870px]  rounded-md h-[500px] overflow-y-auto">
         <div>

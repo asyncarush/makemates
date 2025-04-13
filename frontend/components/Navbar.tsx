@@ -4,11 +4,9 @@ import React, { ReactElement, useContext } from "react";
 import { TiHome } from "react-icons/ti";
 import { BsMessenger } from "react-icons/bs";
 import { BiSolidBell } from "react-icons/bi";
-import { FaUserAlt, FaSearch } from "react-icons/fa";
-import { MdEmojiEmotions } from "react-icons/md";
+import { FaUserAlt } from "react-icons/fa";
 import { IoLogOut } from "react-icons/io5";
 import { IoSettingsSharp } from "react-icons/io5";
-import { FaComments } from "react-icons/fa";
 
 import {
   NavigationMenu,
@@ -76,18 +74,6 @@ function Navbar() {
             </div>
           </div>
           <ul className="space-y-2">
-            {/* <li className="cursor-pointer flex items-center justify-between p-2 hover:bg-purple-100 rounded-md">
-              <Link href="/" className="font-medium text-md">
-                Reactions
-              </Link>
-              <MdEmojiEmotions className="text-xl text-blue-600" />
-            </li> */}
-            {/* <li className="cursor-pointer flex items-center justify-between p-2 hover:bg-purple-100 rounded-md">
-              <Link href="/" className="font-medium text-md">
-                Comments
-              </Link>
-              <FaComments className="text-xl text-blue-600" />
-            </li> */}
             <li className="cursor-pointer flex items-center justify-between p-2 hover:bg-purple-100 rounded-md">
               <Link href="/settings" className="font-medium text-md">
                 Settings
@@ -110,7 +96,7 @@ function Navbar() {
   ];
 
   return (
-    <div className=" w-[1200px] shadow-[0px_2px_10px_0px_#001C43] h-[50px] px-2 rounded-full  text-white bg-[#003789] flex items-center justify-center gap-32">
+    <div className=" w-[1200px] shadow-[0px_2px_10px_0px_#001C43] h-[50px] px-2 rounded-full text-white bg-[#003789] flex items-center justify-center gap-32 z-10">
       <div className="flex-1 flex items-center justify-center">
         <Link href="/feed" className={`text-xl font-extrabold`}>
           Makemates

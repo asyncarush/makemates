@@ -11,16 +11,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 // Middleware function
 const auth = (req, res, next) => {
+    // Get token from cookies
     const token = req.cookies["x-auth-token"];
+    // Only log cookies for debugging if needed
+    if (process.env.NODE_ENV === "development") {
+        console.log("Request cookies:", req.cookies);
+        console.log("Auth token present:", Boolean(token));
+    }
     if (!token)
-        return res.status(401).send("Access denied.");
+        return res.status(401).send("Access denied. No token provided.");
     try {
-        const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_PRIVATE_KEY);
+        const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_PRIVATE_KEY || "jwt-secret-key");
         // Set the user property on req
         req.user = { id: decoded.id };
+        if (process.env.NODE_ENV === "development") {
+            console.log("Authentication successful for user id:", decoded.id);
+        }
         next();
     }
     catch (error) {
+        console.error("JWT verification error:", error);
         res.status(400).send("Invalid token.");
     }
 };

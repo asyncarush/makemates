@@ -21,6 +21,9 @@ export default function AuthContextProvider({
     toast.promise(CreateNewUser(inputs), {
       loading: "Creating New Account....",
       success: (res) => {
+        // Set current user in state and local storage
+        setCurrentUser(res.data);
+        window.localStorage.setItem("currentUser", JSON.stringify(res.data));
         // Redirect to the feed page upon successful Registration
         router.refresh(); // Client-side refresh
         router.push("/feed");
@@ -37,6 +40,9 @@ export default function AuthContextProvider({
     toast.promise(SignInUser(inputs), {
       loading: "Logging....",
       success: (res) => {
+        // Set current user in state and local storage
+        setCurrentUser(res);
+        window.localStorage.setItem("currentUser", JSON.stringify(res));
         router.refresh(); // Client-side refresh
         router.push("/feed");
         return `Login Successful`;

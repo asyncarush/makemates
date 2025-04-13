@@ -11,19 +11,22 @@ import { AuthContextType } from "@/typings";
 
 import Signup from "./_component/signup";
 import InputWithLabel from "./_component/InputWithLabel";
+import { useRouter } from "next/navigation";
 
 function Login() {
+  const router = useRouter();
   const [inputs, setInputs] = useState({
     email: "",
     password: "",
   });
 
-  const { userLogin }: any = useContext<AuthContextType | null>(AuthContext);
+  const { userLogin, currentUser }: any = useContext<AuthContextType | null>(
+    AuthContext
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     userLogin(inputs);
-    // showing alert to user
   };
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,7 +35,10 @@ function Login() {
 
   useEffect(() => {
     document.title = "Makemates | Login";
-  }, []);
+    if (currentUser) {
+      router.push("/feed");
+    }
+  }, [currentUser, router]);
 
   return (
     <div>

@@ -37,11 +37,7 @@ const upload_routes_1 = __importDefault(require("./routes/upload.routes"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use((0, cors_1.default)({
-    origin: [
-        "http://localhost:3000",
-        "http://127.0.0.1:9000",
-        "http://192.168.49.2:30006",
-    ],
+    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],

@@ -26,22 +26,16 @@ import Post from "./routes/post.routes";
 import Search from "./routes/search.routes";
 import upload from "./routes/upload.routes";
 
-import checkConnection from "./db/db";
-
 const app: Application = express();
 dotenv.config();
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://127.0.0.1:9000",
-      "http://192.168.49.2:30006",
-    ],
+    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
-    exposedHeaders: ["Set-Cookie"],
+    exposedHeaders: ["Set-Cookie"]
   })
 );
 
