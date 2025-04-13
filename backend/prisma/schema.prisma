@@ -82,6 +82,36 @@ model relationships {
   @@index([follower_id], map: "relationships_follower_id_idx")
 }
 
+// Chat model for storing conversations between users
+model chats {
+  id         Int        @id @default(autoincrement())
+  user1_id   Int
+  user2_id   Int
+  created_at DateTime
+  updated_at DateTime?  @updatedAt
+  
+  // Messages in this chat
+  messages   messages[]
+  
+  // Relations to users
+  user1      users      @relation("ChatUser1", fields: [user1_id], references: [id])
+  user2      users      @relation("ChatUser2", fields: [user2_id], references: [id])
+}
+
+// Messages model for storing individual messages
+model messages {
+  id         Int      @id @default(autoincrement())
+  chat_id    Int
+  sender_id  Int
+  message    String   @db.Text
+  created_at DateTime
+  updated_at DateTime? @updatedAt
+  
+  // Relations
+  chat       chats    @relation(fields: [chat_id], references: [id])
+  sender     users    @relation(fields: [sender_id], references: [id])
+}
+
 model users {
   id                                             Int             @id @default(autoincrement())
   name                                           String          @db.VarChar(50)
@@ -101,4 +131,9 @@ model users {
   profileimages                                  profileimages[]
   relationships_relationships_follow_idTousers   relationships[] @relation("relationships_follow_idTousers")
   relationships_relationships_follower_idTousers relationships[] @relation("relationships_follower_idTousers")
+  
+  // Chat relations
+  sentMessages     messages[]
+  chatsAsUser1     chats[]    @relation("ChatUser1")
+  chatsAsUser2     chats[]    @relation("ChatUser2")
 }

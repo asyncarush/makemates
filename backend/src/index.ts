@@ -9,6 +9,7 @@ import dotenv from "dotenv";
 import http from "http";
 import { Server } from "socket.io";
 import { createClient } from "redis";
+import { PrismaClient } from "@prisma/client";
 
 // Security middleware
 import cors from "cors";
@@ -105,12 +106,18 @@ app.get("/health", (req, res) => {
   res.status(200).send("Chill , everything is working fine");
 });
 
+// Create a single Prisma client instance to be reused
+const prisma = new PrismaClient();
+
 // Socket.IO event handlers
 io.on("connection", (socket: any) => {
   console.log("Socket connection established:", socket.id);
 
-  // Send immediate acknowledgment to the client
   socket.emit("connection_ack", { status: "connected", socketId: socket.id });
+
+  socket.on("connection_ack", (data: { status: string; socketId: string }) => {
+    console.log("Connection acknowledged by server:", data);
+  });
 
   // Handle errors at the socket level
   socket.on("error", (error: any) => {
@@ -136,6 +143,77 @@ io.on("connection", (socket: any) => {
       });
     }
   });
+
+  // Join a chat room
+  socket.on("join_chat", ({ chatId }: { chatId: string }) => {
+    socket.join(chatId);
+    console.log(`Socket ${socket.id} joined chat room: ${chatId}`);
+  });
+
+  // Leave a chat room
+  socket.on("leave_chat", ({ chatId }: { chatId: string }) => {
+    socket.leave(chatId);
+    console.log(`Socket ${socket.id} left chat room: ${chatId}`);
+  });
+
+  // Handle new message
+  socket.on(
+    "send_message",
+    async (messageData: { chatId: string; senderId: string; text: string }) => {
+      try {
+        const { chatId, senderId, text } = messageData;
+        console.log(`New message in chat ${chatId} from ${senderId}: ${text}`);
+
+        // Store message in database
+        const savedMessage = await prisma.messages.create({
+          data: {
+            chat_id: parseInt(chatId),
+            sender_id: parseInt(senderId),
+            message: text,
+            created_at: new Date(),
+          },
+        });
+
+        // Format message for client
+        const formattedMessage = {
+          id: savedMessage.id,
+          chatId: chatId,
+          senderId: senderId,
+          text: savedMessage.message,
+          timestamp: savedMessage.created_at.toISOString(),
+        };
+
+        // Broadcast to everyone in the room except sender
+        socket.to(chatId).emit("receive_message", formattedMessage);
+
+        // Acknowledge message receipt to sender
+        socket.emit("message_sent", {
+          id: savedMessage.id,
+          status: "delivered",
+          timestamp: savedMessage.created_at,
+          message: formattedMessage,
+        });
+      } catch (error) {
+        console.error("Error sending message:", error);
+        socket.emit("message_error", { error: "Failed to send message" });
+      }
+    }
+  );
+
+  // Typing indicator
+  socket.on(
+    "typing",
+    ({ chatId, userId }: { chatId: string; userId: string }) => {
+      socket.to(chatId).emit("user_typing", { userId, chatId });
+    }
+  );
+
+  socket.on(
+    "stop_typing",
+    ({ chatId, userId }: { chatId: string; userId: string }) => {
+      socket.to(chatId).emit("user_stop_typing", { userId, chatId });
+    }
+  );
 
   socket.on("user-offline", async ({ userId }: { userId: string }) => {
     console.log(`User ${userId} is now offline (socket: ${socket.id})`);
