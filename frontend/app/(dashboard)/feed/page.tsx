@@ -113,7 +113,7 @@ function Page() {
 
       <div className="w-[300px] fixed top-[100px] ml-[870px]  rounded-md h-[500px] overflow-y-auto">
         <div>
-          <h4 className="font-semibold text-sky-900">Followers :</h4>
+          <h4 className="font-semibold text-sky-900">Followings :</h4>
           <div className="flex bg-slate-50 gap-2 shadow-md rounded-md flex-col mt-2 w-full ">
             {friendsList.length > 0 ? (
               friendsList.map((friend: any) => {

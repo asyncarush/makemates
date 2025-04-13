@@ -4,15 +4,12 @@ import React, { createContext, useContext, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { AuthContext } from "@/app/context/AuthContext";
 
-// Define proper type for context
 interface ChatContextType {
   socketRef: React.MutableRefObject<Socket | null>;
 }
 
-// Initialize with correct type
 const ChatContext = createContext<ChatContextType | null>(null);
 
-// Export hook for easy context usage
 export const useChatContext = () => useContext(ChatContext);
 
 export default function ChatContextProvider({
