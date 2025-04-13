@@ -51,19 +51,18 @@ function login(req, res) {
                 const token = jsonwebtoken_1.default.sign({ id: user.id }, process.env.JWT_PRIVATE_KEY || "jwt-secret-key", { expiresIn: "24hr" });
                 // Secure cookie configuration
                 const cookieOptions = {
-                    httpOnly: false, // Secure HttpOnly cookie
-                    secure: process.env.NODE_ENV === "production", // Only require HTTPS in production
-                    sameSite: process.env.NODE_ENV === "production"
-                        ? "none"
-                        : "lax",
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: "lax",
                     path: "/",
-                    maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+                    maxAge: 24 * 60 * 60 * 1000,
+                    domain: undefined,
+                    partitioned: false,
+                    priority: "medium",
                 };
                 console.log("Setting auth cookie with options:", cookieOptions);
-                return res
-                    .cookie("x-auth-token", token, cookieOptions)
-                    .status(200)
-                    .send({ id: user.id });
+                res.cookie("x-auth-token", token, cookieOptions);
+                return res.status(200).send({ id: user.id, token: token });
             }
             else {
                 return res.status(401).send("Incorrect Password");
@@ -98,19 +97,18 @@ function register(req, res) {
             const token = jsonwebtoken_1.default.sign({ id: newUser.id }, process.env.JWT_PRIVATE_KEY, { expiresIn: "24hr" });
             // Secure cookie configuration
             const cookieOptions = {
-                httpOnly: true, // Secure HttpOnly cookie
-                secure: process.env.NODE_ENV === "production", // Only require HTTPS in production
-                sameSite: process.env.NODE_ENV === "production"
-                    ? "none"
-                    : "lax",
+                httpOnly: true,
+                secure: false,
+                sameSite: "lax",
                 path: "/",
-                maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+                maxAge: 24 * 60 * 60 * 1000,
+                domain: undefined,
+                partitioned: false,
+                priority: "medium",
             };
             console.log("Setting auth cookie with options:", cookieOptions);
-            return res
-                .cookie("x-auth-token", token, cookieOptions)
-                .status(200)
-                .send({ id: newUser.id });
+            res.cookie("x-auth-token", token, cookieOptions);
+            return res.status(200).send({ id: newUser.id, token: token });
         }
         catch (err) {
             return res.status(500).send(err);

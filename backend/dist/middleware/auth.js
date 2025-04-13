@@ -11,11 +11,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 // Middleware function
 const auth = (req, res, next) => {
-    // Get token from cookies
-    const token = req.cookies["x-auth-token"];
+    // Get token from cookies or Authorization header
+    let token = req.cookies["x-auth-token"];
+    // Check Authorization header if no cookie token
+    const authHeader = req.header("Authorization");
+    if (!token && authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7);
+    }
     // Only log cookies for debugging if needed
     if (process.env.NODE_ENV === "development") {
-        console.log("Request cookies:", req.cookies);
+        console.log("Auth header:", authHeader);
         console.log("Auth token present:", Boolean(token));
     }
     if (!token)
