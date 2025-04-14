@@ -40,6 +40,7 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
     });
 
     const urls = JSON.parse(imgUrls);
+    
     await Promise.all(
       urls.map((url: string) =>
         prisma.post_media.create({
