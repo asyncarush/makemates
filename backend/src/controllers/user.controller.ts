@@ -323,8 +323,18 @@ export async function setProfilePic(req: RequestWithUser, res: Response) {
 
 // Logout User
 export function logoutUser(req: Request, res: Response) {
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    domain: undefined,
+    partitioned: false,
+    priority: "medium" as const,
+  };
+
   return res
-    .clearCookie("x-auth-token")
+    .clearCookie("x-auth-token", cookieOptions)
     .status(200)
     .send("Logout Successfully.");
 }
