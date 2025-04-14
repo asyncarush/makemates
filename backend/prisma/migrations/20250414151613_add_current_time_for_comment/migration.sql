@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "comments" ALTER COLUMN "datetime" SET DEFAULT CURRENT_TIMESTAMP;

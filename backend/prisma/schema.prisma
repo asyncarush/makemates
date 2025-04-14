@@ -13,7 +13,7 @@ model comments {
   id       Int       @id @default(autoincrement())
   user_id Int
   post_id Int
-  datetime DateTime? @db.Timestamp
+  datetime DateTime? @db.Timestamp @default(now())
   desc       String?      @db.Text
   posts    posts     @relation(fields: [post_id], references: [id], onDelete: Cascade, map: "fk_comments_posts1")
   users    users     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_comments_users1")

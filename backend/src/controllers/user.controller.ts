@@ -222,15 +222,33 @@ export async function unfollowUser(req: RequestWithUser, res: Response) {
   const id = req.user?.id || -1;
   const { friendId }: any = req.body;
 
+  if (!friendId) {
+    return res.status(400).send("Friend ID is required");
+  }
+
   try {
-    await prisma.relationships.deleteMany({
+    // First check if the relationship exists
+    const existingRelationship = await prisma.relationships.findFirst({
       where: {
-        follow_id: friendId,
+        follow_id: parseInt(friendId),
         follower_id: id,
       },
     });
+
+    if (!existingRelationship) {
+      return res.status(404).send("No relationship found to unfollow");
+    }
+
+    await prisma.relationships.deleteMany({
+      where: {
+        follow_id: parseInt(friendId),
+        follower_id: id,
+      },
+    });
+
     return res.status(200).send("Unfollowed Successfully.");
   } catch (err) {
+    console.error("Error in unfollowUser:", err);
     return res.status(500).send("An error occurred while unfollowing user.");
   }
 }

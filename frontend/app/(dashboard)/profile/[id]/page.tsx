@@ -6,16 +6,10 @@ import Image from "next/image";
 import axios from "axios";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  BsMessenger,
-  BsThreeDots,
-  BsGrid3X3,
-  BsBookmark,
-} from "react-icons/bs";
-import { FaUser, FaRegHeart, FaRegBookmark, FaLink } from "react-icons/fa";
+import { BsMessenger, BsGrid3X3, BsBookmark } from "react-icons/bs";
+import { FaRegHeart, FaRegBookmark, FaLink } from "react-icons/fa";
 import { IoMdPhotos, IoMdPeople } from "react-icons/io";
 import { RiUserFollowLine } from "react-icons/ri";
-import Post from "@/components/Post";
 import { useFollowed } from "@/hooks/isFriend";
 import Posts from "@/components/Posts";
 import { API_ENDPOINT } from "@/axios.config";
@@ -27,8 +21,7 @@ function Page() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const route = useRouter();
-  const checkFollowStatus = useFollowed(Number(id));
-  const [isFriend, setIsFriend] = useState<boolean>(false);
+  const { isFollowed, setIsFollowed } = useFollowed(Number(id));
   const [activeTab, setActiveTab] = useState("posts");
 
   useEffect(() => {
@@ -60,8 +53,7 @@ function Page() {
     };
 
     getUserProfile();
-    setIsFriend(checkFollowStatus);
-  }, [checkFollowStatus, id, route]);
+  }, [id, route]);
 
   const handleFollow = async () => {
     try {
@@ -72,8 +64,8 @@ function Page() {
         },
         { withCredentials: true }
       );
-      if (res.data === "DONE") {
-        setIsFriend(true);
+      if (res.status === 200) {
+        setIsFollowed(true);
       }
     } catch (err) {
       console.error("Error following user:", err);
@@ -90,8 +82,8 @@ function Page() {
         { withCredentials: true }
       );
 
-      if (res.data === "DONE") {
-        setIsFriend(false);
+      if (res.status === 200) {
+        setIsFollowed(false);
       }
     } catch (err) {
       console.error("Error unfollowing user:", err);
@@ -171,7 +163,7 @@ function Page() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              {isFriend ? (
+              {isFollowed ? (
                 <Button
                   onClick={handleUnFollow}
                   className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/20"
@@ -186,6 +178,7 @@ function Page() {
                   Follow
                 </Button>
               )}
+
               <Button
                 variant="outline"
                 className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/20"

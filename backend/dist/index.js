@@ -47,7 +47,11 @@ exports.server = server;
 // Initialize Socket.IO with the server
 const io = new socket_io_1.Server(server, {
     cors: {
-        origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+        origin: [
+            "http://localhost:3000",
+            "https://makemates.vercel.app",
+            "http://34.42.91.142:9000",
+        ],
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true,
         allowedHeaders: ["Content-Type", "Authorization"],
@@ -82,7 +86,11 @@ redisClient.on("error", (err) => {
 });
 // Setup CORS for Express
 app.use((0, cors_1.default)({
-    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+    origin: [
+        "http://localhost:3000",
+        "https://makemates.vercel.app",
+        "http://34.42.91.142:9000",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],

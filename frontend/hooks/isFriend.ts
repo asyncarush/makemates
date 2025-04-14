@@ -16,16 +16,17 @@ export function useFollowed(friendId: number) {
           { friendId },
           { withCredentials: true }
         );
-        if (res.data == "USER_FOUND") {
-          setIsFollowed(true);
-        }
+        setIsFollowed(res.data === "USER_FOUND");
       } catch (err) {
         console.error(err);
+        setIsFollowed(false);
       }
     };
-    getResult();
-    return;
-  }, []);
 
-  return isFollowed;
+    if (friendId) {
+      getResult();
+    }
+  }, [friendId, currentUser?.id]); // Add currentUser.id as dependency
+
+  return { isFollowed, setIsFollowed };
 }

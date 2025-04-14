@@ -7,6 +7,8 @@ import { SendIcon } from "lucide-react";
 import Image from "next/image";
 import { useContext, useState } from "react";
 import toast from "react-hot-toast";
+import { formatDistanceToNow } from "date-fns";
+import React from "react";
 
 export function Comments({ postId }: { postId: any }) {
   const { currentUser }: any = useContext(AuthContext);
@@ -56,29 +58,47 @@ export function Comments({ postId }: { postId: any }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col space-y-6">
+    <div className="">
+      <div className="flex flex-col gap-2">
         {allComments &&
           allComments.map((cmnt: any) => {
+            console.log(cmnt);
             return (
-              <div key={cmnt.id} className="group flex items-start space-x-3">
-                <Image
-                  src={cmnt.users.profilePic || "/avatar.png"}
-                  className="rounded-full bg-gray-100"
-                  width="40"
-                  height="40"
-                  alt={`${cmnt.users.name}'s profile picture`}
-                />
-                <div className="flex-1">
-                  <div className="bg-gray-50 rounded-2xl px-4 py-3">
-                    <p className="font-medium text-[15px] text-gray-900 mb-1">
+              <div
+                key={cmnt.id}
+                className="group pl-4 bg-slate-100 flex items-start space-x-1"
+              >
+                <div className="flex items-center justify-center">
+                  <Image
+                    src={cmnt.users.img || "/avatar.png"}
+                    className="rounded-full bg-blue-500 flex items-center justify-center border-2 border-gray-200"
+                    width="30"
+                    height="30"
+                    alt={`${cmnt.users.name}'s profile picture`}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1 w-full ">
+                  <div className="flex gap-1 items-center justify-center w-fit">
+                    <p className="font-medium text-[10px] text-gray-900 truncate px-1 py-0.5 bg-slate-200 rounded-full">
                       {cmnt.users.name}
                     </p>
-                    <p className="text-[15px] text-gray-700">{cmnt.desc}</p>
+                    <span className="text-[10px] text-gray-500">
+                      {cmnt.datetime ? (
+                        <TimeAgo timestamp={cmnt.datetime} />
+                      ) : (
+                        "2m ago"
+                      )}
+                    </span>
                   </div>
-                  <div className="flex items-center space-x-4 mt-1 px-4">
-                    <span className="text-sm text-gray-500">2m ago</span>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-4">
+                  <div className="bg-gray-50">
+                    <p className="text-xs text-gray-700">{cmnt.desc}</p>
+                  </div>
+
+                  {/* need to work on this */}
+
+                  <div className="hidden items-center space-x-4 mt-1 px-4">
+                    <div className="opacity-100 group-hover:opacity-100 transition-opacity flex items-center space-x-4">
                       <button className="text-sm text-gray-500 hover:text-gray-700">
                         Like
                       </button>
@@ -93,22 +113,22 @@ export function Comments({ postId }: { postId: any }) {
           })}
       </div>
 
-      <div className="flex items-start space-x-3 pt-3">
+      <div className="flex bg-slate-100 items-center space-x-3 pt-3">
         <Image
-          src={currentUser.profilePic || "/avatar.png"}
+          src={currentUser.img || "/avatar.png"}
           className="rounded-full bg-gray-100"
-          width="40"
-          height="40"
+          width="30"
+          height="30"
           alt="Your profile picture"
         />
-        <div className="flex-1 flex items-center">
+        <div className="flex-1 flex items-center justify-between px-2 bg-slate-200 rounded-full">
           <input
             type="text"
             value={desc}
             onChange={(e) => setDesc(e.currentTarget.value)}
             onKeyDown={(e) => e.key === "Enter" && handleComment()}
-            placeholder="Write a comment..."
-            className="flex-1 text-[15px] px-4 py-3 bg-gray-50 rounded-2xl focus:outline-none text-gray-700 placeholder:text-gray-400"
+            placeholder="Comment to your friends..."
+            className="text-[12px] w-full bg-transparent px-2 py-1  rounded-2xl focus:outline-none text-gray-700 placeholder:text-gray-400"
             name="postComment"
           />
           <button
@@ -123,3 +143,9 @@ export function Comments({ postId }: { postId: any }) {
     </div>
   );
 }
+
+const TimeAgo = ({ timestamp }: { timestamp: string | number | Date }) => {
+  return (
+    <span>{formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>
+  );
+};

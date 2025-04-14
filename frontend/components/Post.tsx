@@ -82,7 +82,7 @@ function Post({
   }, [postId]);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-gray-100/80 rounded-xl shadow-sm overflow-hidden">
       {/* Post Header */}
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
