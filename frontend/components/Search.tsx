@@ -41,31 +41,36 @@ function Search() {
   }, [searchTerm]);
 
   return (
-    <div className="relative">
-      <div className="flex items-center gap-2 border px-2 py-1 rounded-full bg-white/20">
-        <FaSearch className="text-white/60" />
+    <div className="relative w-full">
+      <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full focus-within:bg-white/20 focus-within:border-white/30 transition-all duration-200">
+        <FaSearch className="w-4 h-4 text-white/70" />
         <input
           type="text"
           placeholder="Search users..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="bg-transparent outline-none text-white w-[200px]"
+          className="bg-transparent w-full outline-none text-white placeholder-white/70"
         />
       </div>
 
       {searchTerm.trim() && (
-        <div className="absolute w-[400px] overflow-hidden overflow-y-auto max-h-[400px] text-black flex flex-col mt-2 rounded-md bg-white/90 drop-shadow-2xl">
+        <div className="absolute w-full mt-2 overflow-hidden overflow-y-auto max-h-[400px] rounded-xl bg-white/95 backdrop-blur-sm shadow-xl ring-1 ring-black/5">
           {isLoading ? (
-            <div className="p-4 text-center text-gray-500">Searching...</div>
+            <div className="p-4 text-center text-gray-500">
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                <span>Searching...</span>
+              </div>
+            </div>
           ) : searchResults.length > 0 ? (
             searchResults.map((user: any) => (
               <Link
                 key={user.id}
                 href={`/profile/${user.id}`}
-                className="flex items-center gap-3 p-3 hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200"
                 onClick={() => setSearchTerm("")}
               >
-                <div className="relative h-10 w-10">
+                <div className="relative h-10 w-10 ring-2 ring-white ring-offset-2">
                   <Image
                     src={
                       user.profileimages?.[0]?.image_url ||
@@ -78,15 +83,20 @@ function Search() {
                   />
                 </div>
                 <div>
-                  <p className="font-medium">{user.name}</p>
+                  <p className="font-medium text-gray-900">{user.name}</p>
                   {user.city && (
-                    <p className="text-sm text-gray-500">{user.city}</p>
+                    <p className="text-sm text-indigo-600">{user.city}</p>
                   )}
                 </div>
               </Link>
             ))
           ) : (
-            <div className="p-4 text-center text-gray-500">No users found</div>
+            <div className="p-6 text-center">
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-indigo-50 flex items-center justify-center">
+                <FaSearch className="w-6 h-6 text-indigo-500" />
+              </div>
+              <p className="text-gray-500">No users found</p>
+            </div>
           )}
         </div>
       )}

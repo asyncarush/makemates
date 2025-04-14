@@ -19,14 +19,16 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <div
-        className={`flex flex-col ${poppins.className} items-center h-screen `}
+        className={`flex flex-col ${poppins.className} min-h-screen bg-gray-50`}
       >
-        <div className="z-[999] bg-slate-100 fixed top-0 h-[100px] flex items-center justify-center w-full">
-          <Navbar />
+        <div className="sticky top-0 z-50 w-full bg-white shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Navbar />
+          </div>
         </div>
-        <div className="mt-[100px] flex w-[1200px] justify-between items-center relative pl-4">
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {children}
-        </div>
+        </main>
       </div>
     </QueryClientProvider>
   );

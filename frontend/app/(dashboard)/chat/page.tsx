@@ -210,173 +210,192 @@ const Page = () => {
   };
 
   return (
-    <div className="flex w-[1000px] h-[700px] rounded-lg overflow-hidden">
-      {/* All friends will be left */}
-      <div className="w-[300px] flex flex-col bg-indigo-900 text-white overflow-auto">
-        <div className="px-4 flex w-full items-center justify-between pt-2 h-[60px]">
-          <div className="hidden">
-            <h3 className="font-bold">Your Friends</h3>
-          </div>
-
-          {/* Search User */}
-          <div className="w-full rounded-md">
-            <input
-              type="text"
-              placeholder="Search User"
-              className="rounded-md p-2 w-full text-black outline-none text-center"
-              onChange={(e) => setSearchUser(e.target.value)}
-              value={searchUser}
-            />
-          </div>
+    <div className="flex w-full max-w-6xl mx-auto h-[calc(100vh-140px)] bg-white rounded-xl shadow-lg overflow-hidden">
+      {/* Sidebar - Chat List */}
+      <div className="w-[320px] flex flex-col bg-gray-50 border-r border-gray-200">
+        <div className="p-4 border-b border-gray-200">
+          <input
+            type="text"
+            placeholder="Search users..."
+            className="w-full px-4 py-2 bg-white rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+            onChange={(e) => setSearchUser(e.target.value)}
+            value={searchUser}
+          />
         </div>
 
-        {/* Search result */}
-        <div
-          className={`${
-            searchUser ? "flex" : "hidden"
-          } flex-col gap-4 bg-white/80 text-black`}
-        >
-          {searchResult.length > 0 &&
+        {/* Search Results */}
+        <div className={`${searchUser ? "flex" : "hidden"} flex-col bg-white`}>
+          {searchResult.length > 0 ? (
             searchResult.map((user) => (
               <div
                 key={user.id}
-                className="flex items-center justify-center gap-2 cursor-pointer p-2 transition-all duration-150 ease-out hover:bg-indigo-300 hover:shadow-md hover:text-black"
+                className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer transition-all duration-200"
                 onClick={() => startChat(user)}
               >
-                <User /> {user.name}
+                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-indigo-600" />
+                </div>
+                <span className="font-medium text-gray-700">{user.name}</span>
               </div>
-            ))}
+            ))
+          ) : (
+            <div className="p-4 text-center text-gray-500">No users found</div>
+          )}
         </div>
 
-        {/* List All Active Chats */}
-        <ul
+        {/* Active Chats */}
+        <div
           className={`${
             searchUser ? "hidden" : "flex"
-          } flex-col text-sm gap-4 bg-indigo-900/85 px-2 py-4`}
+          } flex-col flex-1 overflow-y-auto`}
         >
           {activeChats.length > 0 ? (
             activeChats.map((chat) => (
-              <li
+              <div
                 key={chat.id}
-                className={`flex items-center gap-2 cursor-pointer p-3 rounded-lg transition-all duration-150 ease-out hover:bg-indigo-300 hover:shadow-md hover:text-black ${
-                  activeChat?.id === chat.id ? "bg-indigo-300 text-black" : ""
+                className={`flex items-center gap-3 p-4 cursor-pointer transition-all duration-200 ${
+                  activeChat?.id === chat.id
+                    ? "bg-indigo-50 border-l-4 border-indigo-500"
+                    : "hover:bg-gray-50 border-l-4 border-transparent"
                 }`}
                 onClick={() => setActiveChat(chat)}
               >
-                <User className="w-6 h-6" />
-                <div className="flex flex-col">
-                  <span className="font-medium">{chat.user.name}</span>
+                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <User className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900">
+                    {chat.user.name}
+                  </div>
                   {chat.lastMessage && (
-                    <span className="text-xs opacity-70 truncate w-48">
+                    <p className="text-sm text-gray-500 truncate">
                       {chat.lastMessage.message}
-                    </span>
+                    </p>
                   )}
                 </div>
-              </li>
+              </div>
             ))
           ) : (
-            <li className="text-center py-4 text-indigo-200">
-              No active chats. Search for users to start chatting!
-            </li>
-          )}
-        </ul>
-      </div>
-
-      {/* Welcome Screen (no active chat) */}
-      <div
-        className={` ${
-          activeChat ? "hidden" : "flex"
-        } flex-col items-center justify-center w-[800px] bg-blue-100`}
-      >
-        <h1 className="text-2xl font-semibold flex flex-col items-center gap-8">
-          <UserIcon className="w-12 h-12" />
-          Select User to Chat
-        </h1>
-      </div>
-
-      {/* Active Chat Area */}
-      <div
-        className={` ${
-          activeChat ? "flex" : "hidden"
-        } flex-col w-[800px] bg-indigo-900`}
-      >
-        {/* Chat Header */}
-        <div className="pl-6 flex h-[60px] text-white w-full items-center justify-between">
-          <div className="font-bold">{activeChat?.user?.name}</div>
-          <div className="flex items-center gap-4 mr-12 ">
-            <div className="flex mr-4 items-center justify-center gap-2">
-              <VideoIcon /> Video Call
+            <div className="flex flex-col items-center justify-center h-full text-gray-500 p-4">
+              <User className="w-12 h-12 mb-4 text-gray-400" />
+              <p className="text-center">
+                No active chats. Search for users to start chatting!
+              </p>
             </div>
-            <div className="flex items-center justify-center gap-2">
-              <AudioLinesIcon /> Audio Call
+          )}
+        </div>
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Welcome Screen */}
+        {!activeChat && (
+          <div className="flex-1 flex flex-col items-center justify-center bg-gray-50">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <UserIcon className="w-8 h-8 text-indigo-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Welcome to Chat
+              </h2>
+              <p className="mt-2 text-gray-500">
+                Select a conversation or start a new one
+              </p>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Messages Area */}
-        <div className="flex flex-col h-[640px] w-full bg-blue-100 overflow-y-auto p-4">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                message.senderId === currentUser?.id
-                  ? "justify-end"
-                  : "justify-start"
-              } mb-4`}
-            >
-              <div
-                className={`max-w-[70%] p-3 rounded-lg ${
-                  message.senderId === currentUser?.id
-                    ? "bg-indigo-600 text-white rounded-tr-none"
-                    : "bg-gray-200 text-black rounded-tl-none"
-                }`}
-              >
-                <p>{message.text}</p>
-                <p
-                  className={`text-xs mt-1 ${
-                    message.senderId === currentUser?.id
-                      ? "text-indigo-200"
-                      : "text-gray-500"
-                  }`}
+        {/* Active Chat View */}
+        {activeChat && (
+          <>
+            {/* Chat Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    {activeChat.user.name}
+                  </h3>
+                  {isTyping && (
+                    <span className="text-sm text-indigo-600">typing...</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <button className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200">
+                  <VideoIcon className="w-5 h-5" />
+                  <span className="hidden sm:inline">Video</span>
+                </button>
+                <button className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200">
+                  <AudioLinesIcon className="w-5 h-5" />
+                  <span className="hidden sm:inline">Audio</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50">
+              <div className="space-y-4">
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${
+                      message.senderId === currentUser?.id
+                        ? "justify-end"
+                        : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-[70%] px-4 py-2 rounded-lg ${
+                        message.senderId === currentUser?.id
+                          ? "bg-indigo-600 text-white"
+                          : "bg-white text-gray-900 shadow-sm"
+                      }`}
+                    >
+                      <p className="break-words">{message.text}</p>
+                      <p
+                        className={`text-xs mt-1 ${
+                          message.senderId === currentUser?.id
+                            ? "text-indigo-200"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {new Date(message.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Message Input */}
+            <div className="px-6 py-4 bg-white border-t border-gray-200">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Type your message..."
+                  className="flex-1 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSendMessage();
+                  }}
+                  onFocus={handleTyping}
+                  onBlur={handleStopTyping}
+                />
+                <button
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200"
+                  onClick={handleSendMessage}
                 >
-                  {new Date(message.timestamp).toLocaleTimeString()}
-                </p>
+                  <Send className="w-5 h-5" />
+                </button>
               </div>
             </div>
-          ))}
-
-          {isTyping && (
-            <div className="flex justify-start mb-4">
-              <div className="bg-gray-200 p-3 rounded-lg text-black">
-                <p>Typing...</p>
-              </div>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Message Input */}
-        <div className="h-[100px] bg-white p-4 flex items-center">
-          <input
-            type="text"
-            placeholder="Type a message..."
-            className="flex-1 border border-gray-300 rounded-l-md p-3 focus:outline-none focus:border-indigo-500"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSendMessage();
-            }}
-            onFocus={handleTyping}
-            onBlur={handleStopTyping}
-          />
-          <button
-            className="bg-indigo-600 text-white p-3 rounded-r-md"
-            onClick={handleSendMessage}
-          >
-            <Send size={20} />
-          </button>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -82,24 +82,25 @@ function Post({
   }, [postId]);
 
   return (
-    <div className="flex flex-col w-full rounded-md shadow-lg bg-slate-50">
-      <div className="w-full flex pr-4 pt-4 p-2">
-        <div className="flex gap-2 w-full">
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* Post Header */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-3">
           <div className="relative w-10 h-10">
             <Image
               src={profileImage || "/avatar.png"}
-              alt="Profile pic"
-              className="rounded-full shadow-lg object-cover"
+              alt={name}
+              className="rounded-full object-cover"
               fill
               sizes="40px"
               loading="lazy"
             />
           </div>
-          <div className="flex flex-col">
-            <h6 className="text-[14px]">{name}</h6>
-            <span className="text-[10px] text-muted-foreground">
+          <div>
+            <h3 className="font-medium text-gray-900">{name}</h3>
+            <p className="text-xs text-gray-500">
               {moment(postDate).fromNow()}
-            </span>
+            </p>
           </div>
         </div>
 
@@ -113,58 +114,89 @@ function Post({
         )}
       </div>
 
-      <div className="relative">
-        <div className="text-sm p-2">{caption}</div>
-        {mediaUrls &&
-          mediaUrls.length > 0 &&
-          aspectRatios[currentImageIndex] && (
-            <div className="relative">
-              <div
-                className="relative w-full"
-                style={{ paddingBottom: aspectRatios[currentImageIndex] }}
-              >
-                <Image
-                  src={mediaUrls[currentImageIndex]}
-                  alt={`Post content ${currentImageIndex + 1}`}
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                  loading="lazy"
-                  quality={75}
+      {/* Post Content */}
+      {caption && (
+        <div className="px-4 py-2">
+          <p className="text-gray-700">{caption}</p>
+        </div>
+      )}
+
+      {/* Post Media */}
+      {mediaUrls && mediaUrls.length > 0 && aspectRatios[currentImageIndex] && (
+        <div className="relative mt-2">
+          <div
+            className="relative w-full"
+            style={{ paddingBottom: aspectRatios[currentImageIndex] }}
+          >
+            <Image
+              src={mediaUrls[currentImageIndex]}
+              alt={`Post content ${currentImageIndex + 1}`}
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+              loading="lazy"
+              quality={75}
+            />
+          </div>
+          {mediaUrls.length > 1 && (
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+              {mediaUrls.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                    index === currentImageIndex
+                      ? "bg-white shadow-sm"
+                      : "bg-white/50 hover:bg-white/75"
+                  }`}
                 />
-              </div>
-              {mediaUrls.length > 1 && (
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-                  {mediaUrls.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`w-2 h-2 rounded-full ${
-                        index === currentImageIndex
-                          ? "bg-blue-500"
-                          : "bg-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Post Actions */}
+      <div className="px-4 py-3 border-t border-gray-100">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handlePostLike}
+            className="flex items-center gap-2 text-gray-700 hover:text-red-500 transition-colors"
+          >
+            <FontAwesomeIcon
+              icon={isPostLiked ? likeIcon : unlikeIcon}
+              className={`w-5 h-5 ${isPostLiked ? "text-red-500" : ""}`}
+            />
+            <span className="text-sm font-medium">Like</span>
+          </button>
+          <button
+            onClick={() => setCommentBox(!commentBox)}
+            className="flex items-center gap-2 text-gray-700 hover:text-indigo-500 transition-colors"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+              />
+            </svg>
+            <span className="text-sm font-medium">Comment</span>
+          </button>
+        </div>
       </div>
 
-      <div className="flex p-2 gap-2">
-        <Button variant="ghost" onClick={handlePostLike}>
-          <FontAwesomeIcon
-            icon={isPostLiked ? likeIcon : unlikeIcon}
-            color={isPostLiked ? "red" : undefined}
-          />
-        </Button>
-        <Button variant="ghost" onClick={() => setCommentBox(!commentBox)}>
-          Comments
-        </Button>
-      </div>
-
-      {commentBox && <Comments postId={postId} />}
+      {/* Comments Section */}
+      {commentBox && (
+        <div className="border-t border-gray-100">
+          <Comments postId={postId} />
+        </div>
+      )}
     </div>
   );
 }

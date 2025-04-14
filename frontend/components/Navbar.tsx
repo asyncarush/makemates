@@ -38,7 +38,7 @@ function Navbar() {
       name: "feed",
       Icon: (
         <Link href="/feed">
-          <TiHome className="text-[#001C43] w-4 h-4 " />
+          <TiHome className="w-5 h-5 text-white hover:text-white transition-colors" />
         </Link>
       ),
     },
@@ -46,83 +46,100 @@ function Navbar() {
       name: "messenger",
       Icon: (
         <Link href="/chat">
-          <BsMessenger className="text-[#001C43] w-4 h-4" />
+          <BsMessenger className="w-5 h-5 text-white hover:text-white transition-colors" />
         </Link>
       ),
     },
     {
       name: "notifications",
-      Icon: <BiSolidBell className="text-[#001C43] w-4 h-4" />,
+      Icon: (
+        <BiSolidBell className="w-5 h-5 text-white hover:text-white transition-colors" />
+      ),
     },
     {
       name: "setting",
-      Icon: <FaUserAlt className="text-[#001C43] w-4 h-4" />,
+      Icon: (
+        <FaUserAlt className="w-5 h-5 text-white hover:text-white transition-colors" />
+      ),
       Data: (
-        <div className="text-black p-3 relative shadow-lg">
-          <div className="flex p-4 rounded-md bg-slate-50 items-center justify-start gap-5">
-            <Image
-              src="/avatar.png"
-              className="rounded-full"
-              width="50"
-              alt="Profile pic"
-              height="50"
-              quality={"10"}
-            />
+        <div className="p-3">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50">
+            <div className="relative w-10 h-10 ring-2 ring-white ring-offset-2 ring-offset-indigo-50">
+              <Image
+                src={currentUser?.img || "/avatar.png"}
+                alt="Profile pic"
+                className="rounded-full object-cover"
+                fill
+                sizes="40px"
+                quality={90}
+              />
+            </div>
             <div className="flex flex-col">
-              <div className="font-medium text-sm">{currentUser.name}</div>
-              <div className="text-xs text-muted-foreground">GhostRider</div>
+              <span className="font-medium text-gray-900">
+                {currentUser?.name}
+              </span>
+              <span className="text-sm text-indigo-600">
+                @{currentUser?.name?.toLowerCase().replace(/\s+/g, "")}
+              </span>
             </div>
           </div>
-          <ul className="space-y-2">
-            <li className="cursor-pointer flex items-center justify-between p-2 hover:bg-purple-100 rounded-md">
-              <Link href="/settings" className="font-medium text-md">
-                Settings
-              </Link>
-              <IoSettingsSharp className="text-xl text-blue-600" />
-            </li>
-            <li className="cursor-pointer flex items-center justify-between p-2 hover:bg-purple-100 rounded-md">
-              <button
-                onClick={() => userLogout()}
-                className="font-medium text-md text-red-600"
-              >
-                Logout
-              </button>
-              <IoLogOut className="text-xl text-red-600" />
-            </li>
-          </ul>
+          <div className="mt-3 space-y-1">
+            <Link
+              href="/settings"
+              className="flex items-center justify-between p-2 rounded-md hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 transition-all duration-200"
+            >
+              <span className="text-sm font-medium">Settings</span>
+              <IoSettingsSharp className="w-4 h-4" />
+            </Link>
+            <button
+              onClick={() => userLogout()}
+              className="w-full flex items-center justify-between p-2 rounded-md hover:bg-red-50 text-red-600 hover:text-red-700 transition-all duration-200"
+            >
+              <span className="text-sm font-medium">Logout</span>
+              <IoLogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       ),
     },
   ];
 
   return (
-    <div className=" w-[1200px] shadow-[0px_2px_10px_0px_#001C43] h-[50px] px-2 rounded-full text-white bg-[#003789] flex items-center justify-center gap-32 z-10">
-      <div className="flex-1 flex items-center justify-center">
-        <Link href="/feed" className={`text-xl font-extrabold`}>
+    <nav className="flex h-16 items-center justify-between px-4 bg-gradient-to-r from-blue-600 via-blue-500 to-teal-400 rounded-b-xl">
+      {/* Logo and Upload */}
+      <div className="flex items-center gap-4">
+        <Link
+          href="/feed"
+          className="text-xl font-bold text-white hover:text-white/90 transition-colors"
+        >
           Makemates
         </Link>
         <FeedUploadBox />
       </div>
-      <Search />
-      <div className="flex-1 flex items-center justify-center">
-        <NavigationMenu>
-          <NavigationMenuList className="flex gap-8 ">
-            {navigation.map(({ name, Icon, Data }) => {
-              return (
-                <NavigationMenuItem key={name}>
-                  <NavigationMenuTrigger className="cursor-pointer shadow-lg bg-white rounded-full w-8 h-8 flex items-center justify-center">
-                    {Icon}
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent className="absolute  bg-white mt-4 rounded-md w-[200px]">
-                    {Data}
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              );
-            })}
-          </NavigationMenuList>
-        </NavigationMenu>
+
+      {/* Search */}
+      <div className="flex-1 max-w-xl px-4">
+        <Search />
       </div>
-    </div>
+
+      {/* Navigation */}
+      <NavigationMenu>
+        <NavigationMenuList className="flex items-center gap-2">
+          {navigation.map(({ name, Icon, Data }) => (
+            <NavigationMenuItem key={name}>
+              <NavigationMenuTrigger className="h-10 w-10 p-0 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full flex items-center justify-center border border-white/20 focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200">
+                {Icon}
+              </NavigationMenuTrigger>
+              {Data && (
+                <NavigationMenuContent className="absolute right-0 mt-2 min-w-[240px] rounded-lg bg-white/95 backdrop-blur-sm p-2 shadow-lg ring-1 ring-black/5">
+                  {Data}
+                </NavigationMenuContent>
+              )}
+            </NavigationMenuItem>
+          ))}
+        </NavigationMenuList>
+      </NavigationMenu>
+    </nav>
   );
 }
 
