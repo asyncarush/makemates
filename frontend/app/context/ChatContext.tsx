@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useRef } from "react";
 
 import { io, Socket } from "socket.io-client";
 import { AuthContext } from "@/app/context/AuthContext";
+import { API_ENDPOINT } from "@/axios.config";
 
 interface ChatContextType {
   socketRef: React.MutableRefObject<Socket | null>;
@@ -21,17 +22,14 @@ export default function ChatContextProvider({
   const { currentUser } = useContext(AuthContext) || {};
 
   useEffect(() => {
-    // Only create socket connection once
     if (!socketRef.current) {
-      // Initialize socket
-      socketRef.current = io("http://localhost:2000", {
+      socketRef.current = io(`${API_ENDPOINT || "http://localhost:2000"}`, {
         transports: ["websocket", "polling"],
         reconnectionAttempts: 10,
         reconnectionDelay: 1000,
         withCredentials: true,
       });
 
-      // Set up event listeners
       const socket = socketRef.current;
 
       socket.on("connect", () => {
