@@ -49,7 +49,7 @@ const Page = () => {
     fetchActiveChats();
   }, []);
 
-  // Handle search functionality
+
   useEffect(() => {
     if (!searchUser) return;
 
