@@ -2,11 +2,13 @@ import { Server } from "socket.io";
 import { createClient } from "redis";
 import { PrismaClient } from "@prisma/client";
 import { logger } from "../config/winston";
+import { VideoChatService } from "./video-chat.service";
 
 export class SocketService {
   private io: Server;
   private redisClient: ReturnType<typeof createClient>;
   private prisma: PrismaClient;
+  private videoChatService: VideoChatService;
 
   constructor(server: any) {
     this.io = new Server(server, {
@@ -32,6 +34,9 @@ export class SocketService {
     this.prisma = new PrismaClient();
     this.initializeRedis();
     this.setupSocketHandlers();
+
+    // Initialize video chat service
+    this.videoChatService = new VideoChatService(this.io);
   }
 
   private async initializeRedis() {
