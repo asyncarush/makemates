@@ -6,6 +6,8 @@ import axios from "axios";
 import { AudioLinesIcon, Send, User, UserIcon, VideoIcon } from "lucide-react";
 import { useContext, useEffect, useState, useRef } from "react";
 import { AuthContext } from "@/app/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 interface Message {
   chatId: string;
@@ -22,10 +24,13 @@ const Page = () => {
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [activeChats, setActiveChats] = useState<any[]>([]);
+  const [incomingCall, setIncomingCall] = useState<any>(null);
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { socketRef } = useContext(ChatContext) || {};
   const { currentUser } = useContext(AuthContext) || {};
   const socket = socketRef?.current;
+  const router = useRouter();
 
   // Load active chats on component mount
   useEffect(() => {
@@ -74,6 +79,29 @@ const Page = () => {
   useEffect(() => {
     if (!socket) return;
 
+    // Listen for incoming video calls
+    socket.on("incoming-video-call", ({ roomId, callerId, callerName }) => {
+      console.log("Received video call request:", {
+        roomId,
+        callerId,
+        callerName,
+      });
+      setIncomingCall({ roomId, callerId, callerName });
+    });
+
+    // Listen for video call responses
+    socket.on("video-call-accepted", ({ roomId }) => {
+      console.log("Call accepted, navigating to room:", roomId);
+      setIncomingCall(null);
+      router.push(`/video-chat/${roomId}`);
+    });
+
+    socket.on("video-call-rejected", () => {
+      console.log("Call was rejected");
+      setIncomingCall(null);
+      alert("Call was rejected");
+    });
+
     // Listen for new messages and acknowledgments
     socket.on("receive_message", (message: Message) => {
       setMessages((prev) => [...prev, message]);
@@ -112,8 +140,11 @@ const Page = () => {
       socket.off("message_error");
       socket.off("user_typing");
       socket.off("user_stop_typing");
+      socket.off("incoming-video-call");
+      socket.off("video-call-accepted");
+      socket.off("video-call-rejected");
     };
-  }, [socket, activeChat, currentUser]);
+  }, [socket, activeChat, currentUser, router]);
 
   // Join chat room when active chat changes
   useEffect(() => {
@@ -209,8 +240,75 @@ const Page = () => {
     }
   };
 
+  const handleVideoCall = () => {
+    if (!socket || !activeChat || !currentUser) return;
+
+    // Emit video call request
+    socket.emit("video-call-request", {
+      roomId: activeChat.id,
+      callerId: currentUser.id,
+      callerName: currentUser.name,
+    });
+
+    // Set waiting state
+    setIsWaitingForResponse(true);
+
+    // Navigate to video chat page after a short delay
+    setTimeout(() => {
+      router.push(`/video-chat/${activeChat.id}`);
+    }, 1000);
+  };
+
+  const handleAcceptCall = () => {
+    if (!socket || !incomingCall || !currentUser) return;
+
+    socket.emit("video-call-response", {
+      roomId: incomingCall.roomId,
+      receiverId: currentUser.id,
+      accepted: true,
+    });
+  };
+
+  const handleRejectCall = () => {
+    if (!socket || !incomingCall || !currentUser) return;
+
+    socket.emit("video-call-response", {
+      roomId: incomingCall.roomId,
+      receiverId: currentUser.id,
+      accepted: false,
+    });
+    setIncomingCall(null);
+  };
+
   return (
     <div className="flex w-full max-w-6xl mx-auto h-[calc(100vh-140px)] bg-white rounded-xl shadow-lg overflow-hidden">
+      {/* Incoming Call Notification */}
+      {incomingCall && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-2">Incoming Video Call</h3>
+            <p className="text-gray-600 mb-4">
+              {incomingCall.callerName} is calling you...
+            </p>
+            <div className="flex gap-4">
+              <Button
+                onClick={handleAcceptCall}
+                className="flex-1 bg-green-600 hover:bg-green-700"
+              >
+                Accept
+              </Button>
+              <Button
+                onClick={handleRejectCall}
+                variant="destructive"
+                className="flex-1"
+              >
+                Reject
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar - Chat List */}
       <div className="w-[320px] flex flex-col bg-gray-50 border-r border-gray-200">
         <div className="p-4 border-b border-gray-200">
@@ -324,10 +422,13 @@ const Page = () => {
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <button className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200">
+                <Button
+                  onClick={handleVideoCall}
+                  variant="outline"
+                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/20"
+                >
                   <VideoIcon className="w-5 h-5" />
-                  <span className="hidden sm:inline">Video</span>
-                </button>
+                </Button>
                 <button className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200">
                   <AudioLinesIcon className="w-5 h-5" />
                   <span className="hidden sm:inline">Audio</span>
