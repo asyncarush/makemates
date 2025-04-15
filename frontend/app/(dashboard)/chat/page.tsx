@@ -1,330 +1,111 @@
 "use client";
 
 import { ChatContext } from "@/app/context/ChatContext";
-import { API_ENDPOINT } from "@/axios.config";
-import axios from "axios";
-import { AudioLinesIcon, Send, User, UserIcon, VideoIcon } from "lucide-react";
-import { useContext, useEffect, useState, useRef } from "react";
 import { AuthContext } from "@/app/context/AuthContext";
+import { AudioLinesIcon, Send, User, UserIcon, VideoIcon } from "lucide-react";
+import { useContext, useState, useRef, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-
-interface Message {
-  chatId: string;
-  senderId: string;
-  text: string;
-  timestamp: string;
-}
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useChat } from "@/hooks/useChat";
+import { useVideoCall } from "@/hooks/useVideoCall";
+import { SocketService } from "@/services/SocketService";
+import { ChatService, Chat, ChatUser } from "@/services/ChatService";
 
 const Page = () => {
-  const [searchUser, setSearchUser] = useState("");
-  const [activeChat, setActiveChat] = useState<any>(null);
-  const [searchResult, setSearchResult] = useState<any[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [activeChats, setActiveChats] = useState<any[]>([]);
-  const [incomingCall, setIncomingCall] = useState<any>(null);
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const { socketRef } = useContext(ChatContext) || {};
   const { currentUser } = useContext(AuthContext) || {};
-  const socket = socketRef?.current;
-  const router = useRouter();
+  const socket = socketRef?.current || null;
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load active chats on component mount
+  // Initialize services
+  const socketService = useMemo(
+    () => (socket ? new SocketService(socket) : null),
+    [socket]
+  );
+
+  const chatService = useMemo(
+    () => (socketService ? new ChatService(socketService) : null),
+    [socketService]
+  );
+
+  // Local state
+  const [searchUser, setSearchUser] = useState("");
+  const [activeChat, setActiveChat] = useState<Chat | null>(null);
+  const [searchResult, setSearchResult] = useState<ChatUser[]>([]);
+  const [activeChats, setActiveChats] = useState<Chat[]>([]);
+
+  // Custom hooks
+  const { onlineUsers, isUserOnline } = useOnlineStatus(socket);
+  const {
+    messages,
+    isTyping,
+    newMessage,
+    setNewMessage,
+    sendMessage,
+    handleTypingStatus,
+  } = useChat(socket, chatService!, activeChat, currentUser);
+
+  const {
+    incomingCall,
+    isWaitingForResponse,
+    initiateCall,
+    acceptCall,
+    rejectCall,
+  } = useVideoCall(socket, socketService!, router, currentUser);
+
+  // Load active chats
   useEffect(() => {
     const fetchActiveChats = async () => {
+      if (!chatService) return;
       try {
-        const response = await axios.get(`${API_ENDPOINT}/chat/active`, {
-          withCredentials: true,
-        });
-        setActiveChats(response.data);
+        const chats = await chatService.fetchActiveChats();
+        setActiveChats(chats);
       } catch (error) {
         console.error("Error fetching active chats:", error);
       }
     };
 
     fetchActiveChats();
-  }, []);
+  }, [chatService]);
 
-
+  // Handle search
   useEffect(() => {
-    if (!searchUser) return;
+    if (!searchUser || !chatService) return;
 
-    const debounce = setTimeout(() => {
-      console.log("This will wait for some time", searchUser);
-
-      const getSearchResult = async () => {
-        try {
-          const res = await axios.get(`${API_ENDPOINT}/chat/search/user`, {
-            params: {
-              keyword: searchUser,
-            },
-            withCredentials: true,
-          });
-          setSearchResult(res.data);
-        } catch (error) {
-          console.log(error);
-        }
-      };
-
-      getSearchResult();
-    }, 2000);
+    const debounce = setTimeout(async () => {
+      try {
+        const results = await chatService.searchUsers(searchUser);
+        setSearchResult(results);
+      } catch (error) {
+        console.error("Error searching users:", error);
+      }
+    }, 500);
 
     return () => clearTimeout(debounce);
-  }, [searchUser]);
-
-  // Set up socket event listeners for chat
-  useEffect(() => {
-    if (!socket) return;
-
-    // Listen for online users
-    socket.on("users:online", ({ users }: { users: string[] }) => {
-      console.log("Received online users:", users);
-      setOnlineUsers(new Set(users.map((id) => id.toString())));
-    });
-
-    socket.on("user:online", ({ userId }: { userId: string }) => {
-      console.log("User came online:", userId);
-      setOnlineUsers(
-        (prev) => new Set(Array.from(prev).concat(userId.toString()))
-      );
-    });
-
-    socket.on("user:offline", ({ userId }: { userId: string }) => {
-      console.log("User went offline:", userId);
-      setOnlineUsers((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(userId.toString());
-        return newSet;
-      });
-    });
-
-    // Listen for incoming video calls
-    socket.on("incoming-video-call", ({ roomId, callerId, callerName }) => {
-      console.log("Received video call request:", {
-        roomId,
-        callerId,
-        callerName,
-      });
-      setIncomingCall({ roomId, callerId, callerName });
-    });
-
-    // Listen for video call responses
-    socket.on("video-call-accepted", ({ roomId }) => {
-      console.log("Call accepted, navigating to room:", roomId);
-      setIncomingCall(null);
-      router.push(`/video-chat/${roomId}`);
-    });
-
-    socket.on("video-call-rejected", () => {
-      console.log("Call was rejected");
-      setIncomingCall(null);
-      alert("Call was rejected");
-    });
-
-    // Listen for new messages and acknowledgments
-    socket.on("receive_message", (message: Message) => {
-      setMessages((prev) => [...prev, message]);
-    });
-
-    socket.on("message_sent", (data: any) => {
-      console.log("Message delivered:", data);
-    });
-
-    socket.on("message_error", (data: any) => {
-      console.error("Message failed:", data);
-    });
-
-    // Listen for typing indicators
-    socket.on(
-      "user_typing",
-      ({ userId, chatId }: { userId: string; chatId: string }) => {
-        if (activeChat?.id === chatId && userId !== currentUser?.id) {
-          setIsTyping(true);
-        }
-      }
-    );
-
-    socket.on(
-      "user_stop_typing",
-      ({ userId, chatId }: { userId: string; chatId: string }) => {
-        if (activeChat?.id === chatId && userId !== currentUser?.id) {
-          setIsTyping(false);
-        }
-      }
-    );
-
-    // When component mounts, emit userOnline event
-    if (currentUser?.id) {
-      console.log("Emitting userOnline for:", currentUser.id);
-      socket.emit("userOnline", { userId: currentUser.id.toString() });
-    }
-
-    return () => {
-      // Cleanup when component unmounts
-      if (currentUser?.id) {
-        console.log("Emitting user:offline for:", currentUser.id);
-        socket.emit("user:offline", { userId: currentUser.id.toString() });
-      }
-      socket.off("receive_message");
-      socket.off("message_sent");
-      socket.off("message_error");
-      socket.off("user_typing");
-      socket.off("user_stop_typing");
-      socket.off("incoming-video-call");
-      socket.off("video-call-accepted");
-      socket.off("video-call-rejected");
-      socket.off("users:online");
-      socket.off("user:online");
-      socket.off("user:offline");
-    };
-  }, [socket, activeChat, currentUser, router]);
-
-  // Join chat room when active chat changes
-  useEffect(() => {
-    if (!socket || !activeChat) return;
-
-    // Join the chat room
-    socket.emit("join_chat", { chatId: activeChat.id });
-
-    // Load previous messages
-    const fetchMessages = async () => {
-      try {
-        const response = await axios.get(
-          `${API_ENDPOINT}/chat/messages/${activeChat.id}`,
-          {
-            withCredentials: true,
-          }
-        );
-        setMessages(response.data);
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-      }
-    };
-
-    fetchMessages();
-
-    return () => {
-      // Leave the chat room when component unmounts or active chat changes
-      socket.emit("leave_chat", { chatId: activeChat.id });
-    };
-  }, [socket, activeChat]);
+  }, [searchUser, chatService]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = () => {
-    if (!socket || !activeChat || !newMessage.trim() || !currentUser) return;
-
-    const messageData = {
-      chatId: activeChat.id,
-      senderId: currentUser.id,
-      text: newMessage,
-    };
-
-    // Send message to server
-    socket.emit("send_message", messageData);
-
-    // Optimistically add message to local state
-    setMessages((prev) => [
-      ...prev,
-      {
-        ...messageData,
-        timestamp: new Date().toISOString(),
-      },
-    ]);
-
-    // Clear input
-    setNewMessage("");
-  };
-
-  const handleTyping = () => {
-    if (!socket || !activeChat || !currentUser) return;
-    socket.emit("typing", { chatId: activeChat.id, userId: currentUser.id });
-  };
-
-  const handleStopTyping = () => {
-    if (!socket || !activeChat || !currentUser) return;
-    socket.emit("stop_typing", {
-      chatId: activeChat.id,
-      userId: currentUser.id,
-    });
-  };
-
-  const startChat = async (user: any) => {
+  const startChat = async (user: ChatUser) => {
+    if (!chatService) return;
     try {
-      // Create or get existing chat
-      const response = await axios.post(
-        `${API_ENDPOINT}/chat/create`,
-        { receiverId: user.id },
-        { withCredentials: true }
-      );
-
-      setActiveChat({
-        id: response.data.id,
-        user,
-      });
-
-      // Clear search
+      const chat = await chatService.createChat(user.id);
+      setActiveChat(chat);
       setSearchUser("");
     } catch (error) {
       console.error("Error starting chat:", error);
     }
   };
 
-  const handleVideoCall = () => {
-    if (!socket || !activeChat || !currentUser) return;
-
-    // Emit video call request
-    socket.emit("video-call-request", {
-      roomId: activeChat.id,
-      callerId: currentUser.id,
-      callerName: currentUser.name,
-    });
-
-    // Set waiting state
-    setIsWaitingForResponse(true);
-
-    // Navigate to video chat page after a short delay
-    setTimeout(() => {
-      router.push(`/video-chat/${activeChat.id}`);
-    }, 1000);
-  };
-
-  const handleAcceptCall = () => {
-    if (!socket || !incomingCall || !currentUser) return;
-
-    socket.emit("video-call-response", {
-      roomId: incomingCall.roomId,
-      receiverId: currentUser.id,
-      accepted: true,
-    });
-  };
-
-  const handleRejectCall = () => {
-    if (!socket || !incomingCall || !currentUser) return;
-
-    socket.emit("video-call-response", {
-      roomId: incomingCall.roomId,
-      receiverId: currentUser.id,
-      accepted: false,
-    });
-    setIncomingCall(null);
-  };
-
-  // Helper function to check online status
-  const isUserOnline = (userId: string | number) => {
-    return onlineUsers.has(userId.toString());
-  };
-
   return (
     <div className="flex w-full max-w-6xl mx-auto h-[calc(100vh-140px)] bg-white rounded-xl shadow-lg overflow-hidden">
       {/* Incoming Call Notification */}
+
       {incomingCall && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
@@ -334,13 +115,13 @@ const Page = () => {
             </p>
             <div className="flex gap-4">
               <Button
-                onClick={handleAcceptCall}
+                onClick={acceptCall}
                 className="flex-1 bg-green-600 hover:bg-green-700"
               >
                 Accept
               </Button>
               <Button
-                onClick={handleRejectCall}
+                onClick={rejectCall}
                 variant="destructive"
                 className="flex-1"
               >
@@ -364,8 +145,7 @@ const Page = () => {
         </div>
 
         {/* Search Results */}
-
-        <div className={`${searchUser ? "flex" : "hidden"} flex-col bg-white`}>
+        <div className={searchUser ? "flex-1 overflow-y-auto" : "hidden"}>
           {searchResult.length > 0 ? (
             searchResult.map((user) => (
               <div
@@ -402,7 +182,6 @@ const Page = () => {
                 onClick={() => setActiveChat(chat)}
               >
                 <div className="relative w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                  {/* Online Status of user */}
                   <div
                     className={`w-3 h-3 rounded-full absolute bottom-0 right-0 ${
                       isUserOnline(chat.user.id)
@@ -502,9 +281,10 @@ const Page = () => {
               </div>
               <div className="flex items-center gap-4">
                 <Button
-                  onClick={handleVideoCall}
+                  onClick={() => initiateCall(activeChat.id)}
                   variant="outline"
-                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm  border border-white/20"
+                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/20"
+                  disabled={isWaitingForResponse}
                 >
                   <VideoIcon className="w-5 h-5" />
                 </Button>
@@ -559,19 +339,21 @@ const Page = () => {
                   placeholder="Type your message..."
                   className="flex-1 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSendMessage();
+                  onChange={(e) => {
+                    setNewMessage(e.target.value);
+                    handleTypingStatus(true);
                   }}
-                  onFocus={handleTyping}
-                  onBlur={handleStopTyping}
+                  onBlur={() => handleTypingStatus(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") sendMessage();
+                  }}
                 />
-                <button
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200"
-                  onClick={handleSendMessage}
+                <Button
+                  onClick={sendMessage}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
                 >
                   <Send className="w-5 h-5" />
-                </button>
+                </Button>
               </div>
             </div>
           </>
