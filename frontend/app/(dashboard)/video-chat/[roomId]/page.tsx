@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { io } from "socket.io-client";
 import { API_ENDPOINT } from "@/axios.config";
@@ -16,7 +16,7 @@ import {
 export default function VideoChatPage() {
   const { roomId } = useParams();
   const router = useRouter();
-  const { currentUser } = React.useContext(AuthContext);
+  const { currentUser } = useContext(AuthContext) || {};
   const [socket, setSocket] = useState<any>(null);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
@@ -115,23 +115,26 @@ export default function VideoChatPage() {
         });
 
         // Handle incoming offer
-        socket.on("offer", async ({ offer, userId }) => {
-          console.log("Received offer from:", userId);
-          setRemoteUser(userId);
-          await peerConnection.current?.setRemoteDescription(
-            new RTCSessionDescription(offer)
-          );
-          const answer = await peerConnection.current?.createAnswer();
-          await peerConnection.current?.setLocalDescription(answer);
-          socket.emit("answer", {
-            roomId,
-            answer,
-            userId: currentUser?.id,
-          });
-        });
+        socket.on(
+          "offer",
+          async ({ offer, userId }: { offer: any; userId: number }) => {
+            console.log("Received offer from:", userId);
+            setRemoteUser(userId);
+            await peerConnection.current?.setRemoteDescription(
+              new RTCSessionDescription(offer)
+            );
+            const answer = await peerConnection.current?.createAnswer();
+            await peerConnection.current?.setLocalDescription(answer);
+            socket.emit("answer", {
+              roomId,
+              answer,
+              userId: currentUser?.id,
+            });
+          }
+        );
 
         // Handle incoming answer
-        socket.on("answer", async ({ answer }) => {
+        socket.on("answer", async ({ answer }: { answer: any }) => {
           console.log("Received answer");
           await peerConnection.current?.setRemoteDescription(
             new RTCSessionDescription(answer)
@@ -139,15 +142,18 @@ export default function VideoChatPage() {
         });
 
         // Handle ICE candidates
-        socket.on("ice-candidate", async ({ candidate }) => {
-          console.log("Received ICE candidate");
-          await peerConnection.current?.addIceCandidate(
-            new RTCIceCandidate(candidate)
-          );
-        });
+        socket.on(
+          "ice-candidate",
+          async ({ candidate }: { candidate: any }) => {
+            console.log("Received ICE candidate");
+            await peerConnection.current?.addIceCandidate(
+              new RTCIceCandidate(candidate)
+            );
+          }
+        );
 
         // Handle user joined
-        socket.on("user-joined", ({ userId }) => {
+        socket.on("user-joined", ({ userId }: { userId: number }) => {
           console.log("User joined:", userId);
           setRemoteUser(userId);
           if (!isCaller) {

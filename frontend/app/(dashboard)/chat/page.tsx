@@ -425,7 +425,7 @@ const Page = () => {
                 <Button
                   onClick={handleVideoCall}
                   variant="outline"
-                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/20"
+                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm  border border-white/20"
                 >
                   <VideoIcon className="w-5 h-5" />
                 </Button>
