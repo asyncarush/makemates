@@ -26,6 +26,7 @@ const Page = () => {
   const [activeChats, setActiveChats] = useState<any[]>([]);
   const [incomingCall, setIncomingCall] = useState<any>(null);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { socketRef } = useContext(ChatContext) || {};
   const { currentUser } = useContext(AuthContext) || {};
@@ -78,6 +79,28 @@ const Page = () => {
   // Set up socket event listeners for chat
   useEffect(() => {
     if (!socket) return;
+
+    // Listen for online users
+    socket.on("users:online", ({ users }: { users: string[] }) => {
+      console.log("Received online users:", users);
+      setOnlineUsers(new Set(users.map((id) => id.toString())));
+    });
+
+    socket.on("user:online", ({ userId }: { userId: string }) => {
+      console.log("User came online:", userId);
+      setOnlineUsers(
+        (prev) => new Set(Array.from(prev).concat(userId.toString()))
+      );
+    });
+
+    socket.on("user:offline", ({ userId }: { userId: string }) => {
+      console.log("User went offline:", userId);
+      setOnlineUsers((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(userId.toString());
+        return newSet;
+      });
+    });
 
     // Listen for incoming video calls
     socket.on("incoming-video-call", ({ roomId, callerId, callerName }) => {
@@ -134,7 +157,18 @@ const Page = () => {
       }
     );
 
+    // When component mounts, emit userOnline event
+    if (currentUser?.id) {
+      console.log("Emitting userOnline for:", currentUser.id);
+      socket.emit("userOnline", { userId: currentUser.id.toString() });
+    }
+
     return () => {
+      // Cleanup when component unmounts
+      if (currentUser?.id) {
+        console.log("Emitting user:offline for:", currentUser.id);
+        socket.emit("user:offline", { userId: currentUser.id.toString() });
+      }
       socket.off("receive_message");
       socket.off("message_sent");
       socket.off("message_error");
@@ -143,6 +177,9 @@ const Page = () => {
       socket.off("incoming-video-call");
       socket.off("video-call-accepted");
       socket.off("video-call-rejected");
+      socket.off("users:online");
+      socket.off("user:online");
+      socket.off("user:offline");
     };
   }, [socket, activeChat, currentUser, router]);
 
@@ -280,6 +317,11 @@ const Page = () => {
     setIncomingCall(null);
   };
 
+  // Helper function to check online status
+  const isUserOnline = (userId: string | number) => {
+    return onlineUsers.has(userId.toString());
+  };
+
   return (
     <div className="flex w-full max-w-6xl mx-auto h-[calc(100vh-140px)] bg-white rounded-xl shadow-lg overflow-hidden">
       {/* Incoming Call Notification */}
@@ -322,6 +364,7 @@ const Page = () => {
         </div>
 
         {/* Search Results */}
+
         <div className={`${searchUser ? "flex" : "hidden"} flex-col bg-white`}>
           {searchResult.length > 0 ? (
             searchResult.map((user) => (
@@ -358,12 +401,31 @@ const Page = () => {
                 }`}
                 onClick={() => setActiveChat(chat)}
               >
-                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                <div className="relative w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                  {/* Online Status of user */}
+                  <div
+                    className={`w-3 h-3 rounded-full absolute bottom-0 right-0 ${
+                      isUserOnline(chat.user.id)
+                        ? "bg-green-500"
+                        : "bg-gray-400"
+                    }`}
+                  />
                   <User className="w-6 h-6 text-indigo-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900">
-                    {chat.user.name}
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-gray-900">
+                      {chat.user.name}
+                    </span>
+                    <span
+                      className={`text-xs ${
+                        isUserOnline(chat.user.id)
+                          ? "text-green-500"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      {isUserOnline(chat.user.id) ? "online" : "offline"}
+                    </span>
                   </div>
                   {chat.lastMessage && (
                     <p className="text-sm text-gray-500 truncate">
@@ -409,15 +471,32 @@ const Page = () => {
             {/* Chat Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                <div className="relative w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 ${
+                      isUserOnline(activeChat.user.id)
+                        ? "bg-green-500"
+                        : "bg-gray-400"
+                    }`}
+                  />
                   <User className="w-5 h-5 text-indigo-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">
                     {activeChat.user.name}
                   </h3>
-                  {isTyping && (
-                    <span className="text-sm text-indigo-600">typing...</span>
+                  {isTyping ? (
+                    <span className="text-sm text-gray-500">typing...</span>
+                  ) : (
+                    <span
+                      className={`text-sm ${
+                        isUserOnline(activeChat.user.id)
+                          ? "text-green-500"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      {isUserOnline(activeChat.user.id) ? "online" : "offline"}
+                    </span>
                   )}
                 </div>
               </div>
