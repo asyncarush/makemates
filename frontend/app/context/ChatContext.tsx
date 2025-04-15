@@ -55,6 +55,8 @@ export default function ChatContextProvider({
       socket.on("disconnect", (reason) => {
         console.log("Socket disconnected:", reason);
       });
+
+    
     }
 
     // Send online status when user is available

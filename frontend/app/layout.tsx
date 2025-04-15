@@ -17,13 +17,9 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 
 // Dynamic imports
-const AuthContextProvider = dynamic(() => import("./context/AuthContext.tsx"), {
-  ssr: false,
-});
+const AuthContextProvider = dynamic(() => import("./context/AuthContext.tsx"));
 
-const ChatContextProvider = dynamic(() => import("./context/ChatContext.tsx"), {
-  ssr: false,
-});
+const ChatContextProvider = dynamic(() => import("./context/ChatContext.tsx"));
 
 // Font configuration
 const inter = Inter({ subsets: ["latin"], display: "swap" });

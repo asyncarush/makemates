@@ -9,6 +9,7 @@ export class SocketService {
   private redisClient: ReturnType<typeof createClient>;
   private prisma: PrismaClient;
   private videoChatService: VideoChatService;
+  private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor(server: any) {
     this.io = new Server(server, {
@@ -34,15 +35,60 @@ export class SocketService {
     this.prisma = new PrismaClient();
     this.initializeRedis();
     this.setupSocketHandlers();
+    this.startCleanupInterval();
 
     // Initialize video chat service
     this.videoChatService = new VideoChatService(this.io);
+  }
+
+  private startCleanupInterval() {
+    // Run cleanup every 30 seconds
+    this.cleanupInterval = setInterval(async () => {
+      try {
+        await this.cleanupStaleConnections();
+      } catch (error) {
+        logger.error("Error in cleanup interval:", error);
+      }
+    }, 30000);
+  }
+
+  private async cleanupStaleConnections() {
+    try {
+      const socketKeys = await this.redisClient.keys("socket:*:user");
+
+      for (const socketKey of socketKeys) {
+        const socketId = socketKey.split(":")[1];
+        const userId = await this.redisClient.get(socketKey);
+
+        // Check if socket is still connected
+        const socket = this.io.sockets.sockets.get(socketId);
+        if (!socket && userId) {
+          // Socket is no longer connected, clean up Redis
+          logger.info(`Cleaning up stale connection for user ${userId}`);
+          await this.redisClient.del(socketKey);
+          await this.redisClient.set(`user:${userId}:status`, "offline");
+          this.io.emit("user:offline", { userId: userId.toString() });
+        }
+      }
+    } catch (error) {
+      logger.error("Error cleaning up stale connections:", error);
+    }
   }
 
   private async initializeRedis() {
     try {
       await this.redisClient.connect();
       logger.info("Redis client connected");
+
+      // Clear all existing online statuses on server start
+      const userKeys = await this.redisClient.keys("user:*:status");
+      for (const key of userKeys) {
+        await this.redisClient.del(key);
+      }
+      const socketKeys = await this.redisClient.keys("socket:*:user");
+      for (const key of socketKeys) {
+        await this.redisClient.del(key);
+      }
     } catch (error) {
       logger.error("Redis connection error:", error);
     }
@@ -53,8 +99,13 @@ export class SocketService {
   }
 
   private setupSocketHandlers() {
-    this.io.on("connection", (socket: any) => {
+    this.io.on("connection", async (socket: any) => {
       logger.info(`Socket connection established: ${socket.id}`);
+
+      // Send current online users list to newly connected client
+      const onlineUsers = await this.getOnlineUsers();
+      socket.emit("users:online", { users: onlineUsers });
+
       socket.emit("connection_ack", {
         status: "connected",
         socketId: socket.id,
@@ -69,9 +120,30 @@ export class SocketService {
   private handleUserStatus(socket: any) {
     socket.on("userOnline", async ({ userId }: { userId: string }) => {
       try {
-        await this.redisClient.set(`user:${userId}:status`, "online");
-        await this.redisClient.set(`socket:${socket.id}:user`, userId);
-        socket.broadcast.emit("user:status", { userId, status: "online" });
+        logger.info(`User ${userId} setting online status`);
+        const userIdStr = userId.toString();
+
+        // Check if user already has an active socket
+        const existingSocketKeys = await this.redisClient.keys(`socket:*:user`);
+        for (const key of existingSocketKeys) {
+          const existingUserId = await this.redisClient.get(key);
+          if (existingUserId === userIdStr) {
+            const oldSocketId = key.split(":")[1];
+            // Remove old socket mapping
+            await this.redisClient.del(key);
+            logger.info(`Removed old socket mapping for user ${userIdStr}`);
+          }
+        }
+
+        // Set new socket mapping
+        await this.redisClient.set(`user:${userIdStr}:status`, "online");
+        await this.redisClient.set(`socket:${socket.id}:user`, userIdStr);
+
+        const onlineUsers = await this.getOnlineUsers();
+        logger.info(`Broadcasting online users:`, onlineUsers);
+        this.io.emit("users:online", { users: onlineUsers });
+        this.io.emit("user:online", { userId: userIdStr });
+
         socket.emit("userOnline:ack", { status: "success" });
       } catch (error) {
         logger.error("Redis error when setting user online:", error);
@@ -82,20 +154,46 @@ export class SocketService {
       }
     });
 
-    socket.on("user-offline", async ({ userId }: { userId: string }) => {
+    socket.on("user:offline", async ({ userId }: { userId: string }) => {
       try {
-        await this.redisClient.set(`user:${userId}:status`, "offline");
+        logger.info(`User ${userId} setting offline status`);
+        const userIdStr = userId.toString();
+
+        await this.redisClient.set(`user:${userIdStr}:status`, "offline");
         await this.redisClient.del(`socket:${socket.id}:user`);
-        socket.broadcast.emit("user:status", { userId, status: "offline" });
-        socket.emit("user-offline:ack", { status: "success" });
+
+        this.io.emit("user:offline", { userId: userIdStr });
+        socket.emit("user:offline:ack", { status: "success" });
       } catch (error) {
         logger.error("Redis error when setting user offline:", error);
-        socket.emit("user-offline:ack", {
+        socket.emit("user:offline:ack", {
           status: "error",
           message: "Failed to set offline status",
         });
       }
     });
+  }
+
+  private async getOnlineUsers(): Promise<string[]> {
+    try {
+      const keys = await this.redisClient.keys("user:*:status");
+      const onlineUsers: string[] = [];
+
+      for (const key of keys) {
+        const status = await this.redisClient.get(key);
+        if (status === "online") {
+          // Extract user ID from key (format: user:userId:status)
+          const userId = key.split(":")[1];
+          onlineUsers.push(userId.toString());
+        }
+      }
+
+      logger.info(`Found ${onlineUsers.length} online users:`, onlineUsers);
+      return onlineUsers;
+    } catch (error) {
+      logger.error("Error getting online users:", error);
+      return [];
+    }
   }
 
   private handleChatEvents(socket: any) {
@@ -169,9 +267,14 @@ export class SocketService {
       try {
         const userId = await this.redisClient.get(`socket:${socket.id}:user`);
         if (userId) {
-          await this.redisClient.set(`user:${userId}:status`, "offline");
+          logger.info(`User ${userId} disconnected`);
+          const userIdStr = userId.toString();
+
+          await this.redisClient.set(`user:${userIdStr}:status`, "offline");
           await this.redisClient.del(`socket:${socket.id}:user`);
-          socket.broadcast.emit("user:status", { userId, status: "offline" });
+
+          // Broadcast to all remaining clients
+          this.io.emit("user:offline", { userId: userIdStr });
         }
       } catch (error) {
         logger.error("Error handling disconnect:", error);
