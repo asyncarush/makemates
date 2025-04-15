@@ -28,7 +28,6 @@
     "compressorjs": "^1.2.1",
     "date-fns": "^4.1.0",
     "firebase": "^10.7.1",
-    "framer-motion": "^10.16.16",
     "lucide-react": "^0.294.0",
     "minio": "^8.0.2",
     "moment": "^2.30.1",
