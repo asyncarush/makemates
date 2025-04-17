@@ -45,7 +45,7 @@ const Page = () => {
     setNewMessage,
     sendMessage,
     handleTypingStatus,
-  } = useChat(socket, chatService!, activeChat, currentUser);
+  } = useChat(socket, chatService!, activeChat, currentUser, socketService!);
 
   const {
     incomingCall,

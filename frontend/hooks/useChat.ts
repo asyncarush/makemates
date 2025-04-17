@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 import { ChatService } from "@/services/ChatService";
+import { SocketService } from "@/services/SocketService";
 
 export interface Message {
   chatId: string;
@@ -18,7 +19,8 @@ export const useChat = (
   socket: Socket | null,
   chatService: ChatService,
   activeChat: { id: string; user: User } | null,
-  currentUser: User | null
+  currentUser: User | null,
+  socketService: SocketService
 ) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -100,9 +102,10 @@ export const useChat = (
       chatId: activeChat.id,
       senderId: currentUser.id,
       text: newMessage,
+      timestamp: new Date().toISOString(),
     };
-
-    chatService.socketService.emitMessage(messageData);
+    setMessages((prev) => [...prev, messageData as Message]);
+    socketService.emitMessage(messageData);
     setNewMessage("");
   };
 
@@ -110,9 +113,9 @@ export const useChat = (
     if (!socket || !activeChat || !currentUser) return;
 
     if (isTyping) {
-      chatService.socketService.emitTyping(activeChat.id, currentUser.id);
+      socketService.emitTyping(activeChat.id, currentUser.id);
     } else {
-      chatService.socketService.emitStopTyping(activeChat.id, currentUser.id);
+      socketService.emitStopTyping(activeChat.id, currentUser.id);
     }
   };
 

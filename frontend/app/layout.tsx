@@ -52,7 +52,10 @@ export default function RootLayout({
         sizes="any"
       />
 
-      <body className={`${inter.className} bg-slate-100`}>
+      <body
+        className={`${inter.className} bg-slate-200 `}
+        suppressHydrationWarning
+      >
         <AuthContextProvider>
           <ChatContextProvider>
             <Toaster position="bottom-center" />

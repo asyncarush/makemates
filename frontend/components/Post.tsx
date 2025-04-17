@@ -1,20 +1,39 @@
 "use client";
 
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
 import moment from "moment";
+import dynamic from "next/dynamic";
+import "react-photo-view/dist/react-photo-view.css";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as unlikeIcon } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as likeIcon } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "@/components/ui/button";
+
 import { Comments } from "./Comments";
 import EditPostComponent from "./EditPost";
 
 import { PostProps } from "@/typings";
 import { API_ENDPOINT } from "@/axios.config";
 import { AuthContext } from "@/app/context/AuthContext";
+
+// Dynamically import PhotoProvider and PhotoView with ssr disabled
+const PhotoProvider = dynamic(
+  () => import("react-photo-view").then((mod) => mod.PhotoProvider),
+  { ssr: false }
+);
+
+const PhotoView = dynamic(
+  () => import("react-photo-view").then((mod) => mod.PhotoView),
+  { ssr: false }
+);
+
+// Dynamically import ReactPhotoCollage with ssr disabled
+const ReactPhotoCollage = dynamic(
+  () => import("react-photo-collage").then((mod) => mod.ReactPhotoCollage),
+  { ssr: false }
+);
 
 function Post({
   caption,
@@ -28,28 +47,11 @@ function Post({
   const { currentUser }: any = useContext(AuthContext);
   const [isPostLiked, setIsPostLiked] = useState(false);
   const [commentBox, setCommentBox] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [aspectRatios, setAspectRatios] = useState<string[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    if (mediaUrls && mediaUrls.length > 0) {
-      Promise.all(
-        mediaUrls.map((url: string) => {
-          return new Promise<string>((resolve) => {
-            const img = new window.Image();
-            img.src = url;
-            img.onload = () => {
-              const ratio = (img.height / img.width) * 100;
-              resolve(`${ratio}%`);
-            };
-            img.onerror = () => {
-              resolve("56.25%"); // Default 16:9 ratio
-            };
-          });
-        })
-      ).then(setAspectRatios);
-    }
-  }, [mediaUrls]);
+    setIsMounted(true);
+  }, []);
 
   const handlePostLike = async () => {
     try {
@@ -81,8 +83,93 @@ function Post({
     checkLikeStatus();
   }, [postId]);
 
+  // Create collage settings based on number of images
+  const getCollageConfig = () => {
+    const collageImages = mediaUrls.map((url) => ({ source: url }));
+
+    if (mediaUrls.length === 1) {
+      return {
+        width: "100%",
+        height: ["350px"],
+        layout: [1],
+        photos: collageImages,
+        showNumOfRemainingPhotos: false,
+      };
+    } else if (mediaUrls.length === 2) {
+      return {
+        width: "100%",
+        height: ["250px"],
+        layout: [2],
+        photos: collageImages,
+        showNumOfRemainingPhotos: false,
+      };
+    } else if (mediaUrls.length === 3) {
+      return {
+        width: "100%",
+        height: ["250px"],
+        layout: [3],
+        photos: collageImages,
+        showNumOfRemainingPhotos: false,
+      };
+    } else if (mediaUrls.length === 4) {
+      return {
+        width: "100%",
+        height: ["175px", "175px"],
+        layout: [2, 2],
+        photos: collageImages.slice(0, 4),
+        showNumOfRemainingPhotos: false,
+      };
+    } else {
+      // More than 4 images
+      return {
+        width: "100%",
+        height: ["200px", "120px"],
+        layout: [1, 3],
+        photos: collageImages.slice(0, 4),
+        showNumOfRemainingPhotos: true,
+      };
+    }
+  };
+
+  // Handle click on collage to open photo viewer
+  const handleCollageClick = (index: number) => {
+    // Find and click the PhotoView element
+    setTimeout(() => {
+      const photoViewElements = document.querySelectorAll(
+        `.post-${postId} .PhotoView-Slider__PhotoBox`
+      );
+      if (photoViewElements && photoViewElements[index]) {
+        (photoViewElements[index] as HTMLElement).click();
+      }
+    }, 10);
+  };
+
+  // Render a simple placeholder for SSR
+  const renderPlaceholder = () => {
+    if (mediaUrls.length === 1) {
+      return <div className="w-full h-[350px] bg-gray-100"></div>;
+    } else if (mediaUrls.length === 2) {
+      return (
+        <div className="grid grid-cols-2 gap-1">
+          <div className="h-[250px] bg-gray-100"></div>
+          <div className="h-[250px] bg-gray-100"></div>
+        </div>
+      );
+    } else if (mediaUrls.length === 3) {
+      return (
+        <div className="grid grid-cols-3 gap-1">
+          <div className="h-[250px] bg-gray-100"></div>
+          <div className="h-[250px] bg-gray-100"></div>
+          <div className="h-[250px] bg-gray-100"></div>
+        </div>
+      );
+    } else {
+      return <div className="w-full h-[300px] bg-gray-100"></div>;
+    }
+  };
+
   return (
-    <div className="bg-gray-100/80 rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4 border border-gray-100">
       {/* Post Header */}
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
@@ -122,36 +209,32 @@ function Post({
       )}
 
       {/* Post Media */}
-      {mediaUrls && mediaUrls.length > 0 && aspectRatios[currentImageIndex] && (
-        <div className="relative mt-2">
-          <div
-            className="relative w-full"
-            style={{ paddingBottom: aspectRatios[currentImageIndex] }}
-          >
-            <Image
-              src={mediaUrls[currentImageIndex]}
-              alt={`Post content ${currentImageIndex + 1}`}
-              fill
-              className="object-contain"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-              loading="lazy"
-              quality={75}
-            />
-          </div>
-          {mediaUrls.length > 1 && (
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-              {mediaUrls.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                    index === currentImageIndex
-                      ? "bg-white shadow-sm"
-                      : "bg-white/50 hover:bg-white/75"
-                  }`}
-                />
-              ))}
+      {mediaUrls.length > 0 && (
+        <div
+          className={`media-container w-full overflow-hidden post-${postId}`}
+        >
+          {isMounted ? (
+            <div className="relative">
+              {/* Photo Collage - Only rendered client-side */}
+              <div
+                className="cursor-pointer"
+                onClick={() => handleCollageClick(0)}
+              >
+                {isMounted && <ReactPhotoCollage {...getCollageConfig()} />}
+              </div>
+
+              {/* Hidden Photo Provider */}
+              <PhotoProvider>
+                {mediaUrls.map((url, index) => (
+                  <PhotoView key={index} src={url}>
+                    <div style={{ display: "none" }} />
+                  </PhotoView>
+                ))}
+              </PhotoProvider>
             </div>
+          ) : (
+            // Simple placeholder for SSR
+            renderPlaceholder()
           )}
         </div>
       )}

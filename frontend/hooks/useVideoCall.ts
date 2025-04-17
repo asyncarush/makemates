@@ -1,7 +1,23 @@
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context";
-import { SocketService } from "@/services/ChatService";
+import { useRouter } from "next/navigation";
+
+// Define types locally
+type AppRouterInstance = ReturnType<typeof useRouter>;
+
+// Define SocketService interface
+interface SocketService {
+  emitVideoCallRequest: (
+    roomId: string,
+    userId: string,
+    userName: string
+  ) => void;
+  emitVideoCallResponse: (
+    roomId: string,
+    userId: string,
+    accepted: boolean
+  ) => void;
+}
 
 interface Call {
   roomId: string;
