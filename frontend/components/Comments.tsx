@@ -113,7 +113,7 @@ export function Comments({ postId }: { postId: any }) {
           })}
       </div>
 
-      <div className="flex bg-slate-100 items-center space-x-3 pt-3">
+      <div className="flex w-full p-2 bg-slate-100 items-center space-x-4">
         <Image
           src={currentUser.img || "/avatar.png"}
           className="rounded-full bg-gray-100"
@@ -121,7 +121,7 @@ export function Comments({ postId }: { postId: any }) {
           height="30"
           alt="Your profile picture"
         />
-        <div className="flex-1 flex items-center justify-between px-2 bg-slate-200 rounded-full">
+        <div className="flex items-center w-full justify-between px-2 bg-slate-200 rounded-full">
           <input
             type="text"
             value={desc}

@@ -29,12 +29,6 @@ const PhotoView = dynamic(
   { ssr: false }
 );
 
-// Dynamically import ReactPhotoCollage with ssr disabled
-const ReactPhotoCollage = dynamic(
-  () => import("react-photo-collage").then((mod) => mod.ReactPhotoCollage),
-  { ssr: false }
-);
-
 function Post({
   caption,
   name,
@@ -83,89 +77,42 @@ function Post({
     checkLikeStatus();
   }, [postId]);
 
-  // Create collage settings based on number of images
-  const getCollageConfig = () => {
-    const collageImages = mediaUrls.map((url) => ({ source: url }));
-
-    if (mediaUrls.length === 1) {
-      return {
-        width: "100%",
-        height: ["350px"],
-        layout: [1],
-        photos: collageImages,
-        showNumOfRemainingPhotos: false,
-      };
-    } else if (mediaUrls.length === 2) {
-      return {
-        width: "100%",
-        height: ["250px"],
-        layout: [2],
-        photos: collageImages,
-        showNumOfRemainingPhotos: false,
-      };
-    } else if (mediaUrls.length === 3) {
-      return {
-        width: "100%",
-        height: ["250px"],
-        layout: [3],
-        photos: collageImages,
-        showNumOfRemainingPhotos: false,
-      };
-    } else if (mediaUrls.length === 4) {
-      return {
-        width: "100%",
-        height: ["175px", "175px"],
-        layout: [2, 2],
-        photos: collageImages.slice(0, 4),
-        showNumOfRemainingPhotos: false,
-      };
-    } else {
-      // More than 4 images
-      return {
-        width: "100%",
-        height: ["200px", "120px"],
-        layout: [1, 3],
-        photos: collageImages.slice(0, 4),
-        showNumOfRemainingPhotos: true,
-      };
-    }
+  // Get grid layout based on number of images
+  const getGridLayout = () => {
+    if (mediaUrls.length === 1) return "grid-cols-1";
+    if (mediaUrls.length === 2) return "grid-cols-2";
+    if (mediaUrls.length === 3) return "grid-cols-3";
+    if (mediaUrls.length === 4) return "grid-cols-2 grid-rows-2";
+    return "grid-template-gallery"; // Custom class for 5+ images
   };
 
-  // Handle click on collage to open photo viewer
-  const handleCollageClick = (index: number) => {
-    // Find and click the PhotoView element
-    setTimeout(() => {
-      const photoViewElements = document.querySelectorAll(
-        `.post-${postId} .PhotoView-Slider__PhotoBox`
-      );
-      if (photoViewElements && photoViewElements[index]) {
-        (photoViewElements[index] as HTMLElement).click();
-      }
-    }, 10);
+  // Limit the number of images shown in the grid
+  const getVisibleMediaUrls = () => {
+    if (mediaUrls.length <= 5) return mediaUrls;
+    return mediaUrls.slice(0, 5);
   };
 
-  // Render a simple placeholder for SSR
-  const renderPlaceholder = () => {
-    if (mediaUrls.length === 1) {
-      return <div className="w-full h-[350px] bg-gray-100"></div>;
-    } else if (mediaUrls.length === 2) {
-      return (
-        <div className="grid grid-cols-2 gap-1">
-          <div className="h-[250px] bg-gray-100"></div>
-          <div className="h-[250px] bg-gray-100"></div>
-        </div>
-      );
-    } else if (mediaUrls.length === 3) {
-      return (
-        <div className="grid grid-cols-3 gap-1">
-          <div className="h-[250px] bg-gray-100"></div>
-          <div className="h-[250px] bg-gray-100"></div>
-          <div className="h-[250px] bg-gray-100"></div>
-        </div>
-      );
-    } else {
-      return <div className="w-full h-[300px] bg-gray-100"></div>;
+  // Get specific classes for each image position in the grid
+  const getImageClasses = (index: number, totalImages: number) => {
+    if (totalImages === 1) return "col-span-full row-span-full aspect-[16/9]";
+
+    if (totalImages === 2) return "aspect-square";
+
+    if (totalImages === 3) return "aspect-square";
+
+    if (totalImages === 4) {
+      return "aspect-square";
     }
+
+    if (totalImages >= 5) {
+      if (index === 0) return "gallery-item-0";
+      if (index === 1) return "gallery-item-1";
+      if (index === 2) return "gallery-item-2";
+      if (index === 3) return "gallery-item-3";
+      if (index === 4) return "gallery-item-4";
+    }
+
+    return "aspect-square";
   };
 
   return (
@@ -210,31 +157,68 @@ function Post({
 
       {/* Post Media */}
       {mediaUrls.length > 0 && (
-        <div
-          className={`media-container w-full overflow-hidden post-${postId}`}
-        >
-          {isMounted ? (
-            <div className="relative">
-              {/* Photo Collage - Only rendered client-side */}
+        <div className="media-container w-full overflow-hidden">
+          {isMounted && (
+            <PhotoProvider photoClosable>
               <div
-                className="cursor-pointer"
-                onClick={() => handleCollageClick(0)}
+                className={`grid ${getGridLayout()} gap-1`}
+                style={{
+                  // Custom grid for 5+ images matching the screenshot
+                  ...(mediaUrls.length >= 5
+                    ? {
+                        display: "grid",
+                        gridTemplateAreas: `
+                      "img0 img0 img2"
+                      "img1 img3 img4"
+                    `,
+                        gridTemplateColumns: "1fr 1fr 1fr",
+                        gridTemplateRows:
+                          "minmax(180px, 240px) minmax(180px, 240px)",
+                        maxHeight: "480px",
+                      }
+                    : {}),
+                }}
               >
-                {isMounted && <ReactPhotoCollage {...getCollageConfig()} />}
-              </div>
+                {getVisibleMediaUrls().map((url, index) => {
+                  const imageClasses = getImageClasses(index, mediaUrls.length);
+                  return (
+                    <div
+                      key={url}
+                      className={`relative overflow-hidden ${imageClasses}`}
+                      style={{
+                        ...(mediaUrls.length >= 5
+                          ? {
+                              gridArea: `img${index}`,
+                            }
+                          : {}),
+                      }}
+                    >
+                      <PhotoView src={url}>
+                        <div className="w-full h-full cursor-pointer hover:opacity-95 transition-opacity relative">
+                          <Image
+                            src={url}
+                            alt={caption || `Photo ${index + 1}`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                            className="object-cover"
+                            priority={index === 0}
+                          />
+                        </div>
+                      </PhotoView>
 
-              {/* Hidden Photo Provider */}
-              <PhotoProvider>
-                {mediaUrls.map((url, index) => (
-                  <PhotoView key={index} src={url}>
-                    <div style={{ display: "none" }} />
-                  </PhotoView>
-                ))}
-              </PhotoProvider>
-            </div>
-          ) : (
-            // Simple placeholder for SSR
-            renderPlaceholder()
+                      {/* Show remaining count on last visible image */}
+                      {mediaUrls.length > 5 && index === 4 && (
+                        <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center cursor-pointer hover:bg-opacity-70 transition-all">
+                          <span className="text-white text-3xl font-bold">
+                            +{mediaUrls.length - 5}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </PhotoProvider>
           )}
         </div>
       )}

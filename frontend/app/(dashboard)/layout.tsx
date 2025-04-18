@@ -21,7 +21,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
       <div
         className={`flex flex-col ${poppins.className} min-h-screen`}
       >
-        <div className="sticky top-0 z-50 w-full bg-white shadow-sm">
+        <div className="sticky top-0 z-50 w-full">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <Navbar />
           </div>

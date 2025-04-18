@@ -128,11 +128,10 @@ function Navbar() {
     <nav className="flex h-16 items-center justify-between px-4 bg-gradient-to-r from-blue-600 via-blue-500 to-teal-400 rounded-b-xl">
       {/* Logo and Upload */}
       <div className="flex items-center gap-4">
-        <Link
-          href="/feed"
-          className="text-xl font-bold text-white hover:text-white/90 transition-colors"
-        >
-          Makemates
+        <Link href="/feed" className="group">
+          <h1 className="text-xl font-light text-white tracking-wide group-hover:text-white/90 transition-colors">
+            make<span className="font-semibold text-white">mates</span>
+          </h1>
         </Link>
         <FeedUploadBox />
       </div>

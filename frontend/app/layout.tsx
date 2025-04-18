@@ -18,8 +18,8 @@ import { Toaster } from "react-hot-toast";
 
 // Dynamic imports
 const AuthContextProvider = dynamic(() => import("./context/AuthContext.tsx"));
-
 const ChatContextProvider = dynamic(() => import("./context/ChatContext.tsx"));
+const LoadingProvider = dynamic(() => import("./context/LoadingContext.tsx"));
 
 // Font configuration
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -58,8 +58,10 @@ export default function RootLayout({
       >
         <AuthContextProvider>
           <ChatContextProvider>
-            <Toaster position="bottom-center" />
-            {children}
+            <LoadingProvider>
+              <Toaster position="bottom-center" />
+              {children}
+            </LoadingProvider>
           </ChatContextProvider>
         </AuthContextProvider>
       </body>
