@@ -1,37 +1,109 @@
-import { Router, Response } from "express";
-import auth from "../middleware/auth";
-import { RequestWithUser } from "../typing";
+import express, { Response } from "express";
 import { logger } from "../config/winston";
+import auth from "../middleware/auth";
 import { PrismaClient } from "@prisma/client";
+import { RequestWithUser } from "../typing.d";
+const router = express.Router();
 
-const router = Router();
 const prisma = new PrismaClient();
 
+// Add a centralized error handler for database operations
+const handleDatabaseError = (error: any, res: Response, operation: string) => {
+  // Check if this is a database connection error
+  if (error.message && error.message.includes("Can't reach database server")) {
+    logger.error(`Database connection error during ${operation}:`, error);
+    return res.status(503).json({
+      message: "Database service unavailable",
+      error: "Unable to connect to database. Please try again later.",
+    });
+  }
+
+  // Handle other database errors
+  logger.error(`Error during ${operation}:`, error);
+  return res.status(500).json({
+    message: `Failed to ${operation}`,
+    error: "A database error occurred. Please try again later.",
+  });
+};
+
+// Search for users (keyword search)
 router.get(
   "/search/user",
   auth,
   async (req: RequestWithUser, res: Response) => {
-    const { keyword } = req.query;
+    try {
+      const { keyword } = req.query;
 
-    // first get all the follow user from relationship table jpin it with users table
-    const followUsers = await prisma.relationships.findMany({
-      where: {
-        follower_id: req.user?.id,
-      },
-      select: {
-        follow_id: true,
-      },
-    });
+      // first get all the follow user from relationship table join it with users table
+      const followUsers = await prisma.relationships.findMany({
+        where: {
+          follower_id: req.user?.id,
+        },
+        include: {
+          users_relationships_follow_idTousers: {
+            select: {
+              id: true,
+              name: true,
+              img: true,
+              email: true,
+            },
+          },
+        },
+      });
 
-    // get all the users from users table
-    const users = await prisma.users.findMany({
-      where: {
-        id: { in: followUsers.map((user) => user.follow_id) },
-        name: { contains: keyword as string },
-      },
-    });
+      // Extract following user ids
+      const followingUserIds = followUsers.map(
+        (user: any) => user.users_relationships_follow_idTousers.id
+      );
 
-    return res.status(200).json(users);
+      // Search for users with name like keyword
+      const users = await prisma.users.findMany({
+        where: {
+          AND: [
+            {
+              id: {
+                not: req.user?.id,
+              },
+            },
+            {
+              OR: [
+                {
+                  name: {
+                    contains: keyword as string,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  email: {
+                    contains: keyword as string,
+                    mode: "insensitive",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        select: {
+          id: true,
+          name: true,
+          img: true,
+          email: true,
+        },
+      });
+
+      // Format users to include following status
+      const formattedUsers = users.map((user: any) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        profilePic: user.img,
+        isFollowing: followingUserIds.includes(user.id),
+      }));
+
+      return res.status(200).json(formattedUsers);
+    } catch (error) {
+      return handleDatabaseError(error, res, "search users");
+    }
   }
 );
 
@@ -78,8 +150,7 @@ router.post("/create", auth, async (req: RequestWithUser, res: Response) => {
 
     return res.status(201).json(newChat);
   } catch (error) {
-    logger.error("Error creating chat:", error);
-    return res.status(500).json({ message: "Failed to create chat" });
+    return handleDatabaseError(error, res, "create chat");
   }
 });
 
@@ -115,7 +186,7 @@ router.get(
       });
 
       // Format messages to match frontend expectation
-      const formattedMessages = messages.map((msg) => ({
+      const formattedMessages = messages.map((msg: any) => ({
         id: msg.id,
         chatId: chatId,
         senderId: String(msg.sender_id),
@@ -125,8 +196,7 @@ router.get(
 
       return res.status(200).json(formattedMessages);
     } catch (error) {
-      logger.error("Error fetching messages:", error);
-      return res.status(500).json({ message: "Failed to fetch messages" });
+      return handleDatabaseError(error, res, "fetch messages");
     }
   }
 );
@@ -167,7 +237,7 @@ router.get("/active", auth, async (req: RequestWithUser, res: Response) => {
     });
 
     // Format chats to include other user's info
-    const formattedChats = chats.map((chat) => {
+    const formattedChats = chats.map((chat: any) => {
       // Determine which user is the other participant
       const otherUser = chat.user1_id === userId ? chat.user2 : chat.user1;
 
@@ -186,8 +256,7 @@ router.get("/active", auth, async (req: RequestWithUser, res: Response) => {
 
     return res.status(200).json(formattedChats);
   } catch (error) {
-    logger.error("Error fetching active chats:", error);
-    return res.status(500).json({ message: "Failed to fetch active chats" });
+    return handleDatabaseError(error, res, "fetch active chats");
   }
 });
 

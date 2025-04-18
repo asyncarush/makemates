@@ -183,7 +183,7 @@ function Post({
                   const imageClasses = getImageClasses(index, mediaUrls.length);
                   return (
                     <div
-                      key={url}
+                      key={`${url}-${index}`}
                       className={`relative overflow-hidden ${imageClasses}`}
                       style={{
                         ...(mediaUrls.length >= 5

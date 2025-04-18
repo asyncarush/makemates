@@ -11,15 +11,17 @@ export function useLogout() {
 
   const logout = async () => {
     try {
-      await axios.post(
+      const response = await axios.post(
         `${API_ENDPOINT}/user/logout`,
         {},
         { withCredentials: true }
       );
 
-      // Clear local storage
-      localStorage.removeItem("currentUser");
-      localStorage.removeItem("auth_token");
+      if (response.status === 200) {
+        // Clear local storage
+        localStorage.removeItem("currentUser");
+        localStorage.removeItem("auth_token");
+      }
 
       // Reset auth context
       setCurrentUser(null);

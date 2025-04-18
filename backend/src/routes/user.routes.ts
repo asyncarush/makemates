@@ -45,7 +45,7 @@ router.get("/debug-env", (req, res) => {
 
 router.post("/register", register);
 router.post("/login", login);
-router.get("/logout", auth, logoutUser);
+router.post("/logout", auth, logoutUser);
 router.post("/update", auth, updateUserInfo);
 router.post("/follow", auth, followUser);
 

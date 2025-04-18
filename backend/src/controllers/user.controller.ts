@@ -323,6 +323,7 @@ export async function setProfilePic(req: RequestWithUser, res: Response) {
 
 // Logout User
 export function logoutUser(req: Request, res: Response) {
+  console.log("Reached here...Logout Controller");
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
