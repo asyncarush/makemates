@@ -25,6 +25,7 @@ import { useLogout } from "@/hooks/useLogout";
 import { AuthContext } from "@/app/context/AuthContext";
 import { AuthContextType } from "@/typings";
 import FeedUploadBox from "@/app/(dashboard)/feed/_components/FeedUploadBox";
+import AIAssistant from "./AIAssistant";
 
 interface navLinks {
   name: string;
@@ -158,6 +159,7 @@ function Navbar() {
           ))}
         </NavigationMenuList>
       </NavigationMenu>
+      <AIAssistant />
     </nav>
   );
 }
