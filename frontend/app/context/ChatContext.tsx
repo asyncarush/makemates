@@ -7,6 +7,7 @@ import { API_ENDPOINT } from "@/axios.config";
 
 interface ChatContextType {
   socketRef: React.MutableRefObject<Socket | null>;
+  socket: Socket | null;
 }
 
 export const ChatContext = createContext<ChatContextType | null>(null);
@@ -94,7 +95,7 @@ export default function ChatContextProvider({
   }, []);
 
   return (
-    <ChatContext.Provider value={{ socketRef }}>
+    <ChatContext.Provider value={{ socketRef, socket: socketRef.current }}>
       {children}
     </ChatContext.Provider>
   );

@@ -9,6 +9,7 @@ import {
   getFriendList,
   setProfilePic,
   logoutUser,
+  getUserNotifications,
 } from "../controllers/user.controller";
 
 import auth from "../middleware/auth";
@@ -54,5 +55,6 @@ router.post("/unfollow", auth, unfollowUser);
 router.get("/friendList", auth, getFriendList);
 router.post("/setProfilePic", auth, setProfilePic);
 router.get("/me", auth, getUserData);
+router.get("/notifications", auth, getUserNotifications);
 
 export default router;

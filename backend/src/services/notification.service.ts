@@ -16,6 +16,7 @@ interface NotificationData {
 export class NotificationManger {
   private connection: IORedis;
   private queue: Queue;
+  private io: Server;
 
   constructor(io: Server) {
     this.connection = new IORedis(
@@ -25,6 +26,7 @@ export class NotificationManger {
       }
     );
     this.queue = new Queue("notification", { connection: this.connection });
+    this.io = io;
     this.handleNotificationJob();
   }
 
@@ -66,19 +68,30 @@ export class NotificationManger {
       async (job) => {
         const { batch_recipients, ...notificationData } = job.data;
 
-        // Create notifications for all recipients in batch
-        await prisma.notifications.createMany({
-          data: batch_recipients.map((receiverId: number) => ({
-            user_reciever_id: receiverId,
-            user_sender_id: notificationData.user_sender_id,
-            type: notificationData.type,
-            resource_id: notificationData.resource_id,
-            message: notificationData.message,
-            isRead: false,
-          })),
-        });
+        try {
+          // Create notifications for all recipients in batch
+          const notification = await prisma.notifications.createMany({
+            data: batch_recipients.map((receiverId: number) => ({
+              user_reciever_id: receiverId,
+              user_sender_id: notificationData.user_sender_id,
+              type: notificationData.type,
+              resource_id: notificationData.resource_id,
+              message: notificationData.message,
+              isRead: false,
+            })),
+          });
+          console.log("Notificaton created for : ", notification);
+          // Send socket notification to online users
+          for (const receiverId of batch_recipients) {
+            // Emit to specific user if they're online
+            this.io.to(`user:${receiverId}`).emit("new_notification");
+          }
 
-        return { success: true };
+          return { success: true };
+        } catch (error) {
+          console.error("Error creating notifications:", error);
+          throw error;
+        }
       },
       { connection: this.connection }
     );

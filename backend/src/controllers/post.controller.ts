@@ -55,13 +55,17 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
     );
 
     // will be used to send notification to the followers
-    notificationManager.addNotification("post", {
+    const notificationData = {
       user_sender_id: req.user?.id || -1,
       type: "post",
       resource_id: post.id,
       message: "New post uploaded",
       isRead: false,
-    });
+    };
+
+    console.log("Sending notification to : ", notificationData);
+
+    notificationManager.addNotification("post", notificationData);
 
     return res.status(200).send("Post uploaded...");
   } catch (err) {

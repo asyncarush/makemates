@@ -106,3 +106,13 @@ export async function LogOutUser() {
 
   return data;
 }
+
+export async function fetchUserNotifications() {
+  try {
+    const { data } = await axios.get(`${API_ENDPOINT}/user/notifications`);
+    return data;
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    throw error;
+  }
+}
