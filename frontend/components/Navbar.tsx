@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactElement, useContext } from "react";
+import React, { ReactElement, useContext, useRef } from "react";
 import { TiHome } from "react-icons/ti";
 import { BsMessenger } from "react-icons/bs";
 import { BiSolidBell } from "react-icons/bi";
@@ -19,23 +19,18 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import Search from "./Search";
-import { Button } from "@/components/ui/button";
+
 import { useLogout } from "@/hooks/useLogout";
 
 import { AuthContext } from "@/app/context/AuthContext";
-import { AuthContextType } from "@/typings";
 import FeedUploadBox from "@/app/(dashboard)/feed/_components/FeedUploadBox";
 import AIAssistant from "./AIAssistant";
-
-interface navLinks {
-  name: string;
-  Icon: ReactElement;
-  Data?: ReactElement;
-}
+import Notification from "./Notification";
 
 function Navbar() {
   const { currentUser }: any = useContext(AuthContext);
   const logout = useLogout();
+  const notificationBadgeRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
     await logout();
@@ -61,8 +56,12 @@ function Navbar() {
     {
       name: "notifications",
       Icon: (
-        <BiSolidBell className="w-5 h-5 text-white hover:text-white transition-colors" />
+        <div className="relative">
+          <BiSolidBell className="w-5 h-5 text-white hover:text-white transition-colors" />
+          <div ref={notificationBadgeRef}></div>
+        </div>
       ),
+      Data: <Notification notificationBadgeRef={notificationBadgeRef} />,
     },
     {
       name: "setting",
@@ -133,7 +132,7 @@ function Navbar() {
       <NavigationMenu>
         <NavigationMenuList className="flex items-center gap-2">
           {navigation.map(({ name, Icon, Data }) => (
-            <NavigationMenuItem key={name}>
+            <NavigationMenuItem className={`relative`} key={name}>
               <NavigationMenuTrigger className="h-10 w-10 p-0 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full flex items-center justify-center border border-white/20 focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200">
                 {Icon}
               </NavigationMenuTrigger>

@@ -47,25 +47,25 @@ function Page() {
   return currentUser ? (
     <div className="flex gap-8 max-w-7xl mx-auto">
       {/* Left Sidebar */}
-      <div className="w-[280px] flex-shrink-0 sticky top-[100px] h-fit">
+      <div className="w-[260px] flex-shrink-0 sticky top-[100px] h-fit">
         {/* Profile Card */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="h-20 bg-gradient-to-r from-blue-600 via-blue-500 to-teal-400" />
-          <div className="px-4 pb-4 -mt-10">
-            <div className="relative w-16 h-16 mx-auto mb-3">
+          <div className="h-16 bg-gradient-to-r from-blue-600 via-blue-500 to-teal-400" />
+          <div className="px-3 pb-3 -mt-8">
+            <div className="relative w-12 h-12 mx-auto mb-2">
               <Image
                 src={currentUser?.img || "/avatar.png"}
-                className="rounded-full border-4 border-white shadow-md object-cover"
+                className="rounded-full border-2 border-white shadow-sm object-cover"
                 alt="Profile pic"
                 fill
-                sizes="64px"
+                sizes="48px"
               />
             </div>
             <div className="text-center">
-              <h3 className="font-semibold text-gray-900">
+              <h3 className="font-medium text-gray-900 text-sm">
                 {currentUser?.name || "User"}
               </h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-xs text-gray-500">
                 @{currentUser?.name?.toLowerCase().replace(/\s+/g, "")}
               </p>
             </div>
@@ -73,21 +73,21 @@ function Page() {
         </div>
 
         {/* Navigation Menu */}
-        <div className="bg-white rounded-xl shadow-sm mt-6 p-4">
-          <nav className="space-y-1">
+        <div className="bg-white rounded-xl shadow-sm mt-3 p-2">
+          <nav className="space-y-0.5">
             <Link
               href="/chat"
-              className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg group transition-all duration-200"
+              className="flex items-center gap-2 px-3 py-1.5 text-gray-700 hover:bg-gradient-to-r from-indigo-50 to-purple-50 rounded-md group transition-all duration-200 text-sm"
             >
-              <BsMessenger className="w-5 h-5 text-indigo-600" />
+              <BsMessenger className="w-4 h-4 text-indigo-600" />
               <span className="font-medium">Messages</span>
             </Link>
             <Link
               href="/profile/liked"
-              className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg group transition-all duration-200"
+              className="flex items-center gap-2 px-3 py-1.5 text-gray-700 hover:bg-gradient-to-r from-indigo-50 to-purple-50 rounded-md group transition-all duration-200 text-sm"
             >
               <svg
-                className="w-5 h-5 text-pink-500"
+                className="w-4 h-4 text-pink-500"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -97,10 +97,10 @@ function Page() {
             </Link>
             <Link
               href="/profile/saved"
-              className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg group transition-all duration-200"
+              className="flex items-center gap-2 px-3 py-1.5 text-gray-700 hover:bg-gradient-to-r from-indigo-50 to-purple-50 rounded-md group transition-all duration-200 text-sm"
             >
               <svg
-                className="w-5 h-5 text-yellow-500"
+                className="w-4 h-4 text-yellow-500"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -119,66 +119,105 @@ function Page() {
 
       {/* Right Sidebar - Following */}
       <div className="w-[280px] flex-shrink-0 sticky top-[100px] h-fit">
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <h4 className="font-semibold text-gray-900 mb-4">Following</h4>
-          <div className="space-y-2">
+        <div className="bg-white backdrop-blur-sm bg-opacity-95 rounded-xl border border-gray-100 shadow-sm p-3">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-medium text-gray-800 flex items-center gap-1.5 text-sm">
+              <span className="h-1 w-1 rounded-full bg-indigo-500"></span>
+              Following
+            </h4>
+            {friendsList.length > 0 && (
+              <span className="text-xs bg-indigo-50 text-indigo-600 rounded-full px-1.5 py-0.5">
+                {friendsList.length}
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
             {friendsList.length > 0 ? (
               friendsList.map((friend: any) => (
                 <HoverCard key={`${friend.follow_id}-${friend.follower_id}`}>
                   <HoverCardTrigger asChild>
                     <Link
                       href={`/profile/${friend.follow_id}`}
-                      className="flex items-center gap-3 p-2 hover:bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg transition-all duration-200"
+                      className="flex items-center gap-2 py-1.5 px-2 hover:bg-gray-50 rounded-md transition-all duration-200 group"
                     >
-                      <div className="relative w-10 h-10">
+                      <div className="relative w-8 h-8 rounded-full overflow-hidden ring-1 ring-white">
                         <Image
                           src={friend.profileImage || "/avatar.png"}
                           alt={friend.name}
-                          className="rounded-full object-cover"
+                          className="rounded-full object-cover group-hover:scale-105 transition-transform"
                           fill
-                          sizes="40px"
+                          sizes="32px"
                         />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-gray-800 group-hover:text-indigo-600 transition-colors text-sm">
                           {friend.name}
                         </p>
-                        <p className="text-sm text-gray-500">Online</p>
+                        <div className="flex items-center">
+                          <span className="h-1 w-1 rounded-full bg-green-500 mr-1"></span>
+                          <p className="text-xs text-gray-500">Online</p>
+                        </div>
                       </div>
                     </Link>
                   </HoverCardTrigger>
-                  <HoverCardContent className="w-80 p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="relative w-12 h-12">
-                        <Image
-                          src={friend.profileImage || "/avatar.png"}
-                          alt={friend.name}
-                          className="rounded-full object-cover"
-                          fill
-                          sizes="48px"
-                        />
+                  <HoverCardContent className="w-72 p-0 overflow-hidden rounded-xl border border-gray-100">
+                    <div className="bg-gradient-to-r from-indigo-50 to-blue-50 h-16" />
+                    <div className="p-3 -mt-8">
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-white shadow-sm">
+                          <Image
+                            src={friend.profileImage || "/avatar.png"}
+                            alt={friend.name}
+                            className="rounded-full object-cover"
+                            fill
+                            sizes="48px"
+                          />
+                        </div>
+                        <div className="mt-4">
+                          <h4 className="font-medium text-gray-900 text-sm">
+                            {friend.name}
+                          </h4>
+                          <p className="text-xs text-gray-500 flex items-center">
+                            <span className="h-1 w-1 rounded-full bg-green-500 mr-1"></span>
+                            Online now
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900">
-                          {friend.name}
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          Last seen recently
-                        </p>
+                      <div className="flex mt-3 pt-2 border-t border-gray-100">
+                        <Link
+                          href={`/chat/${friend.follow_id}`}
+                          className="flex-1 flex items-center justify-center py-1.5 rounded-md bg-indigo-50 text-indigo-600 text-xs font-medium hover:bg-indigo-100 transition-colors"
+                        >
+                          <BsMessenger className="w-3 h-3 mr-1" />
+                          Message
+                        </Link>
+                        <Link
+                          href={`/profile/${friend.follow_id}`}
+                          className="flex-1 flex items-center justify-center py-1.5 ml-2 rounded-md bg-gray-50 text-gray-700 text-xs font-medium hover:bg-gray-100 transition-colors"
+                        >
+                          <FaUser className="w-3 h-3 mr-1" />
+                          Profile
+                        </Link>
                       </div>
                     </div>
                   </HoverCardContent>
                 </HoverCard>
               ))
             ) : (
-              <div className="text-center py-6">
-                <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <FaUser className="w-6 h-6 text-indigo-600" />
+              <div className="text-center py-4 px-2">
+                <div className="w-10 h-10 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <FaUser className="w-4 h-4 text-indigo-500" />
                 </div>
-                <p className="text-gray-500">No followers yet</p>
-                <p className="text-sm text-gray-400 mt-1">
-                  Start connecting with others!
+                <p className="text-gray-700 font-medium text-sm">
+                  No connections yet
                 </p>
+                <p className="text-xs text-gray-500 mt-0.5 max-w-[180px] mx-auto">
+                  Find friends to see them appear here
+                </p>
+                <button className="mt-3 text-xs text-indigo-600 font-medium border border-indigo-100 rounded-md px-3 py-1.5 hover:bg-indigo-50 transition-colors">
+                  Find people
+                </button>
               </div>
             )}
           </div>

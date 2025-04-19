@@ -66,7 +66,7 @@ export function Comments({ postId }: { postId: any }) {
             return (
               <div
                 key={cmnt.id}
-                className="group pl-4 bg-slate-100 flex items-start space-x-1"
+                className="group pl-4 flex items-start space-x-1"
               >
                 <div className="flex items-center justify-center">
                   <Image
@@ -91,7 +91,7 @@ export function Comments({ postId }: { postId: any }) {
                       )}
                     </span>
                   </div>
-                  <div className="bg-gray-50">
+                  <div>
                     <p className="text-xs text-gray-700">{cmnt.desc}</p>
                   </div>
 
@@ -113,7 +113,7 @@ export function Comments({ postId }: { postId: any }) {
           })}
       </div>
 
-      <div className="flex w-full p-2 bg-slate-100 items-center space-x-4">
+      <div className="flex w-full p-2 items-center space-x-4">
         <Image
           src={currentUser.img || "/avatar.png"}
           className="rounded-full bg-gray-100"
@@ -121,14 +121,14 @@ export function Comments({ postId }: { postId: any }) {
           height="30"
           alt="Your profile picture"
         />
-        <div className="flex items-center w-full justify-between px-2 bg-slate-200 rounded-full">
+        <div className="flex items-center w-full justify-between px-2 rounded-full">
           <input
             type="text"
             value={desc}
             onChange={(e) => setDesc(e.currentTarget.value)}
             onKeyDown={(e) => e.key === "Enter" && handleComment()}
             placeholder="Comment to your friends..."
-            className="text-[12px] w-full bg-transparent px-2 py-1  rounded-2xl focus:outline-none text-gray-700 placeholder:text-gray-400"
+            className="text-[12px] w-full bg-transparent px-2 py-1 bg-gray-100 rounded-2xl focus:outline-none text-gray-700 placeholder:text-gray-400"
             name="postComment"
           />
           <button

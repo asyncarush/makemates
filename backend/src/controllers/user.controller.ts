@@ -323,19 +323,53 @@ export async function setProfilePic(req: RequestWithUser, res: Response) {
 
 // Logout User
 export function logoutUser(req: Request, res: Response) {
-  console.log("Reached here...Logout Controller");
-  const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
-    path: "/",
-    domain: undefined,
-    partitioned: false,
-    priority: "medium" as const,
-  };
+  try {
+    // Clear auth cookie
+    res.clearCookie("x-auth-token", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax" as const,
+      path: "/",
+    });
 
-  return res
-    .clearCookie("x-auth-token", cookieOptions)
-    .status(200)
-    .send("Logout Successfully.");
+    return res.status(200).send("Logged out successfully");
+  } catch (error) {
+    console.error("Logout error:", error);
+    return res.status(500).send("Error during logout");
+  }
+}
+
+// Get User Notifications
+export async function getUserNotifications(
+  req: RequestWithUser,
+  res: Response
+) {
+  const userId = req.user?.id || -1;
+
+  try {
+    const notifications = await prisma.notifications.findMany({
+      where: {
+        user_reciever_id: userId,
+      },
+      include: {
+        sender: {
+          select: {
+            name: true,
+            img: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 50, // Limit to most recent 50 notifications
+    });
+
+    console.log(notifications);
+
+    return res.status(200).json(notifications);
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    return res.status(500).send("Error fetching notifications");
+  }
 }

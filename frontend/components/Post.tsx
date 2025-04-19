@@ -116,22 +116,24 @@ function Post({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4 border border-gray-100">
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
       {/* Post Header */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10">
+      <div className="flex items-center justify-between px-3 py-2.5">
+        <div className="flex items-center gap-2.5">
+          <div className="relative w-8 h-8">
             <Image
               src={profileImage || "/avatar.png"}
               alt={name}
-              className="rounded-full object-cover"
+              className="rounded-full object-cover ring-1 ring-gray-100"
               fill
-              sizes="40px"
+              sizes="32px"
               loading="lazy"
             />
           </div>
           <div>
-            <h3 className="font-medium text-gray-900">{name}</h3>
+            <h3 className="font-medium text-gray-800 text-sm font-display">
+              {name}
+            </h3>
             <p className="text-xs text-gray-500">
               {moment(postDate).fromNow()}
             </p>
@@ -150,8 +152,8 @@ function Post({
 
       {/* Post Content */}
       {caption && (
-        <div className="px-4 py-2">
-          <p className="text-gray-700">{caption}</p>
+        <div className="px-3 py-1.5">
+          <p className="text-gray-700 text-sm">{caption}</p>
         </div>
       )}
 
@@ -161,7 +163,7 @@ function Post({
           {isMounted && (
             <PhotoProvider photoClosable>
               <div
-                className={`grid ${getGridLayout()} gap-1`}
+                className={`grid ${getGridLayout()} gap-0.5`}
                 style={{
                   // Custom grid for 5+ images matching the screenshot
                   ...(mediaUrls.length >= 5
@@ -173,8 +175,8 @@ function Post({
                     `,
                         gridTemplateColumns: "1fr 1fr 1fr",
                         gridTemplateRows:
-                          "minmax(180px, 240px) minmax(180px, 240px)",
-                        maxHeight: "480px",
+                          "minmax(150px, 200px) minmax(150px, 200px)",
+                        maxHeight: "400px",
                       }
                     : {}),
                 }}
@@ -209,7 +211,7 @@ function Post({
                       {/* Show remaining count on last visible image */}
                       {mediaUrls.length > 5 && index === 4 && (
                         <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center cursor-pointer hover:bg-opacity-70 transition-all">
-                          <span className="text-white text-3xl font-bold">
+                          <span className="text-white text-xl font-medium">
                             +{mediaUrls.length - 5}
                           </span>
                         </div>
@@ -224,24 +226,24 @@ function Post({
       )}
 
       {/* Post Actions */}
-      <div className="px-4 py-3 border-t border-gray-100">
-        <div className="flex items-center gap-4">
+      <div className="px-3 py-2 border-t border-gray-100">
+        <div className="flex items-center gap-3">
           <button
             onClick={handlePostLike}
-            className="flex items-center gap-2 text-gray-700 hover:text-red-500 transition-colors"
+            className="flex items-center gap-1.5 text-gray-700 hover:text-red-500 transition-colors"
           >
             <FontAwesomeIcon
               icon={isPostLiked ? likeIcon : unlikeIcon}
-              className={`w-5 h-5 ${isPostLiked ? "text-red-500" : ""}`}
+              className={`w-4 h-4 ${isPostLiked ? "text-red-500" : ""}`}
             />
-            <span className="text-sm font-medium">Like</span>
+            <span className="text-xs font-medium">Like</span>
           </button>
           <button
             onClick={() => setCommentBox(!commentBox)}
-            className="flex items-center gap-2 text-gray-700 hover:text-indigo-500 transition-colors"
+            className="flex items-center gap-1.5 text-gray-700 hover:text-indigo-500 transition-colors"
           >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -249,18 +251,18 @@ function Post({
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="2"
+                strokeWidth={2}
                 d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
               />
             </svg>
-            <span className="text-sm font-medium">Comment</span>
+            <span className="text-xs font-medium">Comment</span>
           </button>
         </div>
       </div>
 
-      {/* Comments Section */}
+      {/* Comments */}
       {commentBox && (
-        <div className="border-t border-gray-100">
+        <div className="border-t border-gray-100 px-3 py-2">
           <Comments postId={postId} />
         </div>
       )}

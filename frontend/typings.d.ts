@@ -32,6 +32,10 @@ export interface AuthContextType {
   userLogout: () => void;
 }
 
+export interface ChatContextType {
+  socket: any; // Socket.io client instance
+}
+
 export interface NewComment {
   desc: string;
   postId: number;
@@ -74,4 +78,18 @@ interface EditPostProps {
   onError?: (error: Error) => void;
   userId: number;
   postId: number;
+}
+
+export interface NotificationType {
+  id: number;
+  user_sender_id: number;
+  type: string;
+  resource_id: number;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  sender?: {
+    name?: string;
+    img?: string;
+  };
 }
