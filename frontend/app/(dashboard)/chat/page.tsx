@@ -96,6 +96,7 @@ const Page = () => {
     try {
       const chat = await chatService.createChat(user.id);
       setActiveChat(chat);
+      console.log("Active Chat set", activeChat);
       setSearchUser("");
     } catch (error) {
       console.error("Error starting chat:", error);
@@ -253,7 +254,7 @@ const Page = () => {
                 <div className="relative w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
                   <div
                     className={`w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 ${
-                      isUserOnline(activeChat.user.id)
+                      isUserOnline(activeChat?.user?.id)
                         ? "bg-green-500"
                         : "bg-gray-400"
                     }`}

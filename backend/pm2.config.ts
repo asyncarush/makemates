@@ -6,6 +6,10 @@ module.exports = {
       instances: "max", // Use all CPU cores (for scalability)
       exec_mode: "cluster", // Cluster mode for load balancing
       watch: false, // Set to true to restart on file changes
+      env: {
+        NODE_ENV: "production",
+        PORT: process.env.PORT, // pass this down explicitly if needed
+      },
     },
   ],
 };
