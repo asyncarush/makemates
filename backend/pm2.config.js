@@ -8,7 +8,7 @@ module.exports = {
       watch: false, // Set to true to restart on file changes
       env: {
         NODE_ENV: "production",
-        PORT: process.env.PORT, // pass this down explicitly if needed
+        PORT: process.env.PORT || 2000, // pass this down explicitly if needed
       },
     },
   ],
