@@ -12,9 +12,10 @@ import { PrismaClient } from "@prisma/client";
 // Custom types and interfaces
 import { RequestWithUser } from "../typing";
 
-
 // Logger
 import { logger } from "../config/winston";
+
+import { notificationManager } from "../index";
 
 const prisma = new PrismaClient();
 
@@ -25,7 +26,7 @@ interface User {
 // Add Post
 /**
  * Creates a new post with the provided description and image URLs.
- * 
+ *
  * @param {RequestWithUser} req - The incoming request with user information.
  * @param {Response} res - The outgoing response.
  */
@@ -40,7 +41,7 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
     });
 
     const urls = JSON.parse(imgUrls);
-    
+
     await Promise.all(
       urls.map((url: string) =>
         prisma.post_media.create({
@@ -52,6 +53,15 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
         })
       )
     );
+
+    // will be used to send notification to the followers
+    notificationManager.addNotification("post", {
+      user_sender_id: req.user?.id || -1,
+      type: "post",
+      resource_id: post.id,
+      message: "New post uploaded",
+      isRead: false,
+    });
 
     return res.status(200).send("Post uploaded...");
   } catch (err) {
@@ -128,7 +138,7 @@ export const editPost = async (req: RequestWithUser, res: Response) => {
 // Get User Posts
 /**
  * Retrieves a list of posts for the specified user, including their own posts and posts from users they follow.
- * 
+ *
  * @param {Request} req - The incoming request.
  * @param {Response} res - The outgoing response.
  */
@@ -179,7 +189,7 @@ export const getUserPosts = async (req: Request, res: Response) => {
 // Like the Post
 /**
  * Creates a new like for the specified post.
- * 
+ *
  * @param {RequestWithUser} req - The incoming request with user information.
  * @param {Response} res - The outgoing response.
  */
@@ -208,7 +218,7 @@ export const likeThePost = async (req: RequestWithUser, res: Response) => {
 // Unlike the Post
 /**
  * Deletes the like for the specified post.
- * 
+ *
  * @param {RequestWithUser} req - The incoming request with user information.
  * @param {Response} res - The outgoing response.
  */
@@ -237,7 +247,7 @@ export const unLikeThePost = async (req: RequestWithUser, res: Response) => {
 // Check Post Like Status
 /**
  * Checks if the user has liked the specified post.
- * 
+ *
  * @param {RequestWithUser} req - The incoming request with user information.
  * @param {Response} res - The outgoing response.
  */
@@ -269,7 +279,7 @@ export const checkPostLikeStatus = async (
 // Post New Comment
 /**
  * Creates a new comment for the specified post.
- * 
+ *
  * @param {RequestWithUser} req - The incoming request with user information.
  * @param {Response} res - The outgoing response.
  */
@@ -297,7 +307,7 @@ export const postNewComment = async (req: RequestWithUser, res: Response) => {
 // Get Post Comments
 /**
  * Retrieves a list of comments for the specified post.
- * 
+ *
  * @param {Request} req - The incoming request.
  * @param {Response} res - The outgoing response.
  */

@@ -136,4 +136,26 @@ model users {
   sentMessages     messages[]
   chatsAsUser1     chats[]    @relation("ChatUser1")
   chatsAsUser2     chats[]    @relation("ChatUser2")
+  
+  // Notification relations
+  notificationsReceived notifications[] @relation("NotificationsReceived")
+  notificationsSent     notifications[] @relation("NotificationsSent")
+}
+
+model notifications {
+  id                Int @id @default(autoincrement())
+  user_reciever_id  Int 
+  user_sender_id    Int
+  type              String
+  resource_id       Int
+  message           String
+  isRead            Boolean @default(false)
+  createdAt         DateTime @default(now()) @db.Timestamp
+
+  // relations
+  receiver          users    @relation("NotificationsReceived", fields: [user_reciever_id], references: [id], onDelete: Cascade)
+  sender            users    @relation("NotificationsSent", fields: [user_sender_id], references: [id], onDelete: Cascade)
+
+  @@index([user_reciever_id], map: "notifications_receiver_id_idx")
+  @@index([user_sender_id], map: "notifications_sender_id_idx")
 }

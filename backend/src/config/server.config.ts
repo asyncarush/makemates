@@ -19,11 +19,7 @@ export class ServerConfig {
     // CORS configuration
     this.app.use(
       cors({
-        origin: [
-          "http://localhost:3000",
-          "https://makemates.vercel.app",
-          "http://34.42.91.142:9000",
-        ],
+        origin: ["http://localhost:3000", "https://makemates.vercel.app"],
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],

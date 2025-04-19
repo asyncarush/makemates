@@ -8,6 +8,7 @@ import http from "http";
 import { logger } from "./config/winston";
 import { ServerConfig } from "./config/server.config";
 import { SocketService } from "./services/socket.service";
+import { NotificationManger } from "./services/notification.service";
 
 // Route definitions
 import User from "./routes/user.routes";
@@ -29,6 +30,7 @@ const server = http.createServer(app);
 const socketService = new SocketService(server);
 const io = socketService.getIO();
 const redisClient = socketService.getRedisClient();
+const notificationManager = new NotificationManger(io);
 
 // Register routes
 app.use("/user", User);
@@ -52,4 +54,4 @@ async function startServer() {
 
 startServer();
 
-export { server, redisClient, io };
+export { server, redisClient, io, notificationManager };
