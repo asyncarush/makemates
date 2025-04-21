@@ -1,66 +1,121 @@
-# MakeMates - Social Networking Platform
+# MakeMates
 
 <div align="center">
-  <img src="frontend/public/logo.png" alt="MakeMates Logo" width="200"/>
-  <p>Connect, Share, and Collaborate</p>
+  <a href="https://makemates.vercel.app" target="_blank">
+    <img src="frontend/public/logo.png" alt="MakeMates Logo" width="200"/>
+  </a>
+  <h3 align="center">Connect, Share, Collaborate</h3>
+  
+  <p align="center">
+    <a href="https://makemates.vercel.app"><strong>🌐 Live Demo</strong></a>
+    ·
+    <a href="#-getting-started">Getting Started</a>
+    ·
+    <a href="#-features">Features</a>
+    ·
+    <a href="#-tech-stack">Tech Stack</a>
+  </p>
+  
+  <div align="center">
+    <img src="https://img.shields.io/badge/next.js-14.0.0-black?style=for-the-badge&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/typescript-5.0.0-blue?style=for-the-badge&logo=typescript" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/prisma-5.0.0-white?style=for-the-badge&logo=prisma" alt="Prisma" />
+    <img src="https://img.shields.io/badge/tailwindcss-3.0.0-38b2ac?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS" />
+  </div>
 </div>
 
-## 🌟 Features
+## 📱 Screenshots
 
-- **User Authentication**
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><strong>Feed View</strong></td>
+      <td align="center"><strong>Profile Page</strong></td>
+    </tr>
+    <tr>
+      <td><img src="frontend/public/screenshots/feed.png" alt="Feed Screenshot" width="400"/></td>
+      <td><img src="frontend/public/screenshots/profile.png" alt="Profile Screenshot" width="400"/></td>
+    </tr>
+    <tr>
+      <td align="center"><strong>Chat Interface</strong></td>
+      <td align="center"><strong>Video Call</strong></td>
+    </tr>
+    <tr>
+      <td><img src="frontend/public/screenshots/chat.png" alt="Chat Screenshot" width="400"/></td>
+      <td><img src="frontend/public/screenshots/video-chat.png" alt="Video Chat Screenshot" width="400"/></td>
+    </tr>
+  </table>
+</div>
 
-  - Secure login and registration
-  - JWT-based authentication
-  - Password encryption
+## ✨ Features
 
-- **Profile Management**
+### Authentication & Security
 
-  - Profile picture upload
-  - Personal information updates
-  - Privacy settings
+- **Secure Registration & Login** - Robust user authentication with email verification
+- **JWT-based Authentication** - Secure token-based session management
+- **Password Encryption** - Advanced password hashing for maximum security
 
-- **Social Features**
+### Social Experience
 
-  - Post creation and sharing
-  - Real-time chat
-  - Friend connections
-  - Feed customization
+- **Interactive Feed** - Personalized content stream with infinite scrolling
+- **Content Creation** - Rich media posts with images, videos, and formatting
+- **Real-time Chat** - Instant messaging between users with typing indicators and read receipts
+- **Video Calls** - Face-to-face communication with screen sharing capabilities
+- **Connection Management** - Follow/unfollow users and build your network
 
-- **Modern UI/UX**
-  - Responsive design
-  - Dark/Light mode
-  - Intuitive navigation
+### User Experience
+
+- **Responsive Design** - Beautiful UI that works seamlessly across all devices
+- **Dark/Light Mode** - Customizable theme preferences
+- **Notifications** - Real-time alerts for interactions and messages
+- **Search Functionality** - Find users, posts, and content easily
+- **Accessibility** - WCAG compliant interface for all users
+
+### Profile Management
+
+- **Custom Profiles** - Personalized profile pages with custom information
+- **Media Uploads** - Image and avatar uploads with preview
+- **Privacy Controls** - Granular settings for content visibility
+- **Activity History** - Track and manage your platform interactions
+
+### Coming Soon
+
+- **AI-Powered Caption Suggestions** - Smart content assistance for posts
+- **Enhanced Real-time Chat Features** - More interactive messaging tools
+- **Improved Commenting System** - Richer interaction options for posts
 
 ## 🚀 Tech Stack
 
 ### Frontend
 
-- **Framework**: Next.js 14 (App Router)
-- **State Management**: React Query, Context API
-- **Styling**: Tailwind CSS
-- **UI Components**: Radix UI
-- **Icons**: FontAwesome, Lucide React
-- **Form Handling**: React Hook Form
-- **API Client**: Axios
+- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **State Management**: [React Query](https://tanstack.com/query), Context API
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [Radix UI](https://www.radix-ui.com/)
+- **Icons**: [Lucide React](https://lucide.dev/), FontAwesome
+- **Form Handling**: [React Hook Form](https://react-hook-form.com/)
+- **API Client**: [Axios](https://axios-http.com/)
 
 ### Backend
 
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: PostgreSQL
-- **ORM**: Prisma
-- **File Storage**: MinIO
-- **Authentication**: JWT
-- **Logging**: Winston
+- **Runtime**: [Node.js](https://nodejs.org/)
+- **Framework**: [Express.js](https://expressjs.com/)
+- **Database**: [PostgreSQL](https://www.postgresql.org/)
+- **ORM**: [Prisma](https://www.prisma.io/)
+- **File Storage**: [MinIO](https://min.io/)
+- **Authentication**: [JWT](https://jwt.io/)
+- **Logging**: [Winston](https://github.com/winstonjs/winston)
 
 ### DevOps
 
-- **Containerization**: Docker
-- **Orchestration**: Kubernetes
-- **CI/CD**: GitLab CI
-- **Cloud**: AWS/GCP
+- **Containerization**: [Docker](https://www.docker.com/)
+- **Orchestration**: [Kubernetes](https://kubernetes.io/)
+- **CI/CD**: [GitHub Actions](https://github.com/features/actions)
+- **Cloud**: [Google Cloud Platform](https://cloud.google.com/)
+- **Deployment**: [Vercel](https://vercel.com/) (Frontend)
 
-## 🛠️ Installation
+## 🛠️ Getting Started
 
 ### Prerequisites
 
@@ -69,136 +124,105 @@
 - MinIO Server
 - Docker (optional)
 
-### Frontend Setup
+### Environment Setup
 
-\```bash
+#### Frontend (.env.local)
 
-# Clone the repository
-
-git clone https://gitlab.com/archer/makemates-2024.git
-
-# Navigate to frontend directory
-
-cd makemates-2024/frontend
-
-# Install dependencies
-
-npm install
-
-# Create .env.local file
-
-cp .env.example .env.local
-
-# Start development server
-
-npm run dev
-\```
-
-### Backend Setup
-
-\```bash
-
-# Navigate to backend directory
-
-cd makemates-2024/backend
-
-# Install dependencies
-
-npm install
-
-# Set up environment variables
-
-cp .env.example .env
-
-# Run database migrations
-
-npx prisma migrate dev
-
-# Start development server
-
-npm run dev
-\```
-
-### Docker Setup
-
-\```bash
-
-# Build and run with Docker Compose
-
-docker-compose up -d
-\```
-
-## 📝 Environment Variables
-
-### Frontend (.env.local)
-
-\```env
+```env
 NEXT_PUBLIC_API_URL=http://localhost:3000
-\```
+```
 
-### Backend (.env)
+#### Backend (.env)
 
-\```env
+```env
 DATABASE_URL=postgresql://user:password@localhost:5432/makemates
 JWT_SECRET=your-jwt-secret
 MINIO_ENDPOINT=your-minio-endpoint
 MINIO_ACCESS_KEY=your-access-key
 MINIO_SECRET_KEY=your-secret-key
-\```
+```
 
-## 🔨 Scripts
+### Installation
 
-### Frontend
+#### Frontend Setup
 
-- \`npm run dev\`: Start development server
-- \`npm run build\`: Build production bundle
-- \`npm run start\`: Start production server
-- \`npm run lint\`: Run ESLint
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/makemates.git
 
-### Backend
+# Navigate to frontend directory
+cd makemates/frontend
 
-- \`npm run dev\`: Start development server
-- \`npm run build\`: Build TypeScript
-- \`npm run start\`: Start production server
-- \`npm run migrate\`: Run database migrations
+# Install dependencies
+npm install
 
-## 🌐 API Documentation
+# Create .env.local file
+cp .env.example .env.local
+
+# Start development server
+npm run dev
+```
+
+#### Backend Setup
+
+```bash
+# Navigate to backend directory
+cd makemates/backend
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+
+# Run database migrations
+npx prisma migrate dev
+
+# Start development server
+npm run dev
+```
+
+#### Docker Setup
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+```
+
+## 📝 API Documentation
 
 ### Authentication
 
-- POST /api/auth/register
-- POST /api/auth/login
-- POST /api/auth/logout
+- `POST /api/auth/register` - Create a new user account
+- `POST /api/auth/login` - Authenticate a user
+- `POST /api/auth/logout` - End a user session
 
 ### Users
 
-- GET /api/users/profile
-- PUT /api/users/update
-- POST /api/users/upload-avatar
+- `GET /api/users/profile` - Get current user profile
+- `PUT /api/users/update` - Update user information
+- `POST /api/users/upload-avatar` - Upload profile picture
 
 ### Posts
 
-- GET /api/posts
-- POST /api/posts/create
-- PUT /api/posts/:id
-- DELETE /api/posts/:id
+- `GET /api/posts` - Retrieve feed posts
+- `POST /api/posts/create` - Create a new post
+- `PUT /api/posts/:id` - Update an existing post
+- `DELETE /api/posts/:id` - Remove a post
+
+### Chat
+
+- `GET /api/chats` - List user conversations
+- `GET /api/chats/:id/messages` - Get messages for a chat
+- `POST /api/chats/:id/messages` - Send a new message
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create your feature branch (\`git checkout -b feature/amazing-feature\`)
-3. Commit your changes (\`git commit -m 'Add some amazing feature'\`)
-4. Push to the branch (\`git push origin feature/amazing-feature\`)
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
-
-## UI Improvement
-
-[ ] Improve commenting
-
-## upcoming features
-
-[ ] caption suggestions
-[ ] Real time chat feature
 
 ## 📜 License
 
@@ -210,9 +234,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-- Project Link: [https://gitlab.com/rogueModer/makemates-2024](https://gitlab.com/rogueModer/makemates-2024)
-- Website: [makemates.com](https://makemates.com)
-<!-- - Email: [archer@makemates.com](mailto:archer@makemates.com) -->
+- **Live Site**: [makemates.vercel.app](https://makemates.vercel.app)
+- **GitHub Repository**: [github.com/yourusername/makemates](https://github.com/yourusername/makemates)
+- **Email**: [contact@makemates.com](mailto:contact@makemates.com)
 
 ## 🙏 Acknowledgments
 

@@ -1,0 +1,91 @@
+name: Deploy to GCloud
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  GCR_PROJECT_ID: ${{ secrets.GCR_PROJECT_ID }}
+  BACKEND_IMAGE_NAME: makemates-backend
+  FRONTEND_IMAGE_NAME: makemates-frontend
+  HELM_BACKEND_CHART_PATH: ./helm-charts/backend
+  HELM_FRONTEND_CHART_PATH: ./helm-charts/frontend
+  HELM_BACKEND_RELEASE_NAME: makemates-backend
+  HELM_FRONTEND_RELEASE_NAME: makemates-frontend
+  HELM_NAMESPACE: makemates
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup GCloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCR_PROJECT_ID }}
+
+      - name: Configure Docker to use GCloud
+        run: gcloud auth configure-docker gcr.io --quiet
+
+      # Build and deploy backend
+      - name: Build Backend Docker Image
+        run: |
+          docker build -t $BACKEND_IMAGE_NAME:$GITHUB_SHA ./backend
+          docker tag $BACKEND_IMAGE_NAME:$GITHUB_SHA gcr.io/$GCR_PROJECT_ID/$BACKEND_IMAGE_NAME:$GITHUB_SHA
+          docker tag $BACKEND_IMAGE_NAME:$GITHUB_SHA gcr.io/$GCR_PROJECT_ID/$BACKEND_IMAGE_NAME:latest
+
+      - name: Push Backend Image to GCR
+        run: |
+          docker push gcr.io/$GCR_PROJECT_ID/$BACKEND_IMAGE_NAME:$GITHUB_SHA
+          docker push gcr.io/$GCR_PROJECT_ID/$BACKEND_IMAGE_NAME:latest
+
+      # Build and deploy frontend
+      - name: Build Frontend Docker Image
+        run: |
+          docker build -t $FRONTEND_IMAGE_NAME:$GITHUB_SHA ./frontend
+          docker tag $FRONTEND_IMAGE_NAME:$GITHUB_SHA gcr.io/$GCR_PROJECT_ID/$FRONTEND_IMAGE_NAME:$GITHUB_SHA
+          docker tag $FRONTEND_IMAGE_NAME:$GITHUB_SHA gcr.io/$GCR_PROJECT_ID/$FRONTEND_IMAGE_NAME:latest
+
+      - name: Push Frontend Image to GCR
+        run: |
+          docker push gcr.io/$GCR_PROJECT_ID/$FRONTEND_IMAGE_NAME:$GITHUB_SHA
+          docker push gcr.io/$GCR_PROJECT_ID/$FRONTEND_IMAGE_NAME:latest
+
+      # Setup kubectl and kubeconfig for custom cluster
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Setup kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          kubectl config use-context ${{ secrets.KUBE_CONTEXT }}
+          kubectl cluster-info
+
+      - name: Deploy Backend with Helm
+        run: |
+          helm upgrade --install $HELM_BACKEND_RELEASE_NAME $HELM_BACKEND_CHART_PATH \
+            --namespace $HELM_NAMESPACE \
+            --create-namespace \
+            --set image.repository=gcr.io/$GCR_PROJECT_ID/$BACKEND_IMAGE_NAME \
+            --set image.tag=$GITHUB_SHA \
+            --set image.pullPolicy=Always
+
+      - name: Deploy Frontend with Helm
+        run: |
+          helm upgrade --install $HELM_FRONTEND_RELEASE_NAME $HELM_FRONTEND_CHART_PATH \
+            --namespace $HELM_NAMESPACE \
+            --create-namespace \
+            --set image.repository=gcr.io/$GCR_PROJECT_ID/$FRONTEND_IMAGE_NAME \
+            --set image.tag=$GITHUB_SHA \
+            --set image.pullPolicy=Always
+
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/$HELM_BACKEND_RELEASE_NAME -n $HELM_NAMESPACE
+          kubectl rollout status deployment/$HELM_FRONTEND_RELEASE_NAME -n $HELM_NAMESPACE
