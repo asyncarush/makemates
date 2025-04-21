@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci && npm install -g npm@10.9.1
+RUN npm ci --legacy-peer-deps && npm install -g npm@10.9.1
 
 # Copy the rest of the frontend application code
 COPY . .
