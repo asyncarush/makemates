@@ -35,8 +35,8 @@ jobs:
       - name: Configure Docker for GCR
         run: |
           gcloud auth configure-docker gcr.io --quiet
+          # Just verify authentication is working
           gcloud auth list
-          gcloud projects list
 
       # Build and deploy backend
       - name: Build Backend Docker Image
