@@ -73,6 +73,10 @@ export default function RootLayout({
           <ChatContextProvider>
             <LoadingProvider>
               <Toaster position="bottom-center" />
+              <div className="fixed top-0 w-full bg-blue-300 font-bold z-[9999] text-center p-1">
+                ⚠️ This Application is going under migration, and might not work as
+                expected.
+              </div>
               {children}
             </LoadingProvider>
           </ChatContextProvider>

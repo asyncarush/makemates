@@ -15,9 +15,9 @@ global:
   ##
   imagePullSecrets: []
   ## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
-## @param global.storageClass DEPRECATED: use global.defaultStorageClass instead
+  ## @param global.storageClass DEPRECATED: use global.defaultStorageClass instead
   ##
-  defaultStorageClass: ""
+  defaultStorageClass: "openebs-hostpath"
   storageClass: ""
   postgresql:
     ## @param global.postgresql.auth.postgresPassword Password for the "postgres" admin user (overrides `auth.postgresPassword`)
@@ -30,10 +30,10 @@ global:
     ## @param global.postgresql.auth.secretKeys.replicationPasswordKey Name of key in existing secret to use for PostgreSQL credentials (overrides `auth.secretKeys.replicationPasswordKey`). Only used when `global.postgresql.auth.existingSecret` is set.
     ##
     auth:
-      postgresPassword: ""
-      username: ""
-      password: ""
-      database: ""
+      postgresPassword: "password"
+      username: "postgres"
+      password: "password"
+      database: "postgres"
       existingSecret: ""
       secretKeys:
         adminPasswordKey: ""
@@ -1379,7 +1379,7 @@ backup:
       ##
       enabled: true
     storage:
-      ## @param backup.cronjob.storage.enabled Enable using a `PersistentVolumeClaim` as backup data volume 
+      ## @param backup.cronjob.storage.enabled Enable using a `PersistentVolumeClaim` as backup data volume
       ##
       enabled: true
       ## @param backup.cronjob.storage.existingClaim Provide an existing `PersistentVolumeClaim` (only when `architecture=standalone`)
