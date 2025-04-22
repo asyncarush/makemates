@@ -8,17 +8,12 @@ openebs-crds:
 localpv-provisioner:
   rbac:
     create: true
-  hostpathClass:
-    enabled: true
-    name: openebs-hostpath
-    isDefaultClass: true
-    basePath: "/mnt/data1"
 
 # Refer to https://github.com/openebs/zfs-localpv/blob/v2.7.1/deploy/helm/charts/values.yaml for complete set of values.
 zfs-localpv:
   crds:
     zfsLocalPv:
-      enabled: true
+      enabled: false
     csi:
       volumeSnapshots:
         enabled: false
@@ -27,7 +22,7 @@ zfs-localpv:
 lvm-localpv:
   crds:
     lvmLocalPv:
-      enabled: true
+      enabled: false
     csi:
       volumeSnapshots:
         enabled: false
@@ -37,7 +32,7 @@ mayastor:
   csi:
     node:
       initContainers:
-        enabled: true
+        enabled: false
   etcd:
     # -- Kubernetes Cluster Domain
     clusterDomain: cluster.local

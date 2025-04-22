@@ -141,6 +141,18 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
   tls:
-   - secretName: backend-makemates-tls
-     hosts:
-       - backend.makemates.local
+    - secretName: backend-makemates-tls
+      hosts:
+        - backend.makemates.local
+
+secrets:
+  NODE_ENV: production
+  PORT: 2000
+  DATABASE_URL: postgresql://postgres:password@makemates-pg-postgresql.makemates.svc.cluster.local:5432/makemates
+  REDIS_URL: redis://redis-master.makemates.svc.cluster.local:6379
+  JWT_PRIVATE_KEY: secret-key
+  MINIO_ENDPOINT: minio
+  MINIO_PORT: 9000
+  MINIO_USE_SSL: false
+  MINIO_ACCESS_KEY: qL6HeKBaL2i54EtlbqmA
+  MINIO_SECRET_KEY: 7ZdL52cMvI1LdHrKAdFAGKrSnkIf4H6wCfzsJRQR
