@@ -14,31 +14,10 @@ image:
   tag: latest
 
 # This is for the secretes for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-imagePullSecrets: []
+imagePullSecrets: ["gcr-sa-secret"]
 # This is to override the chart name.
 nameOverride: ""
 fullnameOverride: ""
-
-# Environment variables
-env:
-  - name: NODE_ENV
-    value: "production"
-  - name: PORT
-    value: "2000"
-  - name: DATABASE_URL
-    value: "postgresql://postgres:aT7O3n5jEf@192.168.49.2:32319/makemates"
-  - name: JWT_PRIVATE_KEY
-    value: "secret-key"
-  - name: MINIO_ENDPOINT
-    value: "192.168.49.2"
-  - name: MINIO_PORT
-    value: "32184"
-  - name: MINIO_USE_SSL
-    value: "false"
-  - name: MINIO_ACCESS_KEY
-    value: "BudiLoOgcTvoYw99AlNR"
-  - name: MINIO_SECRET_KEY
-    value: "iZwYDsyr2h8gTp35Jd4YsKgODnsX4CLP0UZ2NVF7"
 
 #This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
@@ -151,7 +130,7 @@ secrets:
   DATABASE_URL: postgresql://postgres:password@makemates-pg-postgresql.makemates.svc.cluster.local:5432/makemates
   REDIS_URL: redis://redis-master.makemates.svc.cluster.local:6379
   JWT_PRIVATE_KEY: secret-key
-  MINIO_ENDPOINT: minio
+  MINIO_ENDPOINT: minio.makemates.svc.cluster.local
   MINIO_PORT: 9000
   MINIO_USE_SSL: false
   MINIO_ACCESS_KEY: qL6HeKBaL2i54EtlbqmA

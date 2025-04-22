@@ -144,7 +144,7 @@ architecture: replication
 auth:
   ## @param auth.enabled Enable password authentication
   ##
-  enabled: true
+  enabled: false
   ## @param auth.sentinel Enable authentication on sentinels too
   ##
   sentinel: true
@@ -571,7 +571,7 @@ master:
   service:
     ## @param master.service.type Redis&reg; master service type
     ##
-    type: ClusterIP
+    type: NodePort
     ## @param master.service.portNames.redis Redis&reg; master service port name
     ##
     portNames:
