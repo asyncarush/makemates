@@ -108,22 +108,22 @@ affinity: {}
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
-  enabled: false
-  className: "nginx"
+  enabled: true
+  className: traefik
   annotations:
-    kubernetes.io/ingress.class: nginx
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
     kubernetes.io/tls-acme: "true"
-    cert-manager.io/cluster-issuer: letsencrypt-staging
     nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: letsencrypt-wildcard
   hosts:
-    - host: backend.makemates.local
+    - host: makemates-backend.asyncarush.com
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls:
-    - secretName: backend-makemates-tls
+    - secretName: makemates-backend-tls
       hosts:
-        - backend.makemates.local
+        - makemates-backend.asyncarush.com
 
 secrets:
   NODE_ENV: production

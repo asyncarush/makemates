@@ -27,6 +27,15 @@ export class ServerConfig {
       })
     );
 
+    // Handle CORS preflight for all routes
+    this.app.options("*", cors({
+      origin: ["http://localhost:3000", "https://makemates.vercel.app"],
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
+      exposedHeaders: ["Set-Cookie"],
+    }));
+
     // Development logging
     if (process.env.NODE_ENV === "development") {
       this.app.use(morgan("dev"));
