@@ -109,11 +109,12 @@ affinity: {}
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: true
-  className: traefik
+  className: nginx
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
     kubernetes.io/tls-acme: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     cert-manager.io/cluster-issuer: letsencrypt-wildcard
   hosts:
     - host: makemates-backend.asyncarush.com
@@ -134,5 +135,5 @@ secrets:
   MINIO_ENDPOINT: minio.makemates.svc.cluster.local
   MINIO_PORT: 9000
   MINIO_USE_SSL: false
-  MINIO_ACCESS_KEY: qL6HeKBaL2i54EtlbqmA
-  MINIO_SECRET_KEY: 7ZdL52cMvI1LdHrKAdFAGKrSnkIf4H6wCfzsJRQR
+  MINIO_ACCESS_KEY: wB7S6lLEkGBOIQQEPrNk
+  MINIO_SECRET_KEY: jf9yT8DHhkTmazn6O1tTFLEQIZ8pZ9fGCOHouUcH

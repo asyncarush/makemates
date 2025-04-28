@@ -56,20 +56,20 @@ securityContext:
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
   # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-  type: NodePort
+  type: ClusterIP
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 3000
   targetPort: 3000
-  nodePort: 30005
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: true
-  className: traefik
+  className: nginx
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
     kubernetes.io/tls-acme: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     cert-manager.io/cluster-issuer: letsencrypt-wildcard
   hosts:
     - host: makemates-frontend.asyncarush.com
@@ -104,10 +104,18 @@ livenessProbe:
   httpGet:
     path: /
     port: 3000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
 readinessProbe:
   httpGet:
     path: /
     port: 3000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
 
 #This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
@@ -119,8 +127,10 @@ autoscaling:
 
 # Additional volumes on the output Deployment definition.
 env:
-  - name: NEXT_PUBLIC_API_ENDPOINT
-    value: "http://backend.makemates.local"
+  - name: NEXT_PUBLIC_BACKEND_API_URL
+    value: makemates-backend.makemates.svc.cluster.local
+  - name: NODE_ENV
+    value: "production"
 
 volumes: []
 # - name: foo

@@ -4,6 +4,8 @@ import { LoginInputType, SignUpInputType } from "./typings";
 export const API_ENDPOINT =
   process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://127.0.0.1:2000";
 
+console.log("Current API_ENDPOINT", API_ENDPOINT);
+
 // Configure axios defaults for all requests
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common["Content-Type"] = "application/json";
