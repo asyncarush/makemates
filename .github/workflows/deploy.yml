@@ -96,8 +96,3 @@ jobs:
         run: |
           kubectl rollout status deployment/$HELM_BACKEND_RELEASE_NAME -n $HELM_NAMESPACE
           kubectl rollout status deployment/$HELM_FRONTEND_RELEASE_NAME -n $HELM_NAMESPACE
-
-      - name: Debug service account
-        run: |
-          gcloud auth list
-          gcloud projects get-iam-policy ${{ secrets.GCR_PROJECT_ID }}
