@@ -19,11 +19,7 @@ export class ServerConfig {
     // CORS configuration
     this.app.use(
       cors({
-        origin: [
-          "http://localhost:3000",
-          "https://makemates.vercel.app",
-          "https://makemates-frontend.asyncarush.com:30854",
-        ],
+        origin: ["http://localhost:3000", "https://makemates.asyncarush.com/"],
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
@@ -35,11 +31,7 @@ export class ServerConfig {
     this.app.options(
       "*",
       cors({
-        origin: [
-          "http://localhost:3000",
-          "https://makemates.vercel.app",
-          "https://makemates-frontend.asyncarush.com:30854",
-        ],
+        origin: ["http://localhost:3000", "https://makemates.asyncarush.com/"],
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],

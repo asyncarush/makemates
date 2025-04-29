@@ -14,11 +14,7 @@ export class SocketService {
   constructor(server: any) {
     this.io = new Server(server, {
       cors: {
-        origin: [
-          "http://localhost:3000",
-          "https://makemates.vercel.app",
-          "http://34.42.91.142:9000",
-        ],
+        origin: ["http://localhost:3000", "https://makemates.asyncarush.com/"],
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true,
         allowedHeaders: ["Content-Type", "Authorization"],
