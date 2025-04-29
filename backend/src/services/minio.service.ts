@@ -27,7 +27,6 @@ export class MinioServiceError extends Error {
  */
 const minioClient = new Client({
   endPoint: minioConfig.endpoint,
-  port: minioConfig.port,
   useSSL: minioConfig.useSSL,
   accessKey: minioConfig.accessKey,
   secretKey: minioConfig.secretKey,
@@ -37,7 +36,6 @@ const minioClient = new Client({
 // Add debug logging
 logger.info("Initializing MinIO client with config:", {
   endpoint: minioConfig.endpoint,
-  port: minioConfig.port,
   useSSL: minioConfig.useSSL,
   pathStyle: minioConfig.forcePathStyle,
 });
@@ -114,11 +112,9 @@ export const uploadFile = async (
       file.size,
       metadata
     );
-
     // Construct the public URL
     const protocol = minioConfig.useSSL ? "https" : "http";
-    const url = `${protocol}://${minioConfig.endpoint}:${minioConfig.port}/${BUCKET_NAME}/${fileName}`;
-
+    const url = `${protocol}://${minioConfig.endpoint}/${BUCKET_NAME}/${fileName}`;
     return url;
   } catch (error: any) {
     console.error("MinIO upload error:", error);

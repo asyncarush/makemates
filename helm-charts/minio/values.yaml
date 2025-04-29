@@ -786,21 +786,13 @@ service:
   ## This can be used to set the LoadBalancer service type to internal only.
   ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
   ##
-  annotations:
-  traefik.ingress.kubernetes.io/router.entrypoints: websecure
-  kubernetes.io/tls-acme: "true"
-  nginx.ingress.kubernetes.io/rewrite-target: /
-  cert-manager.io/cluster-issuer: letsencrypt-wildcard
+  annotations: {}
   ## Headless service properties
   ##
   headless:
     ## @param service.headless.annotations Annotations for the headless service.
     ##
-    annotations:
-  traefik.ingress.kubernetes.io/router.entrypoints: websecure
-  kubernetes.io/tls-acme: "true"
-  nginx.ingress.kubernetes.io/rewrite-target: /
-  cert-manager.io/cluster-issuer: letsencrypt-wildcard
+    annotations: {}
 ## Configure the ingress resource that allows you to access the
 ## MinIO&reg; Console. Set up the URL
 ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
@@ -845,6 +837,10 @@ ingress:
     kubernetes.io/tls-acme: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /
     cert-manager.io/cluster-issuer: letsencrypt-wildcard
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+
   ## @param ingress.tls Enable TLS configuration for the hostname defined at `ingress.hostname` parameter
   ## TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.ingress.hostname }}`
   ## You can:
@@ -951,6 +947,9 @@ apiIngress:
     kubernetes.io/tls-acme: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /
     cert-manager.io/cluster-issuer: letsencrypt-wildcard
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
   ## @param apiIngress.tls Enable TLS configuration for the hostname defined at `apiIngress.hostname` parameter
   ## TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.apiIngress.hostname }}`
   ## You can:
