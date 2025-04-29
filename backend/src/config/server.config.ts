@@ -17,12 +17,13 @@ export class ServerConfig {
 
   private setupMiddleware() {
     // CORS configuration
+    const allowedOrigins = ["http://localhost:3000", "https://makemates.asyncarush.com"];
     this.app.use(
       cors({
-        origin: ["http://localhost:3000", "https://makemates.asyncarush.com/"],
+        origin: allowedOrigins,
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
+        allowedHeaders: ["Content-Type", "Authorization"],
         exposedHeaders: ["Set-Cookie"],
       })
     );
@@ -31,12 +32,15 @@ export class ServerConfig {
     this.app.options(
       "*",
       cors({
-        origin: ["http://localhost:3000", "https://makemates.asyncarush.com/"],
+        origin: allowedOrigins,
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
+        allowedHeaders: ["Content-Type", "Authorization"],
         exposedHeaders: ["Set-Cookie"],
-      })
+      }),
+      (req, res) => {
+        res.sendStatus(200);
+      }
     );
 
     // Development logging
