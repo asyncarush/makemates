@@ -128,7 +128,7 @@ autoscaling:
 # Additional volumes on the output Deployment definition.
 env:
   - name: NEXT_PUBLIC_BACKEND_API_URL
-    value: makemates-backend.makemates.svc.cluster.local
+    value: https://makemates-api.asyncarush.com
   - name: NODE_ENV
     value: "production"
 
