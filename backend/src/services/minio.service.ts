@@ -106,6 +106,7 @@ export const uploadFile = async (
       "x-amz-meta-original-name": file.originalname,
     };
 
+    console.log("Reaching");
     await minioClient.putObject(
       BUCKET_NAME,
       fileName,

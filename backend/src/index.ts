@@ -23,7 +23,7 @@ dotenv.config();
 const serverConfig = new ServerConfig();
 const app = serverConfig.getApp();
 
-// Create HTTP server
+//   Create HTTP server
 const server = http.createServer(app);
 
 // Initialize Socket.IO service
