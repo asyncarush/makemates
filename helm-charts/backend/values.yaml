@@ -46,11 +46,10 @@ securityContext: {}
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
   # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-  type: NodePort
+  type: ClusterIP
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 2000
   targetPort: 2000
-  nodePort: 30006
 
 resources:
   limits:
@@ -65,7 +64,7 @@ livenessProbe:
   httpGet:
     path: /health
     port: 2000
-  initialDelaySeconds: 30
+  initialDelaySeconds: 15
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 3
@@ -74,18 +73,18 @@ readinessProbe:
   httpGet:
     path: /health
     port: 2000
-  initialDelaySeconds: 30
+  initialDelaySeconds: 15
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 3
 
 #This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 70
 
 # Additional volumes on the output Deployment definition.
 volumes: []
@@ -117,14 +116,14 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     cert-manager.io/cluster-issuer: letsencrypt-wildcard
   hosts:
-    - host: makemates-backend.asyncarush.com
+    - host: makemates-api.asyncarush.com
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls:
-    - secretName: makemates-backend-tls
+    - secretName: makemates-api-tls
       hosts:
-        - makemates-backend.asyncarush.com
+        - makemates-api.asyncarush.com
 
 secrets:
   NODE_ENV: production
@@ -133,7 +132,7 @@ secrets:
   REDIS_URL: redis://redis-master.redis.svc.cluster.local:6379
   JWT_PRIVATE_KEY: secret-key
   MINIO_ENDPOINT: minio-api.asyncarush.com
-  MINIO_PORT: 30854
+  MINIO_PORT: 443
   MINIO_USE_SSL: true
   MINIO_ACCESS_KEY: wB7S6lLEkGBOIQQEPrNk
   MINIO_SECRET_KEY: jf9yT8DHhkTmazn6O1tTFLEQIZ8pZ9fGCOHouUcH

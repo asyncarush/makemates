@@ -72,14 +72,14 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     cert-manager.io/cluster-issuer: letsencrypt-wildcard
   hosts:
-    - host: makemates-frontend.asyncarush.com
+    - host: makemates.asyncarush.com
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls:
-    - secretName: makemates-frontend-tls
+    - secretName: makemates-tls
       hosts:
-        - makemates-frontend.asyncarush.com
+        - makemates.asyncarush.com
 
 resources:
   limits:
@@ -104,7 +104,7 @@ livenessProbe:
   httpGet:
     path: /
     port: 3000
-  initialDelaySeconds: 30
+  initialDelaySeconds: 15
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 6
@@ -112,18 +112,18 @@ readinessProbe:
   httpGet:
     path: /
     port: 3000
-  initialDelaySeconds: 30
+  initialDelaySeconds: 15
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 6
 
 #This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 70
 
 # Additional volumes on the output Deployment definition.
 env:

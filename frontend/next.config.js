@@ -18,7 +18,7 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "minio-api.asyncarush.com",
-        port: "30854",
+        port: "443",
       },
     ],
   },

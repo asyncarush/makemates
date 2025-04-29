@@ -49,13 +49,13 @@ function Post({
 
   const handlePostLike = async () => {
     try {
+      setIsPostLiked(!isPostLiked);
       const endpoint = isPostLiked ? "/posts/unlike" : "/posts/like";
       await axios.post(
         `${API_ENDPOINT}${endpoint}`,
         { postId },
         { withCredentials: true }
       );
-      setIsPostLiked(!isPostLiked);
     } catch (error: any) {
       console.error(error.response?.data || error.message);
     }

@@ -35,6 +35,7 @@ const Page = () => {
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
   const [searchResult, setSearchResult] = useState<ChatUser[]>([]);
   const [activeChats, setActiveChats] = useState<Chat[]>([]);
+  const [chatError, setChatError] = useState<string | null>(null);
 
   // Custom hooks
   const { onlineUsers, isUserOnline } = useOnlineStatus(socket);
@@ -93,12 +94,18 @@ const Page = () => {
 
   const startChat = async (user: ChatUser) => {
     if (!chatService) return;
+    setChatError(null);
     try {
       const chat = await chatService.createChat(user.id);
+      console.log("Chat object returned from createChat:", chat);
+      if (!chat || !chat.user) {
+        setChatError("Failed to start chat: Invalid chat object returned.");
+        return;
+      }
       setActiveChat(chat);
-      console.log("Active Chat set", activeChat);
       setSearchUser("");
-    } catch (error) {
+    } catch (error: any) {
+      setChatError("Error starting chat: " + (error?.message || error));
       console.error("Error starting chat:", error);
     }
   };
@@ -246,7 +253,12 @@ const Page = () => {
         )}
 
         {/* Active Chat View */}
-        {activeChat && (
+        {chatError && (
+          <div className="p-4 bg-red-100 text-red-700 text-center w-full">
+            {chatError}
+          </div>
+        )}
+        {activeChat && activeChat.user && (
           <>
             {/* Chat Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
