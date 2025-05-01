@@ -38,19 +38,22 @@ export const EditPostComponent = ({
 
   // Edit Post Modal Handler
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);  
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const closeButton = useRef<HTMLButtonElement>(null);
-  
+
   // File & Form Handler
   const [files, setFiles] = useState<FileList | null>(null);
   const [desc, setDesc] = useState<string>(caption);
   const [previewUrls, setPreviewUrls] = useState<string[]>(mediaUrls);
+  const [newPreviewUrls, setNewPreviewUrls] = useState<string[]>(mediaUrls);
   const formRef = useRef<HTMLFormElement>(null);
   const addMediaInput = useRef<HTMLInputElement>(null);
 
   // Loader
   const [uploadState, setUploadState] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+
+  const [removedImages, setRemovedImages] = useState<string[]>([]);
 
   const handleModalClose = () => {
     setIsModalOpen(false);
@@ -96,7 +99,7 @@ export const EditPostComponent = ({
 
     try {
       console.log("Editing Selected File,", files);
-      
+
       const uploadPromises = Array.from(files).map(async (file) => {
         const fileName = `${Date.now()}-${file.name}`;
         const formData = new FormData();
@@ -121,6 +124,7 @@ export const EditPostComponent = ({
           );
 
           const newImages = response.data.urls;
+
           return newImages;
         } catch (error) {
           console.error("Upload error:", error);
@@ -147,6 +151,7 @@ export const EditPostComponent = ({
       mutation.mutate(postData as EditPost);
       closeButton.current?.click();
 
+      removeThisImage(postId, removedImages);
       clearFileInput();
     } catch (error) {
       console.error("Upload failed:", error);
@@ -227,15 +232,22 @@ export const EditPostComponent = ({
     }
   };
 
-  /**
-   * Triggers the file input click event for adding more media
-   *
-   * @param {React.MouseEvent<HTMLButtonElement>} e - Button click event
-   * @description Programmatically triggers the hidden file input to open file selection dialog
-   */
   const handleAddMedia = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     addMediaInput.current?.click();
+  };
+
+  const clearImage = (media: string) => {
+    // check the if existed Media deleted
+    if (previewUrls.includes(media)) {
+      const newPreviewUrls = previewUrls.filter((url) => url !== media);
+      setPreviewUrls(newPreviewUrls);
+      setRemovedImages((prev) => [...prev, media]);
+    }
+
+    // check if new media is deleted
+    if (newPreviewUrls.includes(media)) {
+    }
   };
 
   return (
@@ -263,7 +275,7 @@ export const EditPostComponent = ({
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
         <DialogContent>
           <form ref={formRef} onSubmit={handleUploadPost}>
-            {/* <DialogHeader></DialogHeader> */}
+
             <DialogTitle>Edit Post</DialogTitle>
             <textarea
               rows={3}
@@ -296,7 +308,7 @@ export const EditPostComponent = ({
                       />
                       <div
                         className="absolute p-2 bg-white rounded-full right-2 top-2 cursor-pointer"
-                        onClick={clearFileInput}
+                        onClick={() => clearImage(mediaUrl)}
                       >
                         X
                       </div>
@@ -332,6 +344,21 @@ export const EditPostComponent = ({
       </Dialog>
     </>
   );
+};
+
+const removeThisImage = async (postId: number, media: string[]) => {
+  console.log("Getting, removing", postId, media);
+
+  try {
+    // remove the image from server
+    const response = await axios.post(`${API_ENDPOINT}/posts/editpost/remove`, {
+      postId,
+      media,
+    });
+  } catch (e: any) {
+    console.log(e.message);
+    toast.error("Unable to remove massage");
+  }
 };
 
 export default EditPostComponent;
