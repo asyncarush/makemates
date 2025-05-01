@@ -2,7 +2,8 @@ import axios from "axios";
 import { LoginInputType, SignUpInputType } from "./typings";
 
 export const API_ENDPOINT =
-  process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://127.0.0.1:2000";
+  process.env.NEXT_PUBLIC_BACKEND_API_URL ||
+  "https://makemates-api.asyncarush.com";
 
 console.log("Current API_ENDPOINT", API_ENDPOINT);
 
