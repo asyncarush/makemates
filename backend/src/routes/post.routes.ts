@@ -7,7 +7,8 @@ import {
   checkPostLikeStatus,
   postNewComment,
   getPostComments,
-  editPost
+  editPost,
+  removeThisImage,
 } from "../controllers/post.controller";
 
 import auth from "../middleware/auth";
@@ -22,6 +23,9 @@ router.post("/", auth, addPost);
 
 // Edit a post
 router.post("/edit/:postId", auth, editPost);
+
+// Edit Post : remove image
+router.post("/editpost/remove", auth, removeThisImage);
 
 // Like a post
 router.post("/like", auth, likeThePost);

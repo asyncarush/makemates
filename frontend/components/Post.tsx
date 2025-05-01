@@ -40,6 +40,7 @@ function Post({
 }: PostProps) {
   const { currentUser }: any = useContext(AuthContext);
   const [isPostLiked, setIsPostLiked] = useState(false);
+  const [likeAnimating, setLikeAnimating] = useState(false);
   const [commentBox, setCommentBox] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -48,6 +49,7 @@ function Post({
   }, []);
 
   const handlePostLike = async () => {
+    setLikeAnimating(true);
     try {
       setIsPostLiked(!isPostLiked);
       const endpoint = isPostLiked ? "/posts/unlike" : "/posts/like";
@@ -230,11 +232,14 @@ function Post({
         <div className="flex items-center gap-3">
           <button
             onClick={handlePostLike}
-            className="flex items-center gap-1.5 text-gray-700 hover:text-red-500 transition-colors"
+            className="flex items-cenxter gap-1.5 text-gray-700 hover:text-red-500 transition-colors duration-1000 "
           >
             <FontAwesomeIcon
               icon={isPostLiked ? likeIcon : unlikeIcon}
-              className={`w-4 h-4 ${isPostLiked ? "text-red-500" : ""}`}
+              className={`w-4 h-4 ${isPostLiked ? "text-red-500" : ""} ${
+                likeAnimating ? "like-animate" : ""
+              }`}
+              onAnimationEnd={() => setLikeAnimating(false)}
             />
             <span className="text-xs font-medium">Like</span>
           </button>
@@ -271,3 +276,20 @@ function Post({
 }
 
 export default Post;
+
+<style jsx>{`
+  .like-animate {
+    animation: pop-like 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes pop-like {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.5);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+`}</style>;

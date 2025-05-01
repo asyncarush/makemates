@@ -17,6 +17,8 @@ import { logger } from "../config/winston";
 
 import { notificationManager } from "../index";
 
+import { deleteFile } from "../services/minio.service";
+
 const prisma = new PrismaClient();
 
 interface User {
@@ -42,17 +44,19 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
 
     const urls = JSON.parse(imgUrls);
 
-    await Promise.all(
-      urls.map((url: string) =>
-        prisma.post_media.create({
-          data: {
-            post_id: post.id,
-            media_url: url,
-            user_id: req.user?.id || -1,
-          },
-        })
-      )
-    );
+    if (imgUrls) {
+      await Promise.all(
+        urls.map((url: string) =>
+          prisma.post_media.create({
+            data: {
+              post_id: post.id,
+              media_url: url,
+              user_id: req.user?.id || -1,
+            },
+          })
+        )
+      );
+    }
 
     // will be used to send notification to the followers
     const notificationData = {
@@ -93,6 +97,7 @@ export const editPost = async (req: RequestWithUser, res: Response) => {
 
   try {
     // First update the post
+
     const updatedPost = await prisma.posts.update({
       where: {
         id: parsedPostId,
@@ -110,6 +115,11 @@ export const editPost = async (req: RequestWithUser, res: Response) => {
     }
 
     // Parse imgUrls if it's a string
+
+    if (!imgUrls) {
+      return res.status(200).send("Post Saved...");
+    }
+
     const imageUrlsArray =
       typeof imgUrls === "string" ? JSON.parse(imgUrls) : imgUrls;
     console.log("Processing imageUrlsArray:", imageUrlsArray);
@@ -332,5 +342,39 @@ export const getPostComments = async (req: Request, res: Response) => {
       return res.status(400).send(err.message);
     }
     return res.status(400).send("An unknown error occurred.");
+  }
+};
+
+export const removeThisImage = async (req: RequestWithUser, res: Response) => {
+  const { postId, media } = req.body;
+
+  try {
+    const deleteFromDB = prisma.post_media.deleteMany({
+      where: {
+        post_id: parseInt(postId, 10),
+        media_url: media,
+        user_id: req.user?.id || -1,
+      },
+    });
+
+    // https://minio-api.asyncarush.com/posts/1745945545469-image_1745945535018.png
+
+    const fileName = media.split("posts/")[1];
+    console.log("Filename:", fileName);
+    const deleteFromMinIO = deleteFile(fileName);
+
+    const [postMediaDeleteResult, minioDeleteResult] = await Promise.all([
+      deleteFromDB,
+      deleteFromMinIO,
+    ]);
+
+    console.log("DB delete result:", postMediaDeleteResult);
+    console.log("MinIO delete result:", minioDeleteResult);
+
+    return res.status(200).send(true);
+  } catch (e: any) {
+    console.error("Deletion error:", e);
+    throw new Error("Failed to delete media");
+    return res.status(400).send(e.message);
   }
 };

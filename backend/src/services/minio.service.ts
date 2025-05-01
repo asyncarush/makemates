@@ -124,3 +124,15 @@ export const uploadFile = async (
     );
   }
 };
+
+export const deleteFile = async (fileName: string): Promise<void> => {
+  try {
+    await minioClient.removeObject(BUCKET_NAME, fileName);
+  } catch (error:any) {
+    console.error("MinIO delete error:", error);
+    throw new MinioServiceError(
+      `Failed to delete file: ${error.message || "Unknown error"}`,
+      error
+    );
+  }
+};

@@ -51,7 +51,16 @@ function FeedUploadBox() {
   const handleUploadPost = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Uploading files: ", files);
-    if (!files || files.length === 0) return toast.error("No files selected!");
+
+    if (!files || files.length === 0) {
+      const postData = {
+        desc,
+        imgUrls: "",
+      };
+      mutation.mutate(postData as NewPost);
+      closeButton.current?.click();
+      return toast.success("Post Uploaded");
+    } 
 
     const compressedFiles = await Promise.all(
       Array.from(files).map(

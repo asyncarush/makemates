@@ -16,7 +16,6 @@ export interface NewPost {
 export interface EditPost {
   desc: string;
   imgUrls: string;
-  postId: number;
 }
 
 export interface LoginInputType {

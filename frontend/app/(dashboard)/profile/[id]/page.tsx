@@ -56,6 +56,7 @@ function Page() {
   }, [id, route]);
 
   const handleFollow = async () => {
+    setIsFollowed(true);
     try {
       const res = await axios.post(
         `${API_ENDPOINT}/user/follow`,
@@ -64,8 +65,8 @@ function Page() {
         },
         { withCredentials: true }
       );
-      if (res.status === 200) {
-        setIsFollowed(true);
+      if (res.status !== 200) {
+        setIsFollowed(false);
       }
     } catch (err) {
       console.error("Error following user:", err);
@@ -73,6 +74,7 @@ function Page() {
   };
 
   const handleUnFollow = async () => {
+    setIsFollowed(false);
     try {
       const res = await axios.post(
         `${API_ENDPOINT}/user/unfollow`,
@@ -82,8 +84,8 @@ function Page() {
         { withCredentials: true }
       );
 
-      if (res.status === 200) {
-        setIsFollowed(false);
+      if (res.status !== 200) {
+        setIsFollowed(true);
       }
     } catch (err) {
       console.error("Error unfollowing user:", err);
