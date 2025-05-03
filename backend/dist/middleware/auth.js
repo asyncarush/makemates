@@ -29,9 +29,6 @@ const auth = (req, res, next) => {
         const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_PRIVATE_KEY || "jwt-secret-key");
         // Set the user property on req
         req.user = { id: decoded.id };
-        if (process.env.NODE_ENV === "development") {
-            console.log("Authentication successful for user id:", decoded.id);
-        }
         next();
     }
     catch (error) {

@@ -157,16 +157,7 @@ class NotificationManger {
                         isRead: false,
                     },
                 }));
-                const response = yield Promise.all(allCalls);
-                console.log("Notification creation responses:", response);
-                console.log("Reaching here, and saved to database.");
-                console.log("Notificaton created for : ", notificationData);
-                // Send socket notification to online users
-                for (const receiverId of batch_recipients) {
-                    // Emit to specific user if they're online
-                    this.io.to(`user:${receiverId}`).emit("new_notification");
-                }
-                console.log("Notifications are sent over socket");
+                yield Promise.all(allCalls);
                 return { success: true };
             }
             catch (error) {
