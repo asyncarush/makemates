@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import axios from "axios";
-import Compressor from "compressorjs";
+
 import Image from "next/image";
 import toast from "react-hot-toast";
 
@@ -21,25 +21,26 @@ import { NewPost } from "@/typings";
 import { IoIosAddCircle } from "react-icons/io";
 import { API_ENDPOINT } from "@/axios.config";
 import { useNewPostMutation } from "@/lib/mutations";
+import { useFileUploader } from "@/hooks/useFileUploader";
 
 function FeedUploadBox() {
   const [desc, setDesc] = useState<string>("");
   const [files, setFiles] = useState<FileList | null>(null);
   const [previewUrls, setPreviewUrls] = useState<string[] | null>(null);
-  const [uploadState, setUploadState] = useState<boolean>(false);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  // const [uploadState, setUploadState] = useState<boolean>(false);
+  // const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
 
   const mutation = useNewPostMutation();
 
+  const { uploadFile, uploadProgress, uploadState } = useFileUploader();
+
   const handleUploadPost = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Uploading files: ", files);
-
-    setUploadState(true);
 
     if (!files || files.length === 0) {
+      //Create post wihout images
       const postData = {
         desc,
         imgUrls: "",
@@ -49,77 +50,18 @@ function FeedUploadBox() {
       return toast.success("Post Uploaded");
     }
 
-    const compressedFiles = await Promise.all(
-      Array.from(files).map(
-        (file) =>
-          new Promise((resolve, reject) => {
-            new Compressor(file, {
-              quality: 0.5,
-              success(result) {
-                resolve(result);
-              },
-              error(err) {
-                reject(err);
-                toast.error(err.message);
-              },
-            });
-          })
-      )
-    );
+    const imageUrls = await uploadFile(files);
 
-    // Create FormData with the compressed file
-    let formData = new FormData();
+    const postData = {
+      desc: desc,
+      imgUrls: JSON.stringify(imageUrls),
+    };
 
-    compressedFiles.forEach((file: any) => {
-      const fileExtension = file.type.split("/")[1] || "jpg";
-      const fileName = `image_${Date.now()}.${fileExtension}`;
-      formData.append("post_images", file, fileName);
-    });
+    // Create the post with the image URL
+    mutation.mutate(postData);
 
-    console.log("uploading files to minio");
-
-    try {
-      // Upload file to MinIO through backend API
-      const uploadResponse: any = await axios.post(
-        `${API_ENDPOINT}/upload`,
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          onUploadProgress: (progressEvent) => {
-            const progress = progressEvent.total
-              ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
-              : 0;
-            setUploadProgress(progress);
-          },
-        }
-      );
-
-      // Get the URL from the response
-      const imageUrl = uploadResponse.data.urls;
-
-      // Clear the form and reset states
-      setUploadState(false);
-      setUploadProgress(null);
-      clearFileInput();
-
-      const postData = {
-        desc: desc,
-        imgUrls: JSON.stringify(imageUrl),
-      };
-
-      console.log("Post Data: ", postData);
-
-      // Create the post with the image URL
-      mutation.mutate(postData);
-      closeButton.current?.click();
-    } catch (error: any) {
-      setUploadState(false);
-      setUploadProgress(null);
-      toast.error("Failed to upload image: " + error.message);
-    }
+    clearFileInput();
+    closeButton.current?.click();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,9 +89,7 @@ function FeedUploadBox() {
       );
       return;
     }
-
     setFiles(selectedFiles);
-
     // Create and add new preview URLs
     const newPreviewUrls = arrayOfFileList.map((file) =>
       URL.createObjectURL(file)
