@@ -11,21 +11,6 @@ export default function Notification({
 }: {
   notifications: any;
 }) {
-  //   {
-  //     "id": 45,
-  //     "user_reciever_id": 1,
-  //     "user_sender_id": 4,
-  //     "type": "post",
-  //     "resource_id": 39,
-  //     "message": "4 has post something in long time. Websocket check",
-  //     "isRead": false,
-  //     "createdAt": "2025-05-03T09:22:45.537Z",
-  //     "sender": {
-  //         "name": "Harry Potter",
-  //         "img": "https://minio-api.asyncarush.com/posts/profile-pc-1746009665073-profile_pic_1746009662862-Harry Potter.jpeg"
-  //     }
-  // }
-
   return (
     <div className="p-3 w-[380px] max-h-[600px] overflow-y-auto">
       <div className="flex items-center justify-between mb-4">
