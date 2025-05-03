@@ -351,7 +351,6 @@ function getUserNotifications(req, res) {
                 },
                 take: 50, // Limit to most recent 50 notifications
             });
-            console.log(notifications);
             return res.status(200).json(notifications);
         }
         catch (error) {

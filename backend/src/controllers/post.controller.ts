@@ -58,12 +58,22 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
       );
     }
 
+    const sender = await prisma.users.findUnique({
+      where: {
+        id: req.user?.id || -1,
+      },
+      select: {
+        name: true,
+      },
+    });
+    console.log("SenderName ", sender);
+
     // will be used to send notification to the followers
     const notificationData = {
       user_sender_id: req.user?.id || -1,
       type: "post",
       resource_id: post.id,
-      message: `${req.user?.id} has post something in long time. Websocket check`,
+      message: `${sender?.name || req.user?.id} has posted something.`,
       isRead: false,
     };
 
