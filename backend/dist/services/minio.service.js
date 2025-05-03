@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadFile = exports.MinioServiceError = void 0;
+exports.deleteFile = exports.uploadFile = exports.MinioServiceError = void 0;
 // MinIO client and types
 const minio_1 = require("minio");
 // Configuration
@@ -36,7 +36,6 @@ exports.MinioServiceError = MinioServiceError;
  */
 const minioClient = new minio_1.Client({
     endPoint: minio_config_1.minioConfig.endpoint,
-    port: minio_config_1.minioConfig.port,
     useSSL: minio_config_1.minioConfig.useSSL,
     accessKey: minio_config_1.minioConfig.accessKey,
     secretKey: minio_config_1.minioConfig.secretKey,
@@ -45,7 +44,6 @@ const minioClient = new minio_1.Client({
 // Add debug logging
 winston_1.logger.info("Initializing MinIO client with config:", {
     endpoint: minio_config_1.minioConfig.endpoint,
-    port: minio_config_1.minioConfig.port,
     useSSL: minio_config_1.minioConfig.useSSL,
     pathStyle: minio_config_1.minioConfig.forcePathStyle,
 });
@@ -101,10 +99,11 @@ const uploadFile = (file, fileName) => __awaiter(void 0, void 0, void 0, functio
             "content-type": file.mimetype,
             "x-amz-meta-original-name": file.originalname,
         };
+        console.log("Reaching");
         yield minioClient.putObject(BUCKET_NAME, fileName, file.buffer, file.size, metadata);
         // Construct the public URL
         const protocol = minio_config_1.minioConfig.useSSL ? "https" : "http";
-        const url = `${protocol}://${minio_config_1.minioConfig.endpoint}:${minio_config_1.minioConfig.port}/${BUCKET_NAME}/${fileName}`;
+        const url = `${protocol}://${minio_config_1.minioConfig.endpoint}/${BUCKET_NAME}/${fileName}`;
         return url;
     }
     catch (error) {
@@ -113,3 +112,13 @@ const uploadFile = (file, fileName) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.uploadFile = uploadFile;
+const deleteFile = (fileName) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield minioClient.removeObject(BUCKET_NAME, fileName);
+    }
+    catch (error) {
+        console.error("MinIO delete error:", error);
+        throw new MinioServiceError(`Failed to delete file: ${error.message || "Unknown error"}`, error);
+    }
+});
+exports.deleteFile = deleteFile;

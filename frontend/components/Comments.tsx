@@ -1,7 +1,5 @@
 import { API_ENDPOINT } from "@/axios.config";
 import { AuthContext } from "@/app/context/AuthContext";
-import { NewComment } from "@/typings";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { SendIcon } from "lucide-react";
 import Image from "next/image";
@@ -9,23 +7,13 @@ import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { formatDistanceToNow } from "date-fns";
 import React from "react";
+import { useNewComment } from "@/lib/mutations";
+import { useQuery } from "@tanstack/react-query";
 
 export function Comments({ postId }: { postId: any }) {
   const { currentUser }: any = useContext(AuthContext);
   const [desc, setDesc] = useState("");
-
-  const queryclient = useQueryClient();
-
-  const mutation = useMutation<NewComment, Error, NewComment>({
-    mutationFn: (newComment) => {
-      return axios.post(`${API_ENDPOINT}/posts/comments/add`, newComment, {
-        withCredentials: true,
-      });
-    },
-    onSuccess: () => {
-      queryclient.invalidateQueries({ queryKey: ["newComment"] });
-    },
-  });
+  const mutation = useNewComment();
 
   const handleComment = () => {
     if (!desc.trim()) return;
@@ -33,12 +21,7 @@ export function Comments({ postId }: { postId: any }) {
     setDesc("");
   };
 
-  const {
-    isPending,
-    isError,
-    data: allComments,
-    error,
-  }: any = useQuery({
+  const { data: allComments }: any = useQuery({
     queryKey: ["newComment"],
     queryFn: fetchPostComments,
   });

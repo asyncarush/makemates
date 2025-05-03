@@ -33,11 +33,12 @@ router.get("/debug-env", (req, res) => {
 });
 router.post("/register", user_controller_1.register);
 router.post("/login", user_controller_1.login);
-router.get("/logout", auth_1.default, user_controller_1.logoutUser);
+router.post("/logout", auth_1.default, user_controller_1.logoutUser);
 router.post("/update", auth_1.default, user_controller_1.updateUserInfo);
 router.post("/follow", auth_1.default, user_controller_1.followUser);
 router.post("/unfollow", auth_1.default, user_controller_1.unfollowUser);
 router.get("/friendList", auth_1.default, user_controller_1.getFriendList);
 router.post("/setProfilePic", auth_1.default, user_controller_1.setProfilePic);
 router.get("/me", auth_1.default, user_controller_1.getUserData);
+router.get("/notifications", auth_1.default, user_controller_1.getUserNotifications);
 exports.default = router;

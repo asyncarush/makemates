@@ -1,6 +1,9 @@
 "use client";
 
-import React, { ReactElement, useContext, useRef } from "react";
+import React, {
+  useContext,
+  useRef,
+} from "react";
 import { TiHome } from "react-icons/ti";
 import { BsMessenger } from "react-icons/bs";
 import { BiSolidBell } from "react-icons/bi";
@@ -12,7 +15,6 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@radix-ui/react-navigation-menu";
@@ -26,6 +28,9 @@ import { AuthContext } from "@/app/context/AuthContext";
 import FeedUploadBox from "@/app/(dashboard)/feed/_components/FeedUploadBox";
 import AIAssistant from "./AIAssistant";
 import Notification from "./Notification";
+import { useQuery } from "@tanstack/react-query";
+import { API_ENDPOINT } from "@/axios.config";
+import axios from "axios";
 
 function Navbar() {
   const { currentUser }: any = useContext(AuthContext);
@@ -35,6 +40,27 @@ function Navbar() {
   const handleLogout = async () => {
     await logout();
   };
+
+  const getNotificatonCount = async () => {
+    try {
+      const response = await axios.get(
+        `${API_ENDPOINT}/user/notificationcount`
+      );
+      return response.data.totalCount;
+    } catch (error) {
+      throw new Error("unable to fetch notification");
+    }
+  };
+
+  const { isError, data, error } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: getNotificatonCount,
+    refetchInterval: 30000,
+  });
+
+  if (isError) {
+    console.log(error);
+  }
 
   const navigation = [
     {
@@ -58,10 +84,16 @@ function Navbar() {
       Icon: (
         <div className="relative">
           <BiSolidBell className="w-5 h-5 text-white hover:text-white transition-colors" />
-          <div ref={notificationBadgeRef}></div>
+          <div ref={notificationBadgeRef} className="">
+            {data && (
+              <span className="absolute -top-2 -right-2 flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-white text-xs font-bold ring-2 ring-white">
+                {data}
+              </span>
+            )}
+          </div>
         </div>
       ),
-      Data: <Notification notificationBadgeRef={notificationBadgeRef} />,
+      Data: <Notification />,
     },
     {
       name: "setting",

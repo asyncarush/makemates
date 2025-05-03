@@ -17,40 +17,27 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { NewPost } from "@/typings";
 import { IoIosAddCircle } from "react-icons/io";
 import { API_ENDPOINT } from "@/axios.config";
+import { useNewPostMutation } from "@/lib/mutations";
 
 function FeedUploadBox() {
   const [desc, setDesc] = useState<string>("");
   const [files, setFiles] = useState<FileList | null>(null);
-
   const [previewUrls, setPreviewUrls] = useState<string[] | null>(null);
-
   const [uploadState, setUploadState] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-
   const formRef = useRef<HTMLFormElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
 
-  const queryclient = useQueryClient();
-
-  const mutation = useMutation<NewPost, Error, NewPost>({
-    mutationFn: (newPost: NewPost) => {
-      return axios.post(`${API_ENDPOINT}/posts`, newPost, {
-        withCredentials: true,
-      });
-    },
-    onSuccess: () => {
-      queryclient.invalidateQueries({ queryKey: ["newPost"] });
-    },
-  });
+  const mutation = useNewPostMutation();
 
   const handleUploadPost = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Uploading files: ", files);
+
+    setUploadState(true);
 
     if (!files || files.length === 0) {
       const postData = {
@@ -60,14 +47,14 @@ function FeedUploadBox() {
       mutation.mutate(postData as NewPost);
       closeButton.current?.click();
       return toast.success("Post Uploaded");
-    } 
+    }
 
     const compressedFiles = await Promise.all(
       Array.from(files).map(
         (file) =>
           new Promise((resolve, reject) => {
             new Compressor(file, {
-              quality: 0.2,
+              quality: 0.5,
               success(result) {
                 resolve(result);
               },
@@ -90,6 +77,7 @@ function FeedUploadBox() {
     });
 
     console.log("uploading files to minio");
+
     try {
       // Upload file to MinIO through backend API
       const uploadResponse: any = await axios.post(

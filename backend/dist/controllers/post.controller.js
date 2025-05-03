@@ -13,11 +13,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPostComments = exports.postNewComment = exports.checkPostLikeStatus = exports.unLikeThePost = exports.likeThePost = exports.getUserPosts = exports.editPost = exports.addPost = void 0;
+exports.removeThisImage = exports.getPostComments = exports.postNewComment = exports.checkPostLikeStatus = exports.unLikeThePost = exports.likeThePost = exports.getUserPosts = exports.editPost = exports.addPost = void 0;
 // Database client
 const client_1 = require("@prisma/client");
 // Logger
 const winston_1 = require("../config/winston");
+const index_1 = require("../index");
+const minio_service_1 = require("../services/minio.service");
 const prisma = new client_1.PrismaClient();
 // Add Post
 /**
@@ -27,7 +29,7 @@ const prisma = new client_1.PrismaClient();
  * @param {Response} res - The outgoing response.
  */
 const addPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b, _c;
     const { desc, imgUrls } = req.body;
     try {
         const post = yield prisma.posts.create({
@@ -37,16 +39,28 @@ const addPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             },
         });
         const urls = JSON.parse(imgUrls);
-        yield Promise.all(urls.map((url) => {
-            var _a;
-            return prisma.post_media.create({
-                data: {
-                    post_id: post.id,
-                    media_url: url,
-                    user_id: ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) || -1,
-                },
-            });
-        }));
+        if (imgUrls) {
+            yield Promise.all(urls.map((url) => {
+                var _a;
+                return prisma.post_media.create({
+                    data: {
+                        post_id: post.id,
+                        media_url: url,
+                        user_id: ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) || -1,
+                    },
+                });
+            }));
+        }
+        // will be used to send notification to the followers
+        const notificationData = {
+            user_sender_id: ((_b = req.user) === null || _b === void 0 ? void 0 : _b.id) || -1,
+            type: "post",
+            resource_id: post.id,
+            message: `${(_c = req.user) === null || _c === void 0 ? void 0 : _c.id} has post something in long time. Websocket check`,
+            isRead: false,
+        };
+        console.log("Sending notification to : ", notificationData);
+        index_1.notificationManager.addNotification("post", notificationData);
         return res.status(200).send("Post uploaded...");
     }
     catch (err) {
@@ -86,6 +100,9 @@ const editPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(404).send("Post not found");
         }
         // Parse imgUrls if it's a string
+        if (!imgUrls) {
+            return res.status(200).send("Post Saved...");
+        }
         const imageUrlsArray = typeof imgUrls === "string" ? JSON.parse(imgUrls) : imgUrls;
         console.log("Processing imageUrlsArray:", imageUrlsArray);
         // Create new media entries
@@ -301,3 +318,33 @@ const getPostComments = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getPostComments = getPostComments;
+const removeThisImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    let { postId, mediaUrls } = req.body;
+    mediaUrls = JSON.parse(mediaUrls);
+    const deleteApiCalls = [];
+    for (let media of mediaUrls) {
+        const fileName = media.split("posts/")[1];
+        console.log("Filename:", fileName);
+        const deleteFromdb = prisma.post_media.deleteMany({
+            where: {
+                post_id: parseInt(postId, 10),
+                media_url: media,
+                user_id: ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) || -1,
+            },
+        });
+        const deleteFromMinIO = (0, minio_service_1.deleteFile)(fileName);
+        deleteApiCalls.push(deleteFromdb);
+        deleteApiCalls.push(deleteFromMinIO);
+    }
+    try {
+        const response = yield Promise.all(deleteApiCalls);
+        console.log("delete response : ", response);
+        return res.status(200).send(true);
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(400).send(error);
+    }
+});
+exports.removeThisImage = removeThisImage;

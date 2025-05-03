@@ -1,5 +1,4 @@
 import React, { useRef, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 import { Progress } from "./ui/progress";
@@ -27,6 +26,8 @@ import axios from "axios";
 import { Button } from "./ui/button";
 import Image from "next/image";
 
+import { useEditPostMutation } from "@/lib/mutations";
+
 export const EditPostComponent = ({
   caption,
   mediaUrls,
@@ -34,8 +35,6 @@ export const EditPostComponent = ({
   onError,
   postId,
 }: EditPostProps) => {
-  const queryclient = useQueryClient();
-
   // Edit Post Modal Handler
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,46 +59,20 @@ export const EditPostComponent = ({
     setIsDropdownOpen(false);
   };
 
-  const mutation = useMutation<EditPost, Error, EditPost>({
-    mutationFn: async (newPost: EditPost) => {
-      const response = await axios.post<EditPost>(
-        `${API_ENDPOINT}/posts/edit/${postId}`,
-        {
-          desc: newPost.desc,
-          imgUrls: newPost.imgUrls,
-        },
-        {
-          withCredentials: true,
-        }
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      queryclient.invalidateQueries({ queryKey: ["newPost"] });
-      onSuccess?.();
-    },
-    onError: (error: Error) => {
-      console.error("Post creation failed:", error);
-      onError?.(error);
-    },
-  });
+  const mutation = useEditPostMutation(postId);
 
   const handleUploadPost = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!files || files.length === 0) {
-      const postData = {
-        desc,
-        imgUrls: "",
-      };
+      const postData = { desc, imgUrls: "" };
       mutation.mutate(postData as EditPost);
       closeButton.current?.click();
+      if (removedImages.length > 0) removeThisImage(postId, removedImages);
       return toast.success("Post Updated");
     }
 
     try {
-      console.log("Editing Selected File,", files);
-
       const uploadPromises = Array.from(files).map(async (file) => {
         const fileName = `${Date.now()}-${file.name}`;
         const formData = new FormData();
@@ -145,13 +118,8 @@ export const EditPostComponent = ({
         imgUrls: JSON.stringify(downloadURLs.flat()),
       };
 
-      console.log("Post Data: ", postData);
-
-      // Create the post with the image URL
       mutation.mutate(postData as EditPost);
       closeButton.current?.click();
-
-      removeThisImage(postId, removedImages);
       clearFileInput();
     } catch (error) {
       console.error("Upload failed:", error);
@@ -275,7 +243,6 @@ export const EditPostComponent = ({
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
         <DialogContent>
           <form ref={formRef} onSubmit={handleUploadPost}>
-
             <DialogTitle>Edit Post</DialogTitle>
             <textarea
               rows={3}
@@ -348,13 +315,15 @@ export const EditPostComponent = ({
 
 const removeThisImage = async (postId: number, media: string[]) => {
   console.log("Getting, removing", postId, media);
-
+  let mediaUrls = JSON.stringify(media);
+  console.log("Media Urls after stringify:", mediaUrls);
   try {
     // remove the image from server
     const response = await axios.post(`${API_ENDPOINT}/posts/editpost/remove`, {
       postId,
-      media,
+      mediaUrls,
     });
+    console.log(response.data);
   } catch (e: any) {
     console.log(e.message);
     toast.error("Unable to remove massage");

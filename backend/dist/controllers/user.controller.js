@@ -25,6 +25,7 @@ exports.unfollowUser = unfollowUser;
 exports.getFriendList = getFriendList;
 exports.setProfilePic = setProfilePic;
 exports.logoutUser = logoutUser;
+exports.getUserNotifications = getUserNotifications;
 // Database and authentication
 const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
@@ -217,16 +218,30 @@ function unfollowUser(req, res) {
         var _a;
         const id = ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) || -1;
         const { friendId } = req.body;
+        if (!friendId) {
+            return res.status(400).send("Friend ID is required");
+        }
         try {
+            // First check if the relationship exists
+            const existingRelationship = yield prisma.relationships.findFirst({
+                where: {
+                    follow_id: parseInt(friendId),
+                    follower_id: id,
+                },
+            });
+            if (!existingRelationship) {
+                return res.status(404).send("No relationship found to unfollow");
+            }
             yield prisma.relationships.deleteMany({
                 where: {
-                    follow_id: friendId,
+                    follow_id: parseInt(friendId),
                     follower_id: id,
                 },
             });
             return res.status(200).send("Unfollowed Successfully.");
         }
         catch (err) {
+            console.error("Error in unfollowUser:", err);
             return res.status(500).send("An error occurred while unfollowing user.");
         }
     });
@@ -298,8 +313,50 @@ function setProfilePic(req, res) {
 }
 // Logout User
 function logoutUser(req, res) {
-    return res
-        .clearCookie("x-auth-token")
-        .status(200)
-        .send("Logout Successfully.");
+    try {
+        // Clear auth cookie
+        res.clearCookie("x-auth-token", {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            path: "/",
+        });
+        return res.status(200).send("Logged out successfully");
+    }
+    catch (error) {
+        console.error("Logout error:", error);
+        return res.status(500).send("Error during logout");
+    }
+}
+// Get User Notifications
+function getUserNotifications(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var _a;
+        const userId = ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) || -1;
+        try {
+            const notifications = yield prisma.notifications.findMany({
+                where: {
+                    user_reciever_id: userId,
+                },
+                include: {
+                    sender: {
+                        select: {
+                            name: true,
+                            img: true,
+                        },
+                    },
+                },
+                orderBy: {
+                    createdAt: "desc",
+                },
+                take: 50, // Limit to most recent 50 notifications
+            });
+            console.log(notifications);
+            return res.status(200).json(notifications);
+        }
+        catch (error) {
+            console.error("Error fetching notifications:", error);
+            return res.status(500).send("Error fetching notifications");
+        }
+    });
 }

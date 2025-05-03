@@ -63,7 +63,7 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
       user_sender_id: req.user?.id || -1,
       type: "post",
       resource_id: post.id,
-      message: "New post uploaded",
+      message: `${req.user?.id} has post something in long time. Websocket check`,
       isRead: false,
     };
 
@@ -346,10 +346,15 @@ export const getPostComments = async (req: Request, res: Response) => {
 };
 
 export const removeThisImage = async (req: RequestWithUser, res: Response) => {
-  const { postId, media } = req.body;
+  let { postId, mediaUrls } = req.body;
+  mediaUrls = JSON.parse(mediaUrls);
 
-  try {
-    const deleteFromDB = prisma.post_media.deleteMany({
+  const deleteApiCalls = [];
+
+  for (let media of mediaUrls) {
+    const fileName = media.split("posts/")[1];
+    console.log("Filename:", fileName);
+    const deleteFromdb = prisma.post_media.deleteMany({
       where: {
         post_id: parseInt(postId, 10),
         media_url: media,
@@ -357,24 +362,18 @@ export const removeThisImage = async (req: RequestWithUser, res: Response) => {
       },
     });
 
-    // https://minio-api.asyncarush.com/posts/1745945545469-image_1745945535018.png
-
-    const fileName = media.split("posts/")[1];
-    console.log("Filename:", fileName);
     const deleteFromMinIO = deleteFile(fileName);
 
-    const [postMediaDeleteResult, minioDeleteResult] = await Promise.all([
-      deleteFromDB,
-      deleteFromMinIO,
-    ]);
+    deleteApiCalls.push(deleteFromdb);
+    deleteApiCalls.push(deleteFromMinIO);
+  }
 
-    console.log("DB delete result:", postMediaDeleteResult);
-    console.log("MinIO delete result:", minioDeleteResult);
-
+  try {
+    const response = await Promise.all(deleteApiCalls);
+    console.log("delete response : ", response);
     return res.status(200).send(true);
-  } catch (e: any) {
-    console.error("Deletion error:", e);
-    throw new Error("Failed to delete media");
-    return res.status(400).send(e.message);
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send(error);
   }
 };

@@ -27,11 +27,12 @@ const uploadFileController = (req, res) => __awaiter(void 0, void 0, void 0, fun
             : [];
     // Use .map or .forEach as needed
     const urls = yield Promise.all(files.map((file) => __awaiter(void 0, void 0, void 0, function* () {
-        const fileName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-        // Your file upload logic here
+        const timestamp = Date.now();
+        const randomSuffix = Math.random().toString(36).substring(2, 8); // 6-char random string
+        const sanitizedOriginal = file.originalname.replace(/[^a-zA-Z0-9.-]/g, "_");
+        const fileName = `${timestamp}-${randomSuffix}-${sanitizedOriginal}`;
         return (0, minio_service_1.uploadFile)(file, fileName);
     })));
-    console.log("All images url :", urls);
     res.json({
         success: true,
         message: "Files uploaded successfully",

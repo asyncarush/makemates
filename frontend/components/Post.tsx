@@ -203,7 +203,7 @@ function Post({
                             src={url}
                             alt={caption || `Photo ${index + 1}`}
                             fill
-                            sizes="(max-width: 768px) 100vw, 33vw"
+                            sizes="(max-width: 768px) 100vw, 80vw"
                             className="object-cover"
                             priority={index === 0}
                           />

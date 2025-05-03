@@ -13,6 +13,8 @@ router.get("/:userId", auth_1.default, post_controller_1.getUserPosts);
 router.post("/", auth_1.default, post_controller_1.addPost);
 // Edit a post
 router.post("/edit/:postId", auth_1.default, post_controller_1.editPost);
+// Edit Post : remove image
+router.post("/editpost/remove", auth_1.default, post_controller_1.removeThisImage);
 // Like a post
 router.post("/like", auth_1.default, post_controller_1.likeThePost);
 // Unlike a post

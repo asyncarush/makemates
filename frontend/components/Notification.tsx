@@ -5,22 +5,8 @@ import { NotificationType } from "@/typings";
 import { format } from "date-fns";
 import { BellIcon, CheckIcon, XIcon } from "lucide-react";
 import Image from "next/image";
-import { AuthContext } from "@/app/context/AuthContext";
-import { ChatContext } from "@/app/context/ChatContext";
 
-interface NotificationProps {
-  notificationBadgeRef?: React.RefObject<HTMLDivElement>;
-}
-
-export default function Notification({
-  notificationBadgeRef,
-}: NotificationProps) {
-  const queryClient = useQueryClient();
-  const { currentUser } = useContext(AuthContext) || {};
-  const { socket } = useContext(ChatContext) || {};
-  const [isMarkingRead, setIsMarkingRead] = useState(false);
-
-  // Fetch notifications using Tanstack Query
+export default function Notification() {
   const {
     data: notifications,
     isLoading,
@@ -30,67 +16,6 @@ export default function Notification({
     queryFn: fetchUserNotifications,
     refetchInterval: 30000, // Refetch every 30 seconds
   });
-
-  // Count unread notifications
-  const unreadCount =
-    notifications?.filter((notif: NotificationType) => !notif.isRead).length ||
-    0;
-
-  // Update the badge in navbar
-  useEffect(() => {
-    if (notificationBadgeRef?.current) {
-      if (unreadCount > 0) {
-        notificationBadgeRef.current.innerHTML = `
-          <span class="absolute -top-2 -right-2 flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-white text-xs font-bold ring-2 ring-white animate-pulse">
-            ${unreadCount > 9 ? "9+" : unreadCount}
-          </span>
-        `;
-      } else {
-        notificationBadgeRef.current.innerHTML = "";
-      }
-    }
-  }, [unreadCount, notificationBadgeRef]);
-
-  // Listen for new notifications via socket
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleNewNotification = () => {
-      // When a new notification arrives, invalidate the query to refetch
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    };
-
-    socket.on("new_notification", handleNewNotification);
-
-    return () => {
-      socket.off("new_notification", handleNewNotification);
-    };
-  }, [socket, queryClient]);
-
-  // Handle marking all notifications as read
-  const handleMarkAllAsRead = async () => {
-    setIsMarkingRead(true);
-    try {
-      // Replace with your actual API call to mark all as read
-      // await markAllNotificationsAsRead();
-
-      // After successful API call, update the local cache
-      queryClient.setQueryData(
-        ["notifications"],
-        notifications.map((notif: NotificationType) => ({
-          ...notif,
-          isRead: true,
-        }))
-      );
-
-      // Emit socket event if needed
-      // if (socket) socket.emit("mark_all_read");
-    } catch (error) {
-      console.error("Failed to mark notifications as read:", error);
-    } finally {
-      setIsMarkingRead(false);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -114,30 +39,14 @@ export default function Notification({
         <div className="flex items-center gap-2">
           <BellIcon className="text-indigo-600" size={18} />
           <span className="text-base font-medium">Notifications</span>
-          {unreadCount > 0 && (
-            <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-medium">
-              {unreadCount} new
-            </span>
-          )}
         </div>
-
-        {unreadCount > 0 && (
-          <button
-            onClick={handleMarkAllAsRead}
-            disabled={isMarkingRead}
-            className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors"
-          >
-            <CheckIcon size={14} />
-            {isMarkingRead ? "Marking..." : "Mark all read"}
-          </button>
-        )}
       </div>
 
       {notifications && notifications.length > 0 ? (
         <div className="flex flex-col gap-2">
           {notifications.map((notification: NotificationType) => (
             <div
-              key={notification.id}
+              key={`${notification.id}${notification.resource_id}`}
               className={`p-3 rounded-lg border transition-all duration-200 ${
                 notification.isRead
                   ? "bg-white hover:bg-gray-50 border-gray-100"
