@@ -7,9 +7,13 @@ export const API_ENDPOINT =
 
 console.log("Current API_ENDPOINT", API_ENDPOINT);
 
-// Configure axios defaults for all requests
-axios.defaults.withCredentials = true;
-axios.defaults.headers.common["Content-Type"] = "application/json";
+export const BACKEND_API = axios.create({
+  baseURL: API_ENDPOINT,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 // Get token from localStorage if available
 const getStoredToken = (): string | null => {
@@ -30,13 +34,9 @@ const setStoredToken = (token: string | null): void => {
   }
 };
 
-// Initialize token from localStorage
-let authToken: string | null = getStoredToken();
-
-// Add request interceptor to add token to all requests
-axios.interceptors.request.use(
+// Add request interceptor to BACKEND_API
+BACKEND_API.interceptors.request.use(
   (config) => {
-    // Get latest token from localStorage
     const currentToken = getStoredToken();
     if (currentToken) {
       config.headers.Authorization = `Bearer ${currentToken}`;
@@ -46,48 +46,38 @@ axios.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Create user
 export async function CreateNewUser(inputData: SignUpInputType) {
-  const response = await axios.post(
-    `${API_ENDPOINT}/user/register`,
-    inputData,
-    {
-      withCredentials: true,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  const response = await BACKEND_API.post("/user/register", inputData);
 
-  // Store token if returned
-  if (response.data && response.data.token) {
-    authToken = response.data.token;
-    setStoredToken(authToken);
+  if (response.data?.token) {
+    setStoredToken(response.data.token);
   }
 
-  console.log("login response:", response);
+  console.log("Register response:", response);
   return response;
 }
 
+// Sign in user
 export async function SignInUser(inputData: LoginInputType) {
-  console.log("Making login request to:", `${API_ENDPOINT}/user/login`);
+  console.log("Making login request to:", "/user/login");
 
-  const response = await axios.post(`${API_ENDPOINT}/user/login`, inputData);
+  const response = await BACKEND_API.post("/user/login", inputData);
 
-  // Store token if returned
-  if (response.data && response.data.token) {
-    authToken = response.data.token;
-    setStoredToken(authToken);
-    console.log("Token stored:", authToken);
+  if (response.data?.token) {
+    setStoredToken(response.data.token);
+    console.log("Token stored:", response.data.token);
   }
 
   console.log("Login response cookies:", document.cookie);
   return response.data;
 }
 
+// Get user data
 export async function getUserDataById() {
   try {
     console.log("Cookies before /me request:", document.cookie);
-    const { data } = await axios.get(`${API_ENDPOINT}/user/me`);
+    const { data } = await BACKEND_API.get("/user/me");
     return data;
   } catch (error) {
     console.error("Error fetching user data:", error);
@@ -95,24 +85,36 @@ export async function getUserDataById() {
   }
 }
 
-export async function fetchUserPosts(userId: any) {
-  const { data } = await axios.get(`${API_ENDPOINT}/posts/${userId}`);
+// Fetch posts by user
+export async function fetchUserPosts(userId: string) {
+  const { data } = await BACKEND_API.get(`/posts/${userId}`);
   return data;
 }
 
+export const removeThisImage = async (postId: number, media: string[]) => {
+  let mediaUrls = JSON.stringify(media);
+  try {
+    // remove the image from server
+    await axios.post(`${API_ENDPOINT}/posts/editpost/remove`, {
+      postId,
+      mediaUrls,
+    });
+  } catch (e: any) {
+    console.error("Unable to remove massage");
+  }
+};
+
+// Logout user
 export async function LogOutUser() {
-  const { data } = await axios.get(`${API_ENDPOINT}/user/logout`);
-
-  // Clear stored token
-  authToken = null;
+  const { data } = await BACKEND_API.get("/user/logout");
   setStoredToken(null);
-
   return data;
 }
 
+// Get notifications
 export async function fetchUserNotifications() {
   try {
-    const { data } = await axios.get(`${API_ENDPOINT}/user/notifications`);
+    const { data } = await BACKEND_API.get("/user/notifications");
     return data;
   } catch (error) {
     console.error("Error fetching notifications:", error);
@@ -120,4 +122,17 @@ export async function fetchUserNotifications() {
   }
 }
 
-
+// Fetch ALl comments
+export const fetchPostComments = async (postId: string) => {
+  try {
+    const response = await axios.get(
+      `${API_ENDPOINT}/posts/comments/${postId}`,
+      {
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+  }
+};

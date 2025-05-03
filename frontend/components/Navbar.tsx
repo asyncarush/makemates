@@ -1,9 +1,6 @@
 "use client";
 
-import React, {
-  useContext,
-  useRef,
-} from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { TiHome } from "react-icons/ti";
 import { BsMessenger } from "react-icons/bs";
 import { BiSolidBell } from "react-icons/bi";
@@ -26,35 +23,27 @@ import { useLogout } from "@/hooks/useLogout";
 
 import { AuthContext } from "@/app/context/AuthContext";
 import FeedUploadBox from "@/app/(dashboard)/feed/_components/FeedUploadBox";
-import AIAssistant from "./AIAssistant";
 import Notification from "./Notification";
 import { useQuery } from "@tanstack/react-query";
 import { API_ENDPOINT } from "@/axios.config";
 import axios from "axios";
+import { fetchUserNotifications } from "@/axios.config";
 
 function Navbar() {
   const { currentUser }: any = useContext(AuthContext);
   const logout = useLogout();
-  const notificationBadgeRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
     await logout();
   };
 
-  const getNotificatonCount = async () => {
-    try {
-      const response = await axios.get(
-        `${API_ENDPOINT}/user/notificationcount`
-      );
-      return response.data.totalCount;
-    } catch (error) {
-      throw new Error("unable to fetch notification");
-    }
-  };
-
-  const { isError, data, error } = useQuery({
+  const {
+    isError,
+    data: notifications,
+    error,
+  } = useQuery({
     queryKey: ["notifications"],
-    queryFn: getNotificatonCount,
+    queryFn: fetchUserNotifications,
     refetchInterval: 30000,
   });
 
@@ -84,16 +73,16 @@ function Navbar() {
       Icon: (
         <div className="relative">
           <BiSolidBell className="w-5 h-5 text-white hover:text-white transition-colors" />
-          <div ref={notificationBadgeRef} className="">
-            {data && (
+          <div>
+            {notifications && (
               <span className="absolute -top-2 -right-2 flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-white text-xs font-bold ring-2 ring-white">
-                {data}
+                {notifications.length}
               </span>
             )}
           </div>
         </div>
       ),
-      Data: <Notification />,
+      Data: <Notification notifications={notifications} />,
     },
     {
       name: "setting",
@@ -177,7 +166,6 @@ function Navbar() {
           ))}
         </NavigationMenuList>
       </NavigationMenu>
-      <AIAssistant />
     </nav>
   );
 }
