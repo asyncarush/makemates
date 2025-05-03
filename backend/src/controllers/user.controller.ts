@@ -372,35 +372,35 @@ export async function getUserNotifications(
   }
 }
 
-export const getUserNotificationsCount = async (
-  req: RequestWithUser,
-  res: Response
-) => {
-  const userId = req.user?.id || -1;
+// export const getUserNotificationsCount = async (
+//   req: RequestWithUser,
+//   res: Response
+// ) => {
+//   const userId = req.user?.id || -1;
 
-  try {
-    const notifications = await prisma.notifications.findMany({
-      where: {
-        user_reciever_id: userId,
-        isRead: false,
-      },
-      include: {
-        sender: {
-          select: {
-            name: true,
-            img: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 50, // Limit to most recent 50 notifications
-    });
+//   try {
+//     const notifications = await prisma.notifications.findMany({
+//       where: {
+//         user_reciever_id: userId,
+//         isRead: false,
+//       },
+//       include: {
+//         sender: {
+//           select: {
+//             name: true,
+//             img: true,
+//           },
+//         },
+//       },
+//       orderBy: {
+//         createdAt: "desc",
+//       },
+//       take: 50, // Limit to most recent 50 notifications
+//     });
 
-    return res.status(200).send({ totalCount: notifications.length });
-  } catch (error) {
-    console.error("Error fetching notifications:", error);
-    return res.status(500).send("Error fetching notifications");
-  }
-};
+//     return res.status(200).send({ totalCount: notifications.length });
+//   } catch (error) {
+//     console.error("Error fetching notifications:", error);
+//     return res.status(500).send("Error fetching notifications");
+//   }
+// };

@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { API_ENDPOINT } from "@/axios.config";
+import { API_ENDPOINT, removeThisImage } from "@/axios.config";
 
 import { IoEllipsisVertical } from "react-icons/io5";
 import { EditPost, EditPostProps, UploadResponse } from "@/typings";
@@ -113,6 +113,8 @@ export const EditPostComponent = ({
       setUploadState(false);
       setUploadProgress(null);
 
+
+      
       const postData = {
         desc,
         imgUrls: JSON.stringify(downloadURLs.flat()),
@@ -311,23 +313,6 @@ export const EditPostComponent = ({
       </Dialog>
     </>
   );
-};
-
-const removeThisImage = async (postId: number, media: string[]) => {
-  console.log("Getting, removing", postId, media);
-  let mediaUrls = JSON.stringify(media);
-  console.log("Media Urls after stringify:", mediaUrls);
-  try {
-    // remove the image from server
-    const response = await axios.post(`${API_ENDPOINT}/posts/editpost/remove`, {
-      postId,
-      mediaUrls,
-    });
-    console.log(response.data);
-  } catch (e: any) {
-    console.log(e.message);
-    toast.error("Unable to remove massage");
-  }
 };
 
 export default EditPostComponent;

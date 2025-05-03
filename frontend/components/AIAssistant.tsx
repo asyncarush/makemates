@@ -211,13 +211,12 @@ const AIAssistant = ({
   }, [isActive]);
 
   // For demo purposes - simulate receiving notifications
-  useEffect(() => {
-    const demoTimeout = setTimeout(() => {
-      addNotification("Sarah just posted a new photo!", "post");
-    }, 5000);
+  // useEffect(() => {
 
-    return () => clearTimeout(demoTimeout);
-  }, []);
+  //   }, 5000);
+
+  //   return () => clearTimeout(demoTimeout);
+  // }, []);
 
   return (
     <div

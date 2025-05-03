@@ -1,14 +1,12 @@
-import { API_ENDPOINT } from "@/axios.config";
 import { AuthContext } from "@/app/context/AuthContext";
-import axios from "axios";
 import { SendIcon } from "lucide-react";
 import Image from "next/image";
 import { useContext, useState } from "react";
-import toast from "react-hot-toast";
 import { formatDistanceToNow } from "date-fns";
 import React from "react";
 import { useNewComment } from "@/lib/mutations";
 import { useQuery } from "@tanstack/react-query";
+import { fetchPostComments } from "@/axios.config";
 
 export function Comments({ postId }: { postId: any }) {
   const { currentUser }: any = useContext(AuthContext);
@@ -22,23 +20,9 @@ export function Comments({ postId }: { postId: any }) {
   };
 
   const { data: allComments }: any = useQuery({
-    queryKey: ["newComment"],
-    queryFn: fetchPostComments,
+    queryKey: ["newComment", postId],
+    queryFn: ({ queryKey }) => fetchPostComments(queryKey[1]),
   });
-
-  async function fetchPostComments() {
-    try {
-      const response = await axios.get(
-        `${API_ENDPOINT}/posts/comments/${postId}`,
-        {
-          withCredentials: true,
-        }
-      );
-      return response.data;
-    } catch (error: any) {
-      toast.error(error.response.data);
-    }
-  }
 
   return (
     <div className="">

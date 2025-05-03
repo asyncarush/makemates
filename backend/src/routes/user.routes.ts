@@ -10,7 +10,6 @@ import {
   setProfilePic,
   logoutUser,
   getUserNotifications,
-  getUserNotificationsCount,
 } from "../controllers/user.controller";
 
 import auth from "../middleware/auth";
@@ -57,6 +56,5 @@ router.get("/friendList", auth, getFriendList);
 router.post("/setProfilePic", auth, setProfilePic);
 router.get("/me", auth, getUserData);
 router.get("/notifications", auth, getUserNotifications);
-router.get("/notificationcount", auth, getUserNotificationsCount);
 
 export default router;
