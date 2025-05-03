@@ -172,6 +172,7 @@ export const EditPostComponent = ({
 
     // check if new media is deleted
     if (newPreviewUrls.includes(media)) {
+      console.log("Found In new preview URL");
     }
   };
 
