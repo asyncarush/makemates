@@ -23,11 +23,11 @@ const auth = (req: RequestWithUser, res: Response, next: NextFunction) => {
     token = authHeader.substring(7);
   }
 
-  // // Only log cookies for debugging if needed
-  // if (process.env.NODE_ENV === "development") {
-  //   console.log("Auth header:", authHeader);
-  //   console.log("Auth token present:", Boolean(token));
-  // }
+  // Only log cookies for debugging if needed
+  if (process.env.NODE_ENV === "development") {
+    console.log("Auth header:", authHeader);
+    console.log("Auth token present:", Boolean(token));
+  }
 
   if (!token) return res.status(401).send("Access denied. No token provided.");
 

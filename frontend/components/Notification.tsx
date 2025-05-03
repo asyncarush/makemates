@@ -1,6 +1,5 @@
-import React, { useContext, useEffect, useState, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchUserNotifications } from "@/axios.config";
+import React from "react";
+
 import { NotificationType } from "@/typings";
 import { format } from "date-fns";
 import { BellIcon, CheckIcon, XIcon } from "lucide-react";

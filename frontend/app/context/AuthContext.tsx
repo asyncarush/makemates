@@ -67,7 +67,12 @@ export default function AuthContextProvider({
       const user = JSON.parse(loggedUser);
       setCurrentUser(user);
     }
-  }, []);
+
+    () => {
+      console.log("Moving to login");
+      return router.push("/");
+    };
+  }, [router]);
 
   // // Use this effect to track changes in currentUser
   // useEffect(() => {

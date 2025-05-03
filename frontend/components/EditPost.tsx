@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { API_ENDPOINT, removeThisImage } from "@/axios.config";
+import { removeThisImage } from "@/axios.config";
 
 import { IoEllipsisVertical } from "react-icons/io5";
 import { EditPost, EditPostProps, UploadResponse } from "@/typings";
@@ -27,6 +27,7 @@ import { Button } from "./ui/button";
 import Image from "next/image";
 
 import { useEditPostMutation } from "@/lib/mutations";
+import { useFileUploader } from "@/hooks/useFileUploader";
 
 export const EditPostComponent = ({
   caption,
@@ -49,8 +50,10 @@ export const EditPostComponent = ({
   const addMediaInput = useRef<HTMLInputElement>(null);
 
   // Loader
-  const [uploadState, setUploadState] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  // const [uploadState, setUploadState] = useState(false);
+  // const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+
+  const { uploadFile, uploadProgress, uploadState } = useFileUploader();
 
   const [removedImages, setRemovedImages] = useState<string[]>([]);
 
@@ -67,69 +70,21 @@ export const EditPostComponent = ({
     if (!files || files.length === 0) {
       const postData = { desc, imgUrls: "" };
       mutation.mutate(postData as EditPost);
-      closeButton.current?.click();
       if (removedImages.length > 0) removeThisImage(postId, removedImages);
+      closeButton.current?.click();
       return toast.success("Post Updated");
     }
 
-    try {
-      const uploadPromises = Array.from(files).map(async (file) => {
-        const fileName = `${Date.now()}-${file.name}`;
-        const formData = new FormData();
-        formData.append("post_images", file, fileName);
+    const downloadURLs = await uploadFile(files);
 
-        try {
-          setUploadState(true);
+    const postData = {
+      desc,
+      imgUrls: JSON.stringify(downloadURLs.flat()),
+    };
 
-          const response = await axios.post<UploadResponse>(
-            `${API_ENDPOINT}/upload`,
-            formData,
-            {
-              withCredentials: true,
-              onUploadProgress: (progressEvent) => {
-                if (progressEvent.total) {
-                  const progress =
-                    (progressEvent.loaded / progressEvent.total) * 100;
-                  setUploadProgress(progress);
-                }
-              },
-            }
-          );
-
-          const newImages = response.data.urls;
-
-          return newImages;
-        } catch (error) {
-          console.error("Upload error:", error);
-          const errorMessage =
-            error instanceof Error ? error.message : "Unknown error occurred";
-          toast.error(`Upload failed for ${file.name}: ${errorMessage}`);
-          throw error;
-        }
-      });
-
-      const downloadURLs = await Promise.all(uploadPromises);
-
-      setUploadState(false);
-      setUploadProgress(null);
-
-
-      
-      const postData = {
-        desc,
-        imgUrls: JSON.stringify(downloadURLs.flat()),
-      };
-
-      mutation.mutate(postData as EditPost);
-      closeButton.current?.click();
-      clearFileInput();
-    } catch (error) {
-      console.error("Upload failed:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      toast.error(`Failed to upload files: ${errorMessage}`);
-      onError?.(error instanceof Error ? error : new Error("Upload failed"));
-    }
+    mutation.mutate(postData as EditPost);
+    closeButton.current?.click();
+    clearFileInput();
   };
 
   const handleMultipleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {

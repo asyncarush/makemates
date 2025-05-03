@@ -7,14 +7,6 @@ export const API_ENDPOINT =
 
 console.log("Current API_ENDPOINT", API_ENDPOINT);
 
-export const BACKEND_API = axios.create({
-  baseURL: API_ENDPOINT,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
 // Get token from localStorage if available
 const getStoredToken = (): string | null => {
   if (typeof window !== "undefined") {
@@ -34,48 +26,97 @@ const setStoredToken = (token: string | null): void => {
   }
 };
 
-// Add request interceptor to BACKEND_API
+// Create axios instance AFTER defining the token functions
+export const BACKEND_API = axios.create({
+  baseURL: API_ENDPOINT,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Add request interceptor to set the Authorization header
 BACKEND_API.interceptors.request.use(
   (config) => {
-    const currentToken = getStoredToken();
-    if (currentToken) {
-      config.headers.Authorization = `Bearer ${currentToken}`;
+    const token = getStoredToken();
+    if (token) {
+      // Make sure we're setting the header correctly
+      config.headers["Authorization"] = `Bearer ${token}`;
+      console.log(
+        "Token added to request headers:",
+        `Bearer ${token.substring(0, 10)}...`
+      );
+    } else {
+      console.log("No token found in localStorage");
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error("Request interceptor error:", error);
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor to handle token updates or errors
+BACKEND_API.interceptors.response.use(
+  (response) => {
+    // Check if the response contains a new token
+    const newToken = response.data?.token;
+    if (newToken) {
+      setStoredToken(newToken);
+      console.log("New token stored from response");
+    }
+    return response;
+  },
+  (error) => {
+    // Handle authentication errors
+    if (error.response && error.response.status === 401) {
+      console.log("Authentication error detected");
+      // Optionally clear the token
+      setStoredToken(null);
+    }
+    return Promise.reject(error);
+  }
 );
 
 // Create user
 export async function CreateNewUser(inputData: SignUpInputType) {
-  const response = await BACKEND_API.post("/user/register", inputData);
+  try {
+    const response = await BACKEND_API.post("/user/register", inputData);
 
-  if (response.data?.token) {
-    setStoredToken(response.data.token);
+    // Token handling is now done in the response interceptor
+    console.log("Register response:", response.data);
+    return response;
+  } catch (error) {
+    console.error("Registration error:", error);
+    throw error;
   }
-
-  console.log("Register response:", response);
-  return response;
 }
 
 // Sign in user
 export async function SignInUser(inputData: LoginInputType) {
-  console.log("Making login request to:", "/user/login");
+  try {
+    console.log("Making login request to:", `${API_ENDPOINT}/user/login`);
 
-  const response = await BACKEND_API.post("/user/login", inputData);
+    const response = await BACKEND_API.post("/user/login", inputData);
 
-  if (response.data?.token) {
-    setStoredToken(response.data.token);
-    console.log("Token stored:", response.data.token);
+    // Token handling is now done in the response interceptor
+    console.log("Login successful");
+    console.log("Login response cookies:", document.cookie);
+    return response.data;
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
   }
-
-  console.log("Login response cookies:", document.cookie);
-  return response.data;
 }
 
 // Get user data
 export async function getUserDataById() {
   try {
+    console.log(
+      "Fetching user data with token:",
+      getStoredToken() ? "Token exists" : "No token"
+    );
     console.log("Cookies before /me request:", document.cookie);
     const { data } = await BACKEND_API.get("/user/me");
     return data;
@@ -86,29 +127,44 @@ export async function getUserDataById() {
 }
 
 // Fetch posts by user
-export async function fetchUserPosts(userId: string) {
-  const { data } = await BACKEND_API.get(`/posts/${userId}`);
-  return data;
+export async function fetchUserPosts(userId: number) {
+  try {
+    const { data } = await BACKEND_API.get(`/posts/${userId}`);
+    return data;
+  } catch (error) {
+    console.error("Error fetching user posts:", error);
+    throw error;
+  }
 }
 
 export const removeThisImage = async (postId: number, media: string[]) => {
   let mediaUrls = JSON.stringify(media);
   try {
     // remove the image from server
-    await axios.post(`${API_ENDPOINT}/posts/editpost/remove`, {
+    await BACKEND_API.post(`/posts/editpost/remove`, {
       postId,
       mediaUrls,
     });
-  } catch (e: any) {
-    console.error("Unable to remove massage");
+    return true;
+  } catch (error: any) {
+    console.error("Unable to remove image:", error);
+    return false;
   }
 };
 
 // Logout user
 export async function LogOutUser() {
-  const { data } = await BACKEND_API.get("/user/logout");
-  setStoredToken(null);
-  return data;
+  try {
+    const { data } = await BACKEND_API.get("/user/logout");
+    setStoredToken(null);
+    console.log("User logged out successfully");
+    return data;
+  } catch (error) {
+    console.error("Logout error:", error);
+    // Still clear the token even if the server request fails
+    setStoredToken(null);
+    throw error;
+  }
 }
 
 // Get notifications
@@ -122,17 +178,13 @@ export async function fetchUserNotifications() {
   }
 }
 
-// Fetch ALl comments
+// Fetch All comments
 export const fetchPostComments = async (postId: string) => {
   try {
-    const response = await axios.get(
-      `${API_ENDPOINT}/posts/comments/${postId}`,
-      {
-        withCredentials: true,
-      }
-    );
+    const response = await BACKEND_API.get(`/posts/comments/${postId}`);
     return response.data;
   } catch (error: any) {
-    console.error(error.response.data);
+    console.error("Error fetching comments:", error);
+    throw error;
   }
 };
