@@ -25,8 +25,7 @@ import { AuthContext } from "@/app/context/AuthContext";
 import FeedUploadBox from "@/app/(dashboard)/feed/_components/FeedUploadBox";
 import Notification from "./Notification";
 import { useQuery } from "@tanstack/react-query";
-import { API_ENDPOINT } from "@/axios.config";
-import axios from "axios";
+
 import { fetchUserNotifications } from "@/axios.config";
 
 function Navbar() {

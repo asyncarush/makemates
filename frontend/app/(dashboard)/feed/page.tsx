@@ -17,6 +17,7 @@ import { API_ENDPOINT } from "@/axios.config";
 import { AuthContext } from "@/app/context/AuthContext";
 import useFriendList from "@/hooks/useFriendList";
 import Posts from "@/components/Posts";
+import { AIResponseLoader } from "@/components/AIResponseLoader";
 
 function Page() {
   const friendsList = useFriendList();
@@ -113,7 +114,7 @@ function Page() {
       </div>
 
       {/* Main Feed */}
-      <div className="flex-1 max-w-2xl">
+      <div className="flex-1 max-w-2xl items-center">
         <Posts userId={currentUser?.id} />
       </div>
 
