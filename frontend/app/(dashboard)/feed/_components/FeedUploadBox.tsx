@@ -174,7 +174,10 @@ function FeedUploadBox() {
   return (
     <Dialog>
       <DialogTrigger asChild className="border-none outline-none">
-        <Button variant="ghost" className="hover:bg-transparent outline-none">
+        <Button
+          variant="ghost"
+          className="hover:bg-transparent outline-none border-none ring-0"
+        >
           {/* <IoIosAddCircle className="w-8 h-8 text-gray-200 hover:text-gray-50" /> */}
           {/* import { BiSolidImageAdd } from "react-icons/bi"; */}
           <BiSolidImageAdd className="w-6 h-6 text-gray-200 hover:text-gray-50 outline-none border-none" />

@@ -121,7 +121,7 @@ function Posts({ userId }: { userId: number }) {
 
   return (
     <div className="space-y-4">
-      {data.reverse().map((post: PostInterface) => {
+      {data.map((post: PostInterface) => {
         const mediaUrls =
           post.post_media && post.post_media.length > 0
             ? post.post_media.map((media: any) => media.media_url)
