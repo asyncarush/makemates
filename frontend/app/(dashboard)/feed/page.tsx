@@ -18,6 +18,9 @@ import { AuthContext } from "@/app/context/AuthContext";
 import useFriendList from "@/hooks/useFriendList";
 import Posts from "@/components/Posts";
 import { AIResponseLoader } from "@/components/AIResponseLoader";
+import ChannelsList from "@/components/ChannelList";
+import TrendingTopics from "@/components/TrendingTopics";
+import { TrendingDown } from "lucide-react";
 
 function Page() {
   const friendsList = useFriendList();
@@ -46,11 +49,11 @@ function Page() {
   }, [currentUser]);
 
   return currentUser ? (
-    <div className="flex gap-8 max-w-7xl mx-auto">
+    <div className="flex gap-8 max-w-7xl mx-auto ">
       {/* Left Sidebar */}
-      <div className="w-[260px] flex-shrink-0 sticky top-[100px] h-fit">
+      <div className="w-[260px] flex flex-col sticky gap-4 top-[100px] h-fit">
         {/* Profile Card */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md shadow-sm overflow-hidden">
           <div className="h-16 bg-gradient-to-r from-blue-600 via-blue-500 to-teal-400" />
           <div className="px-3 pb-3 -mt-8">
             <div className="relative w-12 h-12 mx-auto mb-2">
@@ -74,7 +77,7 @@ function Page() {
         </div>
 
         {/* Navigation Menu */}
-        <div className="bg-white rounded-xl shadow-sm mt-3 p-2">
+        <div className="bg-white rounded-md shadow-sm p-2">
           <nav className="space-y-0.5">
             <Link
               href="/chat"
@@ -111,6 +114,9 @@ function Page() {
             </Link>
           </nav>
         </div>
+
+        {/* Channel List */}
+        <ChannelsList />
       </div>
 
       {/* Main Feed */}
@@ -119,10 +125,10 @@ function Page() {
       </div>
 
       {/* Right Sidebar - Following */}
-      <div className="w-[280px] flex-shrink-0 sticky top-[100px] h-fit">
+      <div className="w-[280px] flex flex-col gap-3 sticky top-[100px] h-fit">
         <div className="bg-white backdrop-blur-sm bg-opacity-95 rounded-xl border border-gray-100 shadow-sm p-3">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-medium text-gray-800 flex items-center gap-1.5 text-sm">
+            <h4 className="font-semibold text-gray-800 flex items-center gap-1.5 text-sm">
               <span className="h-1 w-1 rounded-full bg-indigo-500"></span>
               Following
             </h4>
@@ -223,6 +229,7 @@ function Page() {
             )}
           </div>
         </div>
+        <TrendingTopics />
       </div>
     </div>
   ) : (

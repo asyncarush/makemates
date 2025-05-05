@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import axios from "axios";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BsMessenger, BsGrid3X3, BsBookmark } from "react-icons/bs";
@@ -12,7 +11,7 @@ import { IoMdPhotos, IoMdPeople } from "react-icons/io";
 import { RiUserFollowLine } from "react-icons/ri";
 import { useFollowed } from "@/hooks/isFriend";
 import Posts from "@/components/Posts";
-import { API_ENDPOINT } from "@/axios.config";
+import { BACKEND_API } from "@/axios.config";
 
 function Page() {
   const { id } = useParams();
@@ -28,8 +27,8 @@ function Page() {
     const getUserProfile = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.post(
-          `${API_ENDPOINT}/search/profile`,
+        const response = await BACKEND_API.post(
+          `/search/profile`,
           { id },
           { withCredentials: true }
         );
@@ -58,8 +57,8 @@ function Page() {
   const handleFollow = async () => {
     setIsFollowed(true);
     try {
-      const res = await axios.post(
-        `${API_ENDPOINT}/user/follow`,
+      const res = await BACKEND_API.post(
+        `/user/follow`,
         {
           friendId: id,
         },
@@ -76,8 +75,8 @@ function Page() {
   const handleUnFollow = async () => {
     setIsFollowed(false);
     try {
-      const res = await axios.post(
-        `${API_ENDPOINT}/user/unfollow`,
+      const res = await BACKEND_API.post(
+        `/user/unfollow`,
         {
           friendId: id,
         },
