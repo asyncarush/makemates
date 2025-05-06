@@ -22,15 +22,21 @@ import { useFileUploader } from "@/hooks/useFileUploader";
 import AIResponseLoader from "@/components/AIResponseLoader";
 import { BiSolidImageAdd } from "react-icons/bi";
 
+interface PreviewURL {
+  type: string;
+  url: string;
+}
+
 function FeedUploadBox() {
   const [desc, setDesc] = useState<string>("");
   const [files, setFiles] = useState<FileList | null>(null);
-  const [previewUrls, setPreviewUrls] = useState<string[] | null>(null);
+  const [previewUrls, setPreviewUrls] = useState<PreviewURL[] | null>(null);
   const [captions, setCaptions] = useState<string[]>([]);
   const [captionLoader, setCaptionLoader] = useState<boolean>(false);
   const formRef = useRef<HTMLFormElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
 
+  const videoRef = useRef<HTMLVideoElement>(null);
   // Custom Hoooks
   const mutation = useNewPostMutation();
   const { uploadFile, uploadProgress, uploadState } = useFileUploader();
@@ -64,14 +70,28 @@ function FeedUploadBox() {
     e.preventDefault();
     const selectedFiles = e.target.files;
     setCaptionLoader(true);
+    setCaptions([]); // for regenerating captions on file change
 
     if (!selectedFiles || selectedFiles.length === 0)
       return toast.error("Please select files");
 
     const arrayOfFileList = Array.from(selectedFiles);
     // Validate file types and sizes
-    const validFileTypes = ["image/jpeg", "image/png"];
-    const maxFileSize = 5 * 1024 * 1024; // 5MB
+    const validFileTypes = [
+      "image/jpeg",
+      "image/png",
+      "video/mp4",
+      "video/mp4",
+      "video/webm",
+      "video/ogg",
+      "video/quicktime",
+      "video/x-msvideo",
+      "video/x-matroska",
+      "video/x-ms-wmv",
+      "video/x-flv",
+      "video/3gpp",
+    ];
+    const maxFileSize = 100 * 1024 * 1024; // 5MB
 
     const invalidFiles = arrayOfFileList.filter(
       (file) => !validFileTypes.includes(file.type) || file.size > maxFileSize
@@ -85,18 +105,11 @@ function FeedUploadBox() {
     }
     setFiles(selectedFiles);
     // Create and add new preview URLs
-    const newPreviewUrls = arrayOfFileList.map((file) =>
-      URL.createObjectURL(file)
-    );
-    // Update preview URLs while maintaining the existing ones
-    setPreviewUrls((prev) => {
-      // If we already have preview URLs, add the new ones
-      if (prev && prev.length > 0) {
-        return [...prev, ...newPreviewUrls];
-      }
-      // If no existing preview URLs, just use the new ones
-      return newPreviewUrls;
+    const newPreviewUrls = arrayOfFileList.map((file) => {
+      return { type: file.type.split("/")[0], url: URL.createObjectURL(file) };
     });
+    // Update preview URLs while maintaining the existing ones
+    setPreviewUrls(newPreviewUrls);
 
     const file = selectedFiles[0];
 
@@ -151,17 +164,18 @@ function FeedUploadBox() {
       reader.readAsDataURL(file);
     };
 
-    generateCaptions();
+    // generateCaptions();
 
     // Clean up old preview URLs when component unmounts
     return () => {
-      newPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+      newPreviewUrls.forEach((preview) => URL.revokeObjectURL(preview.url));
     };
   };
 
   const clearFileInput = () => {
     setFiles(null);
     setPreviewUrls([]);
+    setCaptions([]);
 
     if (formRef.current) {
       const fileInput = formRef.current.querySelector(
@@ -169,6 +183,15 @@ function FeedUploadBox() {
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = "";
     }
+  };
+
+  const handleMouseEnter = () => {
+    videoRef.current?.play();
+  };
+
+  const handleMouseLeave = () => {
+    videoRef.current?.pause();
+    videoRef.current!.currentTime = 0; // reset to beginning
   };
 
   return (
@@ -222,19 +245,33 @@ function FeedUploadBox() {
           <div>
             <div className="flex max-h-[200px] gap-1 overflow-y-auto">
               {previewUrls &&
-                previewUrls.map((url, index) => (
+                previewUrls.map((preview, index) => (
                   <div
                     key={index}
                     className="relative my-2 w-[80px] h-[100px] rounded-lg"
                   >
-                    <Image
-                      src={url}
-                      alt={`preview-${index}`}
-                      className="object-cover rounded-lg"
-                      fill
-                      loading="lazy"
-                      // priority={index === 0}
-                    />
+                    {preview.type === "image" ? (
+                      <Image
+                        src={preview.url}
+                        alt={`preview-${index}`}
+                        className="object-cover rounded-lg"
+                        fill
+                        loading="lazy"
+                        // priority={index === 0}
+                      />
+                    ) : (
+                      <video
+                        ref={videoRef}
+                        src={preview.url}
+                        width="300"
+                        muted
+                        preload="metadata"
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                        className="object-cover rounded-lg w-18 h-24"
+                        //
+                      />
+                    )}
                   </div>
                 ))}
             </div>

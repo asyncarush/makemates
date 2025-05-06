@@ -28,8 +28,6 @@ export const useFileUploader = () => {
       )
     );
 
-    console.log("Compressed File::", compressedFiles);
-
     // Create FormData with the compressed file
     let formData = new FormData();
 
