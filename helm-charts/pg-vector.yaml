@@ -1,0 +1,187 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: makemates
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: makemates-config
+  namespace: makemates
+data:
+  init-pgvector.sh: |
+    #!/bin/bash
+    set -e
+
+    # Create extension pgvector
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+      CREATE EXTENSION IF NOT EXISTS vector;
+    EOSQL
+
+    echo "pgvector extension installed successfully"
+
+  postgresql.conf: |
+    listen_addresses = '*'
+    shared_buffers = 256MB
+    max_connections = 100
+    shared_preload_libraries = 'vector'
+    effective_cache_size = 512MB
+    work_mem = 4MB
+    maintenance_work_mem = 64MB
+    min_wal_size = 80MB
+    max_wal_size = 1GB
+    checkpoint_completion_target = 0.7
+    random_page_cost = 1.1
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: makemates-credentials
+  namespace: makemates
+type: Opaque
+data:
+  # Default credentials: 'postgres' / 'postgres123'
+  # Base64 encoded: echo -n "postgres" | base64
+  # Make sure to change these for production
+  postgres-user: cG9zdGdyZXM=
+  postgres-password: cG9zdGdyZXMxMjM=
+  postgres-db: dmVjdG9yZGI=
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: makemates
+  namespace: makemates
+  labels:
+    app: makemates
+spec:
+  ports:
+    - port: 5432
+      name: postgres
+      targetPort: 5432
+  clusterIP: None # Headless service for StatefulSet
+  selector:
+    app: makemates
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: makemates-lb
+  namespace: makemates
+  labels:
+    app: makemates
+spec:
+  type: ClusterIP # Change to LoadBalancer, NodePort etc. as needed
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: postgres
+  selector:
+    app: makemates
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: makemates
+  namespace: makemates
+spec:
+  serviceName: "makemates"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: makemates
+  template:
+    metadata:
+      labels:
+        app: makemates
+    spec:
+      securityContext:
+        fsGroup: 999 # postgres group
+      containers:
+        - name: postgres
+          image: ramsrib/pgvector:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 999 # postgres user
+            runAsGroup: 999
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: makemates-credentials
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: makemates-credentials
+                  key: postgres-password
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: makemates-credentials
+                  key: postgres-db
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+            - name: config
+              mountPath: /etc/postgresql/postgresql.conf
+              subPath: postgresql.conf
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+      volumes:
+        - name: init-scripts
+          configMap:
+            name: makemates-config
+            defaultMode: 0755
+            items:
+              - key: init-pgvector.sh
+                path: init-pgvector.sh
+        - name: config
+          configMap:
+            name: makemates-config
+            items:
+              - key: postgresql.conf
+                path: postgresql.conf
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+        # Uncomment and specify your storage class if needed
+        # storageClassName: standard

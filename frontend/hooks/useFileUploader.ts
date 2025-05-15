@@ -9,9 +9,17 @@ export const useFileUploader = () => {
   const uploadFile = async (files: FileList) => {
     setUploadState(true);
     setUploadProgress(0);
+    let videoFiles: File[] = [];
+    let imageFiles: File[] = [];
 
-    const compressedFiles = await Promise.all(
-      Array.from(files).map(
+    Array.from(files).forEach((file: File) => {
+      file.type.startsWith("video")
+        ? videoFiles.push(file)
+        : imageFiles.push(file);
+    });
+
+    const compressedImageFiles = await Promise.all(
+      imageFiles.map(
         (file: File) =>
           new Promise((resolve, reject) => {
             new Compressor(file, {
@@ -31,7 +39,7 @@ export const useFileUploader = () => {
     // Create FormData with the compressed file
     let formData = new FormData();
 
-    compressedFiles.forEach((file: any) => {
+    compressedImageFiles.forEach((file: any) => {
       const fileExtension = file.type.split("/")[1] || "jpg";
       const fileName = `image_${Date.now()}.${fileExtension}`;
       formData.append("post_images", file, fileName);
