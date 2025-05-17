@@ -43,7 +43,7 @@ export interface NewComment {
 interface PostProps {
   caption: string;
   name: string;
-  mediaUrls: string[]; // Can be either a string (JSON) or array of strings
+  mediaUrls: (string | MediaItem)[];
   postDate: string;
   profileImage: string | null;
   postId: number;
@@ -72,7 +72,7 @@ interface UploadResponse {
 
 interface EditPostProps {
   caption: string;
-  mediaUrls: string[];
+  mediaUrls: Array<string | MediaItem>;
   onSuccess?: () => void;
   onError?: (error: Error) => void;
   userId: number;

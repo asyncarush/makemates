@@ -21,7 +21,7 @@ import {
 import { removeThisImage } from "@/axios.config";
 
 import { IoEllipsisVertical } from "react-icons/io5";
-import { EditPost, EditPostProps, UploadResponse } from "@/typings";
+import { EditPost, EditPostProps, MediaItem, UploadResponse } from "@/typings";
 import axios from "axios";
 import { Button } from "./ui/button";
 import Image from "next/image";
@@ -44,8 +44,8 @@ export const EditPostComponent = ({
   // File & Form Handler
   const [files, setFiles] = useState<FileList | null>(null);
   const [desc, setDesc] = useState<string>(caption);
-  const [previewUrls, setPreviewUrls] = useState<string[]>(mediaUrls);
-  const [newPreviewUrls, setNewPreviewUrls] = useState<string[]>(mediaUrls);
+  const [previewUrls, setPreviewUrls] = useState<Array<string | MediaItem>>(mediaUrls);
+  const [newPreviewUrls, setNewPreviewUrls] = useState<Array<string | MediaItem>>(mediaUrls);
   const formRef = useRef<HTMLFormElement>(null);
   const addMediaInput = useRef<HTMLInputElement>(null);
 
@@ -53,7 +53,7 @@ export const EditPostComponent = ({
   // const [uploadState, setUploadState] = useState(false);
   // const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
-  const { uploadFile, uploadProgress, uploadState } = useFileUploader();
+  const { uploadFiles, isUploading, progress, error } = useFileUploader();
 
   const [removedImages, setRemovedImages] = useState<string[]>([]);
 
@@ -75,16 +75,22 @@ export const EditPostComponent = ({
       return toast.success("Post Updated");
     }
 
-    const downloadURLs = await uploadFile(files);
+    try {
+      const uploadedFiles = await uploadFiles(files);
+      const downloadURLs = uploadedFiles.map(file => file.url);
 
-    const postData = {
-      desc,
-      imgUrls: JSON.stringify(downloadURLs.flat()),
-    };
+      const postData = {
+        desc,
+        imgUrls: JSON.stringify(downloadURLs.flat()),
+      };
 
-    mutation.mutate(postData as EditPost);
-    closeButton.current?.click();
-    clearFileInput();
+      mutation.mutate(postData as EditPost);
+      closeButton.current?.click();
+      clearFileInput();
+    } catch (err) {
+      console.error("Error uploading files:", err);
+      toast.error("Failed to upload files. Please try again.");
+    }
   };
 
   const handleMultipleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,16 +168,28 @@ export const EditPostComponent = ({
     addMediaInput.current?.click();
   };
 
-  const clearImage = (media: string) => {
-    // check the if existed Media deleted
-    if (previewUrls.includes(media)) {
-      const newPreviewUrls = previewUrls.filter((url) => url !== media);
+  const clearImage = (media: string | MediaItem) => {
+    const mediaUrl = typeof media === 'string' ? media : media.url;
+    
+    // check if existing media is deleted
+    const mediaExists = previewUrls.some(url => 
+      (typeof url === 'string' ? url : url.url) === mediaUrl
+    );
+    
+    if (mediaExists) {
+      const newPreviewUrls = previewUrls.filter(url => 
+        (typeof url === 'string' ? url : url.url) !== mediaUrl
+      );
       setPreviewUrls(newPreviewUrls);
-      setRemovedImages((prev) => [...prev, media]);
+      setRemovedImages((prev) => [...prev, mediaUrl]);
     }
 
     // check if new media is deleted
-    if (newPreviewUrls.includes(media)) {
+    const newMediaExists = newPreviewUrls.some(url => 
+      (typeof url === 'string' ? url : url.url) === mediaUrl
+    );
+    
+    if (newMediaExists) {
       console.log("Found In new preview URL");
     }
   };
@@ -220,20 +238,31 @@ export const EditPostComponent = ({
 
             {previewUrls.length > 0 && (
               <div className="h-[400px] overflow-auto mb-5">
-                {previewUrls.map((mediaUrl) => {
+                {previewUrls.map((mediaItem) => {
+                  const mediaUrl = typeof mediaItem === 'string' ? mediaItem : mediaItem.url;
+                  const isVideo = typeof mediaItem !== 'string' && mediaItem.type === 'video';
+                  
                   return (
                     <div key={mediaUrl} className="relative w-full mt-4">
-                      <Image
-                        src={mediaUrl}
-                        alt="preview-image"
-                        width={100}
-                        height={100}
-                        unoptimized={true}
-                        className="w-full rounded-md"
-                      />
+                      {isVideo ? (
+                        <video
+                          src={mediaUrl}
+                          controls
+                          className="w-full rounded-md"
+                        />
+                      ) : (
+                        <Image
+                          src={mediaUrl}
+                          alt="preview-image"
+                          width={100}
+                          height={100}
+                          unoptimized={true}
+                          className="w-full rounded-md"
+                        />
+                      )}
                       <div
                         className="absolute p-2 bg-white rounded-full right-2 top-2 cursor-pointer"
-                        onClick={() => clearImage(mediaUrl)}
+                        onClick={() => clearImage(mediaItem)}
                       >
                         X
                       </div>
@@ -242,15 +271,15 @@ export const EditPostComponent = ({
                 })}
               </div>
             )}
-            {uploadState && (
+            {isUploading && (
               <div className="w-full flex flex-col justify-center">
                 <span className="text-center font-medium">
                   Post is Uploading...
                 </span>
                 <div className="flex items-center gap-1">
-                  <Progress value={uploadProgress} />
+                  <Progress value={progress} />
                   <span className="font-semibold text-sm">
-                    {Math.round(uploadProgress || 0)}%
+                    {Math.round(progress || 0)}%
                   </span>
                 </div>
               </div>

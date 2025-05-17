@@ -1,75 +1,83 @@
-import { BACKEND_API } from "./../axios.config";
-import { useState } from "react";
-import Compressor from "compressorjs";
+import { BACKEND_API } from "../axios.config";
+import { useState, useCallback } from "react";
 
-export const useFileUploader = () => {
-  const [uploadState, setUploadState] = useState<boolean>(false);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+export interface UploadedFile {
+  url: string;
+  type: "image" | "video";
+  size: number;
+  originalName: string;
+}
 
-  const uploadFile = async (files: FileList) => {
-    setUploadState(true);
-    setUploadProgress(0);
-    let videoFiles: File[] = [];
-    let imageFiles: File[] = [];
+interface UploadOptions {
+  maxSizeMB?: number;
+  maxWidthOrHeight?: number;
+  onUploadProgress?: (progressEvent: ProgressEvent) => void;
+}
 
-    Array.from(files).forEach((file: File) => {
-      file.type.startsWith("video")
-        ? videoFiles.push(file)
-        : imageFiles.push(file);
-    });
+export const useFileUploader = (options: UploadOptions = {}) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<Error | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
 
-    const compressedImageFiles = await Promise.all(
-      imageFiles.map(
-        (file: File) =>
-          new Promise((resolve, reject) => {
-            new Compressor(file, {
-              quality: 0.1,
-              success(result) {
-                resolve(result);
-              },
-              error(err) {
-                reject(err);
-                console.error(err.message);
-              },
-            });
-          })
-      )
-    );
+  const uploadFiles = useCallback(
+    async (files: FileList): Promise<UploadedFile[]> => {
+      setIsUploading(true);
+      setError(null);
 
-    // Create FormData with the compressed file
-    let formData = new FormData();
+      try {
+        const formData = new FormData();
+        Array.from(files).forEach((file) => {
+          formData.append("files", file);
+        });
 
-    compressedImageFiles.forEach((file: any) => {
-      const fileExtension = file.type.split("/")[1] || "jpg";
-      const fileName = `image_${Date.now()}.${fileExtension}`;
-      formData.append("post_images", file, fileName);
-    });
+        const response = await BACKEND_API.post("/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = progressEvent.total
+              ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              : 0;
+            setProgress(percentCompleted);
+            options.onUploadProgress?.(
+              progressEvent as unknown as ProgressEvent
+            );
+          },
+        });
 
-    try {
-      // Upload file to MinIO through backend API
-      const uploadResponse = await BACKEND_API.post(`/upload`, formData, {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          const progress = progressEvent.total
-            ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
-            : 0;
-          setUploadProgress(progress);
-        },
-      });
+        if (response.data.success && response.data.files) {
+          setUploadedFiles((prev) => [...prev, ...response.data.files]);
+          return response.data.files;
+        }
 
-      // Get the URL from the response
-      setUploadState(false);
-      return uploadResponse.data?.urls;
-    } catch (error: any) {
-      console.error("Failed to upload image: " + error.message);
-      setUploadState(false);
-      setUploadProgress(null);
-      throw error;
-    }
+        throw new Error("Failed to upload files");
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error("Failed to upload files");
+        setError(error);
+        throw error;
+      } finally {
+        setIsUploading(false);
+        setProgress(0);
+      }
+    },
+    [options]
+  );
+
+  const reset = useCallback(() => {
+    setUploadedFiles([]);
+    setError(null);
+    setProgress(0);
+  }, []);
+
+  return {
+    uploadFiles,
+    isUploading,
+    progress,
+    error,
+    uploadedFiles,
+    reset,
   };
-
-  return { uploadFile, uploadProgress, uploadState };
 };

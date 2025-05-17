@@ -1,20 +1,57 @@
-import { Request, Response } from "express";
-import * as path from "path";
+import { Response } from "express";
+import { RequestWithUser } from "../typing";
 import * as fs from "fs";
+import * as path from "path";
 import * as util from "util";
 import { exec } from "child_process";
 import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
-import { uploadFile } from "../services/minio.service";
+import { logger } from "../config/winston";
 import { minioConfig } from "../config/minio.config";
-
-const execPromise = util.promisify(exec);
+import { Client } from "minio";
+// Constants
+const BUCKET_NAME = process.env.MINIO_BUCKET || "makemates";
 const UPLOAD_DIR = "/tmp/uploads";
 
-// Ensure upload directory exists
+// Create upload directory if it doesn't exist
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
+
+// Extend Express.Multer types
+declare global {
+  namespace Express {
+    namespace Multer {
+      interface File {
+        buffer: Buffer;
+        originalname: string;
+        mimetype: string;
+        size: number;
+      }
+    }
+  }
+}
+
+const execPromise = util.promisify(exec);
+
+const minioClient = new Client({
+  endPoint: minioConfig.endpoint,
+  useSSL: minioConfig.useSSL,
+  accessKey: minioConfig.accessKey,
+  secretKey: minioConfig.secretKey,
+  pathStyle: minioConfig.forcePathStyle,
+});
+
+const ensureBucketExists = async () => {
+  const bucketExists = await minioClient.bucketExists(BUCKET_NAME);
+  if (!bucketExists) {
+    await minioClient.makeBucket(BUCKET_NAME, "us-east-1");
+    console.log(`Created bucket: ${BUCKET_NAME}`);
+  }
+};
+
+// Initialize the bucket on startup
+ensureBucketExists().catch(console.error);
 
 interface UploadedFile {
   originalName: string;
@@ -23,12 +60,14 @@ interface UploadedFile {
   size: number;
 }
 
-interface CustomRequest extends Request {
-  files?:
-    | { [fieldname: string]: Express.Multer.File[] }
-    | Express.Multer.File[];
+interface UploadedFileResponse {
+  originalName: string;
+  url: string;
+  type: "image" | "video";
+  size: number;
 }
 
+// Process a single file upload
 const processFileUpload = async (
   file: Express.Multer.File
 ): Promise<UploadedFile> => {
@@ -56,64 +95,51 @@ const processFileUpload = async (
     await fs.promises.writeFile(tempFilePath, file.buffer);
 
     let processedBuffer: Buffer;
-    let contentType: string;
 
     if (isImage) {
-      // Process image using sharp - resize and compress
+      // Process image using sharp
       const image = sharp(file.buffer);
       processedBuffer = await image
-        .resize({
-          width: 1200,
-          height: 1200,
+        .jpeg({ quality: 80, mozjpeg: true })
+        .resize(1200, 1200, {
           fit: "inside",
           withoutEnlargement: true,
         })
-        .jpeg({
-          quality: 80,
-          mozjpeg: true,
-          progressive: true,
-          optimizeCoding: true,
-        })
         .toBuffer();
-      contentType = "image/jpeg";
     } else {
-      // Process video using ffmpeg - compress and optimize
-      // Escape the file paths to handle spaces in filenames
-      const escapedInputPath = `"${tempFilePath}"`;
-      const escapedOutputPath = `"${outputPath}"`;
-      
-      await execPromise(
-        `ffmpeg -i ${escapedInputPath} ` +
-          `-c:v libx264 -preset slow -crf 28 ` +
-          `-vf "scale='min(1920,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease" ` +
-          `-c:a aac -b:a 128k -movflags +faststart -y ${escapedOutputPath}`
-      );
+      // Process video using ffmpeg
+      await new Promise<void>((resolve, reject) => {
+        const ffmpegCmd = `ffmpeg -i ${tempFilePath} -vcodec libx264 -crf 28 -preset faster -pix_fmt yuv420p -movflags +faststart ${outputPath}`;
+        exec(ffmpegCmd, (error) => {
+          if (error) {
+            reject(new Error(`FFmpeg error: ${error.message}`));
+            return;
+          }
+          resolve();
+        });
+      });
       processedBuffer = await fs.promises.readFile(outputPath);
-      contentType = "video/mp4";
     }
 
-    // Upload to MinIO using the existing service
-    const fileUrl = await uploadFile(
+    // Upload to MinIO
+    await minioClient.putObject(
+      BUCKET_NAME,
+      outputFileName,
+      processedBuffer,
+      processedBuffer.length,
       {
-        ...file,
-        buffer: processedBuffer,
-        originalname: outputFileName,
-        mimetype: contentType,
-        size: processedBuffer.length,
-      } as Express.Multer.File,
-      outputFileName
+        "Content-Type": isVideo ? "video/mp4" : "image/jpeg",
+      }
     );
 
-    // Ensure we have a valid URL string
-    if (typeof fileUrl !== 'string') {
-      throw new Error('Invalid file URL received from storage service');
-    }
+    // Generate public URL (adjust based on your MinIO configuration)
+    const publicUrl = `${`http://${minioConfig.endpoint}`}/${BUCKET_NAME}/${outputFileName}`;
 
     return {
       originalName: file.originalname,
-      url: fileUrl,
-      type: isVideo ? 'video' : 'image',
-      size: processedBuffer.length
+      url: publicUrl,
+      type: isVideo ? "video" : "image",
+      size: processedBuffer.length,
     };
   } catch (error) {
     console.error("Error processing file:", error);
@@ -125,35 +151,29 @@ const processFileUpload = async (
   } finally {
     // Clean up temporary files
     try {
-      if (fs.existsSync(tempFilePath))
-        await fs.promises.unlink(tempFilePath).catch(() => {});
-      if (fs.existsSync(outputPath))
-        await fs.promises.unlink(outputPath).catch(() => {});
+      if (fs.existsSync(tempFilePath)) await fs.promises.unlink(tempFilePath);
+      if (fs.existsSync(outputPath)) await fs.promises.unlink(outputPath);
     } catch (cleanupError) {
       console.error("Error cleaning up temporary files:", cleanupError);
     }
   }
 };
 
-export const uploadFileController = async (
-  req: CustomRequest,
-  res: Response
-) => {
-  console.log("Reaching here for file upload", req.files);
+export const uploadMedia = async (req: RequestWithUser, res: Response) => {
+  console.log("reaching here... In upload Media");
+  console.log()
+
   try {
-    if (!req.files || (Array.isArray(req.files) && req.files.length === 0)) {
+    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       return res.status(400).json({
         success: false,
         error: "No files uploaded",
       });
     }
 
-    const files = Array.isArray(req.files)
-      ? req.files
-      : Object.values(req.files).flat();
-
+    // Process all files in parallel
     const results = await Promise.all(
-      files.map((file) =>
+      req.files.map((file) =>
         processFileUpload(file).catch((error) => ({
           originalName: file.originalname,
           error: error.message,
@@ -162,10 +182,15 @@ export const uploadFileController = async (
       )
     );
 
+    // Check for any failed uploads
+    const failedUploads = results.filter((result) => "error" in result);
     const successfulUploads = results.filter(
       (result): result is UploadedFile => "url" in result
     );
-    const failedUploads = results.filter((result) => "error" in result);
+
+    if (failedUploads.length > 0) {
+      console.error("Some files failed to upload:", failedUploads);
+    }
 
     if (successfulUploads.length === 0) {
       return res.status(400).json({
@@ -191,38 +216,10 @@ export const uploadFileController = async (
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    console.error("Error in uploadFileController:", error);
+    logger.error("Error in uploadMedia:", errorMessage);
     res.status(500).json({
       success: false,
-      error: "Failed to process file upload",
-      details: errorMessage,
-    });
-  }
-};
-
-export const uploadProfilePicture = async (req: Request, res: Response) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "No file uploaded",
-      });
-    }
-
-    const result = await processFileUpload(req.file);
-
-    res.status(200).json({
-      success: true,
-      message: "Profile picture uploaded successfully",
-      file: result,
-    });
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    console.error("Error uploading profile picture:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to upload profile picture",
+      error: "Failed to process media upload",
       details: errorMessage,
     });
   }

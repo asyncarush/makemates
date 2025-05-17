@@ -8,7 +8,7 @@ import {
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post("/upload", upload.array("post_images"), uploadFileController);
+router.post("/", upload.array("files"), uploadFileController);
 
 router.post(
   "/upload/profileImage",

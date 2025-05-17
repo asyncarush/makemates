@@ -5,6 +5,8 @@
 
 import dotenv from "dotenv";
 import http from "http";
+import cors from "cors";
+import express from "express";
 import { logger } from "./config/winston";
 import { ServerConfig } from "./config/server.config";
 import { SocketService } from "./services/socket.service";
@@ -16,6 +18,7 @@ import Post from "./routes/post.routes";
 import Search from "./routes/search.routes";
 import upload from "./routes/upload.routes";
 import chat from "./routes/chat.routes";
+import media from "./routes/media.routes";
 
 dotenv.config();
 
@@ -32,12 +35,23 @@ const io = socketService.getIO();
 const redisClient = socketService.getRedisClient();
 const notificationManager = new NotificationManger(io);
 
+// Middleware
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
 // Register routes
 app.use("/user", User);
 app.use("/posts", Post);
 app.use("/search", Search);
-app.use("/", upload);
+app.use("/upload", upload);
 app.use("/chat", chat);
+// app.use("/api/media", media);
 
 const PORT: number = parseInt(process.env.PORT || "2000", 10);
 

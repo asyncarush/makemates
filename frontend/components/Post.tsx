@@ -17,36 +17,24 @@ import EditPostComponent from "./EditPost";
 import { PostProps } from "@/typings";
 import { API_ENDPOINT } from "@/axios.config";
 import { AuthContext } from "@/app/context/AuthContext";
-
-// Dynamically import PhotoProvider and PhotoView with ssr disabled
-const PhotoProvider = dynamic(
-  () => import("react-photo-view").then((mod) => mod.PhotoProvider),
-  { ssr: false }
-);
-
-const PhotoView = dynamic(
-  () => import("react-photo-view").then((mod) => mod.PhotoView),
-  { ssr: false }
-);
+import RenderMedia from "./RenderMedia";
+interface PostComponentProps extends Omit<PostProps, "mediaUrls"> {
+  mediaUrls: string[];
+}
 
 function Post({
   caption,
   name,
-  mediaUrls,
+  mediaUrls: rawMediaUrls,
   postDate,
   profileImage,
   postId,
   userId,
-}: PostProps) {
+}: PostComponentProps) {
   const { currentUser }: any = useContext(AuthContext);
   const [isPostLiked, setIsPostLiked] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
   const [commentBox, setCommentBox] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const handlePostLike = async () => {
     setLikeAnimating(true);
@@ -79,44 +67,6 @@ function Post({
     checkLikeStatus();
   }, [postId]);
 
-  // Get grid layout based on number of images
-  const getGridLayout = () => {
-    if (mediaUrls.length === 1) return "grid-cols-1";
-    if (mediaUrls.length === 2) return "grid-cols-2";
-    if (mediaUrls.length === 3) return "grid-cols-3";
-    if (mediaUrls.length === 4) return "grid-cols-2 grid-rows-2";
-    return "grid-template-gallery"; // Custom class for 5+ images
-  };
-
-  // Limit the number of images shown in the grid
-  const getVisibleMediaUrls = () => {
-    if (mediaUrls.length <= 5) return mediaUrls;
-    return mediaUrls.slice(0, 5);
-  };
-
-  // Get specific classes for each image position in the grid
-  const getImageClasses = (index: number, totalImages: number) => {
-    if (totalImages === 1) return "col-span-full row-span-full aspect-[16/9]";
-
-    if (totalImages === 2) return "aspect-square";
-
-    if (totalImages === 3) return "aspect-square";
-
-    if (totalImages === 4) {
-      return "aspect-square";
-    }
-
-    if (totalImages >= 5) {
-      if (index === 0) return "gallery-item-0";
-      if (index === 1) return "gallery-item-1";
-      if (index === 2) return "gallery-item-2";
-      if (index === 3) return "gallery-item-3";
-      if (index === 4) return "gallery-item-4";
-    }
-
-    return "aspect-square";
-  };
-
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
       {/* Post Header */}
@@ -142,9 +92,9 @@ function Post({
           </div>
         </div>
 
-        {userId === currentUser.id && (
+        {userId === currentUser?.id && (
           <EditPostComponent
-            mediaUrls={mediaUrls}
+            mediaUrls={rawMediaUrls}
             caption={caption}
             userId={userId}
             postId={postId}
@@ -159,73 +109,9 @@ function Post({
         </div>
       )}
 
-      {/* Post Media */}
-      {mediaUrls.length > 0 && (
-        <div className="media-container w-full overflow-hidden">
-          {isMounted && (
-            <PhotoProvider photoClosable>
-              <div
-                className={`grid ${getGridLayout()} gap-0.5`}
-                style={{
-                  // Custom grid for 5+ images matching the screenshot
-                  ...(mediaUrls.length >= 5
-                    ? {
-                        display: "grid",
-                        gridTemplateAreas: `
-                      "img0 img0 img2"
-                      "img1 img3 img4"
-                    `,
-                        gridTemplateColumns: "1fr 1fr 1fr",
-                        gridTemplateRows:
-                          "minmax(150px, 200px) minmax(150px, 200px)",
-                        maxHeight: "400px",
-                      }
-                    : {}),
-                }}
-              >
-                {getVisibleMediaUrls().map((url, index) => {
-                  const imageClasses = getImageClasses(index, mediaUrls.length);
-                  return (
-                    <div
-                      key={`${url}-${index}`}
-                      className={`relative overflow-hidden ${imageClasses}`}
-                      style={{
-                        ...(mediaUrls.length >= 5
-                          ? {
-                              gridArea: `img${index}`,
-                            }
-                          : {}),
-                      }}
-                    >
-                      <PhotoView src={url}>
-                        <div className="w-full h-full cursor-pointer hover:opacity-95 transition-opacity relative">
-                          <Image
-                            src={url}
-                            alt={caption || `Photo ${index + 1}`}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 80vw"
-                            className="object-cover"
-                            priority={index === 0}
-                          />
-                        </div>
-                      </PhotoView>
-
-                      {/* Show remaining count on last visible image */}
-                      {mediaUrls.length > 5 && index === 4 && (
-                        <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center cursor-pointer hover:bg-opacity-70 transition-all">
-                          <span className="text-white text-xl font-medium">
-                            +{mediaUrls.length - 5}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </PhotoProvider>
-          )}
-        </div>
-      )}
+      <div className="relative w-full h-full">
+        <RenderMedia mediaUrls={rawMediaUrls} />
+      </div>
 
       {/* Post Actions */}
       <div className="px-3 py-2 border-t border-gray-100">
@@ -276,20 +162,3 @@ function Post({
 }
 
 export default Post;
-
-<style jsx>{`
-  .like-animate {
-    animation: pop-like 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  }
-  @keyframes pop-like {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.5);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-`}</style>;

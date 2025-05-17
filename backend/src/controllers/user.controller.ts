@@ -27,10 +27,6 @@ export async function login(req: Request, res: Response) {
 
   if (error) return res.status(400).send(error.details[0].message);
 
-  const test = await prisma.$queryRaw`SELECT * FROM users;`;
-
-  console.log("Test Result for raw query:", test);
-
   try {
     const user = await prisma.users.findUnique({
       where: { email: req.body.email },
