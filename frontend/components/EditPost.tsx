@@ -21,7 +21,19 @@ import {
 import { removeThisImage } from "@/axios.config";
 
 import { IoEllipsisVertical } from "react-icons/io5";
-import { EditPost, EditPostProps, MediaItem, UploadResponse } from "@/typings";
+import { EditPost, EditPostProps } from "@/typings";
+
+// Define MediaItem type
+interface MediaItem {
+  url: string;
+  type: "video" | "image";
+}
+
+// Helper function to check if URL is a video
+const isVideoUrl = (url: string) => {
+  const validVideoFiles = ["mp4", "mkv", "webm", "mov"];
+  return validVideoFiles.some((ext) => url.toLowerCase().endsWith(`.${ext}`));
+};
 import axios from "axios";
 import { Button } from "./ui/button";
 import Image from "next/image";
@@ -44,8 +56,12 @@ export const EditPostComponent = ({
   // File & Form Handler
   const [files, setFiles] = useState<FileList | null>(null);
   const [desc, setDesc] = useState<string>(caption);
-  const [previewUrls, setPreviewUrls] = useState<Array<string | MediaItem>>(mediaUrls);
-  const [newPreviewUrls, setNewPreviewUrls] = useState<Array<string | MediaItem>>(mediaUrls);
+  const [previewUrls, setPreviewUrls] = useState<(string | MediaItem)[]>(
+    mediaUrls || []
+  );
+  const [newPreviewUrls, setNewPreviewUrls] = useState<(string | MediaItem)[]>(
+    []
+  ); // Initialize as empty array
   const formRef = useRef<HTMLFormElement>(null);
   const addMediaInput = useRef<HTMLInputElement>(null);
 
@@ -77,7 +93,7 @@ export const EditPostComponent = ({
 
     try {
       const uploadedFiles = await uploadFiles(files);
-      const downloadURLs = uploadedFiles.map(file => file.url);
+      const downloadURLs = uploadedFiles.map((file) => file.url);
 
       const postData = {
         desc,
@@ -169,28 +185,25 @@ export const EditPostComponent = ({
   };
 
   const clearImage = (media: string | MediaItem) => {
-    const mediaUrl = typeof media === 'string' ? media : media.url;
-    
-    // check if existing media is deleted
-    const mediaExists = previewUrls.some(url => 
-      (typeof url === 'string' ? url : url.url) === mediaUrl
-    );
-    
-    if (mediaExists) {
-      const newPreviewUrls = previewUrls.filter(url => 
-        (typeof url === 'string' ? url : url.url) !== mediaUrl
-      );
-      setPreviewUrls(newPreviewUrls);
+    const mediaUrl = typeof media === "string" ? media : media.url;
+
+    // Remove from previewUrls
+    const newPreviewUrls = previewUrls.filter((item) => {
+      if (typeof item === "string") {
+        return item !== mediaUrl;
+      }
+      return item.url !== mediaUrl;
+    });
+    setPreviewUrls(newPreviewUrls);
+
+    // Add to removed images if it's an existing media
+    if (mediaUrls.includes(mediaUrl)) {
       setRemovedImages((prev) => [...prev, mediaUrl]);
     }
 
-    // check if new media is deleted
-    const newMediaExists = newPreviewUrls.some(url => 
-      (typeof url === 'string' ? url : url.url) === mediaUrl
-    );
-    
-    if (newMediaExists) {
-      console.log("Found In new preview URL");
+    // If it's a new media, remove from newPreviewUrls
+    if (newPreviewUrls.includes(mediaUrl)) {
+      setNewPreviewUrls(newPreviewUrls.filter((url) => url !== mediaUrl));
     }
   };
 
@@ -238,12 +251,12 @@ export const EditPostComponent = ({
 
             {previewUrls.length > 0 && (
               <div className="h-[400px] overflow-auto mb-5">
-                {previewUrls.map((mediaItem) => {
-                  const mediaUrl = typeof mediaItem === 'string' ? mediaItem : mediaItem.url;
-                  const isVideo = typeof mediaItem !== 'string' && mediaItem.type === 'video';
-                  
+                {previewUrls.map((item, index) => {
+                  const mediaUrl = typeof item === "string" ? item : item.url;
+                  const isVideo = isVideoUrl(mediaUrl);
+
                   return (
-                    <div key={mediaUrl} className="relative w-full mt-4">
+                    <div key={index} className="relative w-full mt-4">
                       {isVideo ? (
                         <video
                           src={mediaUrl}
@@ -262,7 +275,7 @@ export const EditPostComponent = ({
                       )}
                       <div
                         className="absolute p-2 bg-white rounded-full right-2 top-2 cursor-pointer"
-                        onClick={() => clearImage(mediaItem)}
+                        onClick={() => clearImage(item)}
                       >
                         X
                       </div>
