@@ -4,13 +4,13 @@
  */
 
 // Core Express types
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 
 // Authentication
 import jwt from "jsonwebtoken";
 
 // Custom types
-import { RequestWithUser } from "../typing";
+import { RequestWithUser, User } from "../typing";
 
 // Middleware function
 const auth = (req: RequestWithUser, res: Response, next: NextFunction) => {
@@ -35,10 +35,21 @@ const auth = (req: RequestWithUser, res: Response, next: NextFunction) => {
     const decoded = jwt.verify(
       token,
       (process.env.JWT_PRIVATE_KEY as string) || "jwt-secret-key"
-    ) as { id: number };
+    ) as { id: string | number; email?: string };
 
+    // Ensure the ID is a number to match the User type
+    const userId = typeof decoded.id === 'string' ? parseInt(decoded.id, 10) : decoded.id;
+    
+    // Create user object with proper typing
+    const user: User = { id: userId };
+    
+    // Add email if it exists in the token
+    if (decoded.email) {
+      user.email = decoded.email;
+    }
+    
     // Set the user property on req
-    req.user = { id: decoded.id };
+    req.user = user as User;
 
     next();
   } catch (error) {

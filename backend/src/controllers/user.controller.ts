@@ -16,6 +16,7 @@ import { validateNewUser, validateUser } from "../utils/validate";
 
 // Custom types
 import { RequestWithUser } from "../typing.js";
+import { notificationManager } from "../index";
 
 const prisma = new PrismaClient();
 
@@ -211,7 +212,32 @@ export async function followUser(req: RequestWithUser, res: Response) {
         follower_id: id,
       },
     });
-    return res.status(200).send("Followed Successfully.");
+
+    res.status(200).send("Followed Successfully.");
+
+    const sender = await prisma.users.findUnique({
+      where: {
+        id: req.user?.id || -1,
+      },
+      select: {
+        name: true,
+      },
+    });
+    console.log("SenderName ", sender);
+
+    const notificationData = {
+      user_sender_id: req.user?.id || -1,
+      type: "followRequest",
+      resource_id: 1,
+      message: `${sender?.name || req.user?.id} has followed you 👋🏻`,
+      isRead: false,
+    };
+
+    console.log("Sending notification to : ", notificationData);
+
+    notificationManager.addNotification("follow", notificationData);
+
+    return;
   } catch (err) {
     return res.status(500).send("An error occurred while following user.");
   }

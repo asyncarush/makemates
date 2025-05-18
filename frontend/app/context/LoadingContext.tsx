@@ -38,17 +38,15 @@ export default function LoadingProvider({ children }: { children: ReactNode }) {
   const hideLoader = () => setIsLoading(false);
 
   return (
-    <LoadingContext.Provider value={{ isLoading, showLoader, hideLoader }}>
-      {isLoading && <Loader />}
-      <div
-        className={
-          isLoading
-            ? "opacity-0"
-            : "opacity-100 transition-opacity duration-500"
-        }
-      >
-        {children}
-      </div>
-    </LoadingContext.Provider>
+    // <LoadingContext.Provider value={{ isLoading, showLoader, hideLoader }}>
+    // {isLoading && <Loader />}
+    <div
+      className={
+        isLoading ? "opacity-0" : "opacity-100 transition-opacity duration-500"
+      }
+    >
+      {children}
+    </div>
+    // </LoadingContext.Provider>
   );
 }

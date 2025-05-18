@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dialog";
 
 import { NewPost } from "@/typings";
-import { IoIosAddCircle } from "react-icons/io";
 import { useNewPostMutation } from "@/lib/mutations";
 import { useFileUploader } from "@/hooks/useFileUploader";
 import AIResponseLoader from "@/components/AIResponseLoader";
@@ -39,7 +38,7 @@ function FeedUploadBox() {
   const videoRef = useRef<HTMLVideoElement>(null);
   // Custom Hoooks
   const mutation = useNewPostMutation();
-  const { uploadFile, uploadProgress, uploadState } = useFileUploader();
+  const { uploadFiles, isUploading, progress } = useFileUploader();
 
   const handleUploadPost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +55,7 @@ function FeedUploadBox() {
       return toast.success("Post Uploaded");
     }
 
-    const imageUrls = await uploadFile(files);
+    const imageUrls = await uploadFiles(files);
 
     postData.imgUrls = JSON.stringify(imageUrls);
     // Create the post with the image URL
@@ -158,13 +157,13 @@ function FeedUploadBox() {
           setCaptionLoader(false);
         } catch (err) {
           console.error("Caption API error:", err);
-          toast.error("Failed to generate caption");
+          toast.error("Currently caption generation support for single image.");
         }
       };
       reader.readAsDataURL(file);
     };
 
-    // generateCaptions();
+    generateCaptions();
 
     // Clean up old preview URLs when component unmounts
     return () => {
@@ -176,6 +175,7 @@ function FeedUploadBox() {
     setFiles(null);
     setPreviewUrls([]);
     setCaptions([]);
+    setCaptionLoader(false);
 
     if (formRef.current) {
       const fileInput = formRef.current.querySelector(
@@ -300,15 +300,15 @@ function FeedUploadBox() {
           </DialogFooter>
         </form>
         <div className="w-full flex flex-col justify-center">
-          {uploadState && (
+          {isUploading && (
             <span className="text-center font-medium">
               Post is Uploading...
             </span>
           )}
-          {uploadState && (
+          {isUploading && (
             <div className="flex items-center gap-1">
-              <Progress value={uploadProgress} />
-              <span className="font-semibold text-sm">{uploadProgress}%</span>
+              <Progress value={progress} />
+              <span className="font-semibold text-sm">{progress}%</span>
             </div>
           )}
         </div>

@@ -44,17 +44,23 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
 
     const urls = JSON.parse(imgUrls);
 
-    if (imgUrls) {
+    if (imgUrls && Array.isArray(urls)) {
       await Promise.all(
-        urls.map((url: string) =>
-          prisma.post_media.create({
+        urls.map((media: any) => {
+          // Ensure we're using the URL string, not the entire media object
+          const mediaUrl = typeof media === 'string' ? media : media?.url;
+          if (!mediaUrl) {
+            console.error('Invalid media URL:', media);
+            return null;
+          }
+          return prisma.post_media.create({
             data: {
               post_id: post.id,
-              media_url: url,
+              media_url: mediaUrl,
               user_id: req.user?.id || -1,
             },
-          })
-        )
+          });
+        }).filter(Boolean) // Filter out any null values from invalid media
       );
     }
 
