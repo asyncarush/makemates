@@ -38,7 +38,10 @@ const notificationManager = new NotificationManger(io);
 // Middleware
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: [
+      process.env.FRONTEND_URL || "http://localhost:3000",
+      "https://makemates.asyncarush.com/",
+    ],
     credentials: true,
   })
 );
