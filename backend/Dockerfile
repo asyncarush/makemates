@@ -27,7 +27,7 @@ RUN npm run build
 FROM node:18-slim
 
 # Install OpenSSL
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y openssl && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /app
