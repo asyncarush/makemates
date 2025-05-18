@@ -91,6 +91,7 @@ export const EditPostComponent = ({
       return toast.success("Post Updated");
     }
 
+    
     try {
       const uploadedFiles = await uploadFiles(files);
       const downloadURLs = uploadedFiles.map((file) => file.url);
