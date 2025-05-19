@@ -3,13 +3,11 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
-// Main component
 const RenderMedia = ({ mediaUrls }: { mediaUrls: string[] }) => {
   const [media, setMedia] = useState<string[]>(mediaUrls || []);
   const [showModal, setShowModal] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
-  // Handle empty media array
   if (!media.length) {
     return null;
   }
@@ -71,17 +69,15 @@ const RenderMedia = ({ mediaUrls }: { mediaUrls: string[] }) => {
   );
 };
 
-// Helper function to determine media type
-const mediaType = (url: string) => {
+const mediaType = (url: string | null | undefined) => {
+  if (!url) return "image";
   const validVideoFiles = ["mp4", "mkv", "webm", "mov"];
   const isVideo = validVideoFiles.some((ext) =>
     url.toLowerCase().endsWith(`.${ext}`)
   );
-
   return isVideo ? "video" : "image";
 };
 
-// Component for a single media item
 const OneMedia = ({
   mediaUrl,
   onMediaClick,
@@ -101,8 +97,7 @@ const OneMedia = ({
           src={mediaUrl}
           controls
           className="w-full h-full object-contain"
-          poster="/api/placeholder/500/400"
-          onClick={(e) => e.stopPropagation()} // Allow video controls to work
+          onClick={(e) => e.stopPropagation()}
         />
       </div>
     );

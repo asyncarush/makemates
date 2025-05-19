@@ -25,6 +25,18 @@ interface User {
   id: number;
 }
 
+interface Posts {
+  userid: number;
+  username: string;
+  userprofileimage: string;
+  postid: number;
+  content: string;
+  postdate: string;
+  media_urls: string[];
+  cu_like_status: number;
+  totallikes: number;
+  totalcomments: number;
+}
 // Add Post
 /**
  * Creates a new post with the provided description and image URLs.
@@ -46,21 +58,23 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
 
     if (imgUrls && Array.isArray(urls)) {
       await Promise.all(
-        urls.map((media: any) => {
-          // Ensure we're using the URL string, not the entire media object
-          const mediaUrl = typeof media === 'string' ? media : media?.url;
-          if (!mediaUrl) {
-            console.error('Invalid media URL:', media);
-            return null;
-          }
-          return prisma.post_media.create({
-            data: {
-              post_id: post.id,
-              media_url: mediaUrl,
-              user_id: req.user?.id || -1,
-            },
-          });
-        }).filter(Boolean) // Filter out any null values from invalid media
+        urls
+          .map((media: any) => {
+            // Ensure we're using the URL string, not the entire media object
+            const mediaUrl = typeof media === "string" ? media : media?.url;
+            if (!mediaUrl) {
+              console.error("Invalid media URL:", media);
+              return null;
+            }
+            return prisma.post_media.create({
+              data: {
+                post_id: post.id,
+                media_url: mediaUrl,
+                user_id: req.user?.id || -1,
+              },
+            });
+          })
+          .filter(Boolean) // Filter out any null values from invalid media
       );
     }
 
@@ -185,6 +199,9 @@ export const getUserPosts = async (req: Request, res: Response) => {
 
     // get all posts whoes post's user id are in followersId
     // console.log("Follower Id : ", followersId);
+
+    // get all the post of users to whom currentUser follow and also contain currentUser own posts as well with the tag if post is liked or not
+
     const posts = await prisma.posts.findMany({
       where: {
         OR: [
@@ -203,9 +220,10 @@ export const getUserPosts = async (req: Request, res: Response) => {
       },
     });
 
-    // console.log("all posts : ", posts);
+    const allPosts: Posts[] =
+      await prisma.$queryRaw`SELECT * FROM get_user_feed(${userId}::integer)`;
 
-    return res.status(200).send(posts);
+    return res.status(200).send(allPosts);
   } catch (err) {
     if (err instanceof Error) {
       logger.error(err.message);

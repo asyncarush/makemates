@@ -48,20 +48,22 @@ interface PostProps {
   profileImage: string | null;
   postId: number;
   userId: number;
+  totalLikes: number;
+  totalComments: number;
+  cu_like_status: number;
 }
 
-export interface PostInterface {
-  id: number;
-  user_id: number;
-  users?: {
-    img?: string;
-    name?: string;
-  };
-  desc: string;
-  post_media?: Array<{
-    media_url: string;
-  }>;
-  date: string;
+interface PostInterface {
+  userid: number;
+  username: string;
+  userprofileimage: string;
+  postid: number;
+  content: string;
+  postdate: string;
+  media_urls: string[];
+  cu_like_status: number;
+  totallikes: number;
+  totalcomments: number;
 }
 
 interface UploadResponse {

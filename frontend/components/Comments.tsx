@@ -5,10 +5,19 @@ import { useContext, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import React from "react";
 import { useNewComment } from "@/lib/mutations";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchPostComments } from "@/axios.config";
 
-export function Comments({ postId }: { postId: any }) {
+export function Comments({ 
+  postId, 
+  onCommentAdded,
+  onCommentRemoved
+}: { 
+  postId: any; 
+  onCommentAdded?: () => void;
+  onCommentRemoved?: () => void;
+}) {
+  const queryClient = useQueryClient();
   const { currentUser }: any = useContext(AuthContext);
   const [desc, setDesc] = useState("");
   const mutation = useNewComment();
@@ -16,6 +25,8 @@ export function Comments({ postId }: { postId: any }) {
   const handleComment = () => {
     if (!desc.trim()) return;
     mutation.mutate({ desc, postId });
+    onCommentAdded?.();
+    queryClient.invalidateQueries({ queryKey: ['newPost'] });
     setDesc("");
   };
 

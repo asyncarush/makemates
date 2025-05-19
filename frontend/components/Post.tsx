@@ -18,9 +18,6 @@ import { PostProps } from "@/typings";
 import { API_ENDPOINT } from "@/axios.config";
 import { AuthContext } from "@/app/context/AuthContext";
 import RenderMedia from "./RenderMedia";
-interface PostComponentProps extends Omit<PostProps, "mediaUrls"> {
-  mediaUrls: string[];
-}
 
 function Post({
   caption,
@@ -30,16 +27,26 @@ function Post({
   profileImage,
   postId,
   userId,
-}: PostComponentProps) {
+  totalLikes,
+  totalComments,
+  cu_like_status,
+}: PostProps) {
   const { currentUser }: any = useContext(AuthContext);
-  const [isPostLiked, setIsPostLiked] = useState(false);
+  const [isPostLiked, setIsPostLiked] = useState(Boolean(cu_like_status));
   const [likeAnimating, setLikeAnimating] = useState(false);
   const [commentBox, setCommentBox] = useState(false);
+  const [currentTotalLikes, setCurrentTotalLikes] = useState(totalLikes);
+  const [currentTotalComments, setCurrentTotalComments] =
+    useState(totalComments);
 
   const handlePostLike = async () => {
-    setLikeAnimating(true);
     try {
-      setIsPostLiked(!isPostLiked);
+      // Update UI immediately
+      setIsPostLiked((prev) => !prev);
+      setCurrentTotalLikes((prev) => (isPostLiked ? prev - 1 : prev + 1));
+      setLikeAnimating(true);
+
+      // Make API call
       const endpoint = isPostLiked ? "/posts/unlike" : "/posts/like";
       await axios.post(
         `${API_ENDPOINT}${endpoint}`,
@@ -48,25 +55,13 @@ function Post({
       );
     } catch (error: any) {
       console.error(error.response?.data || error.message);
+      // If API call fails, revert UI changes
+      setIsPostLiked((prev) => !prev);
+      setCurrentTotalLikes((prev) => (isPostLiked ? prev + 1 : prev - 1));
+    } finally {
+      setLikeAnimating(false);
     }
   };
-
-  useEffect(() => {
-    const checkLikeStatus = async () => {
-      try {
-        const response = await axios.post(
-          `${API_ENDPOINT}/posts/like/status`,
-          { postId },
-          { withCredentials: true }
-        );
-        setIsPostLiked(response.data);
-      } catch (error) {
-        console.error("Error checking like status:", error);
-      }
-    };
-    checkLikeStatus();
-  }, [postId]);
-
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
       {/* Post Header */}
@@ -109,16 +104,22 @@ function Post({
         </div>
       )}
 
-      <div className="relative w-full h-full">
-        <RenderMedia mediaUrls={rawMediaUrls} />
-      </div>
+      {/* Media Content */}
+      {rawMediaUrls &&
+        rawMediaUrls.length > 0 &&
+        rawMediaUrls[0] !== null &&
+        rawMediaUrls[0] !== undefined && (
+          <div className="relative w-full h-full">
+            <RenderMedia mediaUrls={rawMediaUrls} />
+          </div>
+        )}
 
       {/* Post Actions */}
       <div className="px-3 py-2 border-t border-gray-100">
         <div className="flex items-center gap-3">
           <button
             onClick={handlePostLike}
-            className="flex items-cenxter gap-1.5 text-gray-700 hover:text-red-500 transition-colors duration-1000 "
+            className="flex items-cenxter gap-1.5 text-gray-700 hover:text-red-500 transition-colors duration-1000"
           >
             <FontAwesomeIcon
               icon={isPostLiked ? likeIcon : unlikeIcon}
@@ -128,6 +129,11 @@ function Post({
               onAnimationEnd={() => setLikeAnimating(false)}
             />
             <span className="text-xs font-medium">Like</span>
+            {currentTotalLikes > 0 && (
+              <span className="text-xs font-medium ml-1">
+                {currentTotalLikes}
+              </span>
+            )}
           </button>
           <button
             onClick={() => setCommentBox(!commentBox)}
@@ -147,6 +153,9 @@ function Post({
               />
             </svg>
             <span className="text-xs font-medium">Comment</span>
+            {totalComments > 0 && (
+              <span className="text-xs font-medium ml-1">{totalComments}</span>
+            )}
           </button>
         </div>
       </div>
@@ -154,7 +163,11 @@ function Post({
       {/* Comments */}
       {commentBox && (
         <div className="border-t border-gray-100 px-3 py-2">
-          <Comments postId={postId} />
+          <Comments
+            postId={postId}
+            onCommentAdded={() => setCurrentTotalComments((prev) => prev + 1)}
+            onCommentRemoved={() => setCurrentTotalComments((prev) => prev - 1)}
+          />
         </div>
       )}
     </div>

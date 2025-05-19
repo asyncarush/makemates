@@ -23,18 +23,13 @@ import { removeThisImage } from "@/axios.config";
 import { IoEllipsisVertical } from "react-icons/io5";
 import { EditPost, EditPostProps } from "@/typings";
 
-// Define MediaItem type
-interface MediaItem {
-  url: string;
-  type: "video" | "image";
-}
-
 // Helper function to check if URL is a video
 const isVideoUrl = (url: string) => {
+  if (!url) return false;
   const validVideoFiles = ["mp4", "mkv", "webm", "mov"];
   return validVideoFiles.some((ext) => url.toLowerCase().endsWith(`.${ext}`));
 };
-import axios from "axios";
+
 import { Button } from "./ui/button";
 import Image from "next/image";
 
@@ -56,12 +51,8 @@ export const EditPostComponent = ({
   // File & Form Handler
   const [files, setFiles] = useState<FileList | null>(null);
   const [desc, setDesc] = useState<string>(caption);
-  const [previewUrls, setPreviewUrls] = useState<(string | MediaItem)[]>(
-    mediaUrls || []
-  );
-  const [newPreviewUrls, setNewPreviewUrls] = useState<(string | MediaItem)[]>(
-    []
-  ); // Initialize as empty array
+  const [previewUrls, setPreviewUrls] = useState<string[]>(mediaUrls || []);
+  const [newPreviewUrls, setNewPreviewUrls] = useState<string[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const addMediaInput = useRef<HTMLInputElement>(null);
 
@@ -91,7 +82,6 @@ export const EditPostComponent = ({
       return toast.success("Post Updated");
     }
 
-    
     try {
       const uploadedFiles = await uploadFiles(files);
       const downloadURLs = uploadedFiles.map((file) => file.url);
@@ -185,26 +175,21 @@ export const EditPostComponent = ({
     addMediaInput.current?.click();
   };
 
-  const clearImage = (media: string | MediaItem) => {
-    const mediaUrl = typeof media === "string" ? media : media.url;
-
+  const clearImage = (media: string) => {
     // Remove from previewUrls
     const newPreviewUrls = previewUrls.filter((item) => {
-      if (typeof item === "string") {
-        return item !== mediaUrl;
-      }
-      return item.url !== mediaUrl;
+      return item !== media;
     });
     setPreviewUrls(newPreviewUrls);
 
     // Add to removed images if it's an existing media
-    if (mediaUrls.includes(mediaUrl)) {
-      setRemovedImages((prev) => [...prev, mediaUrl]);
+    if (mediaUrls.includes(media)) {
+      setRemovedImages((prev) => [...prev, media]);
     }
 
     // If it's a new media, remove from newPreviewUrls
-    if (newPreviewUrls.includes(mediaUrl)) {
-      setNewPreviewUrls(newPreviewUrls.filter((url) => url !== mediaUrl));
+    if (newPreviewUrls.includes(media)) {
+      setNewPreviewUrls(newPreviewUrls.filter((url) => url !== media));
     }
   };
 
@@ -253,20 +238,19 @@ export const EditPostComponent = ({
             {previewUrls.length > 0 && (
               <div className="h-[400px] overflow-auto mb-5">
                 {previewUrls.map((item, index) => {
-                  const mediaUrl = typeof item === "string" ? item : item.url;
-                  const isVideo = isVideoUrl(mediaUrl);
+                  const isVideo = isVideoUrl(item);
 
                   return (
                     <div key={index} className="relative w-full mt-4">
                       {isVideo ? (
                         <video
-                          src={mediaUrl}
+                          src={item}
                           controls
                           className="w-full rounded-md"
                         />
                       ) : (
                         <Image
-                          src={mediaUrl}
+                          src={item}
                           alt="preview-image"
                           width={100}
                           height={100}

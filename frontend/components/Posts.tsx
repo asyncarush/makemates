@@ -12,6 +12,7 @@ function Posts({ userId }: { userId: number }) {
     queryFn: () => fetchUserPosts(userId),
   });
 
+  // console.log("All Posts", data);
   const router = useRouter();
 
   if (isPending) {
@@ -122,21 +123,19 @@ function Posts({ userId }: { userId: number }) {
   return (
     <div className="space-y-4">
       {data.map((post: PostInterface) => {
-        const mediaUrls =
-          post.post_media && post.post_media.length > 0
-            ? post.post_media.map((media: any) => media.media_url)
-            : [];
-
         return (
           <Post
-            key={post.id}
-            postId={post.id}
-            userId={post.user_id}
-            profileImage={post.users?.img || null}
-            name={post.users?.name || "Unknown User"}
-            caption={post.desc}
-            mediaUrls={mediaUrls}
-            postDate={post.date}
+            key={post.postid}
+            postId={post.postid}
+            userId={post.userid}
+            profileImage={post.userprofileimage}
+            name={post.username || "Unknown User"}
+            caption={post.content}
+            mediaUrls={post.media_urls}
+            postDate={post.postdate}
+            totalLikes={post.totallikes}
+            totalComments={post.totalcomments}
+            cu_like_status={post.cu_like_status}
           />
         );
       })}

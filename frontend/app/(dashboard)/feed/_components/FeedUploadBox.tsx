@@ -136,7 +136,7 @@ function FeedUploadBox() {
                         },
                       },
                       {
-                        text: "I want you be an agent that suggest cools captions by analysing the attached images. I expect the response in array, just give me array nothing else, Keep the captions shorts, also include some cools emojis.",
+                        text: "I want you be an agent that suggest cool captions by analysing the attached images. I expect the response in array, just give me array nothing else, Keep the captions shorts, also include some cools emojis.",
                       },
                     ],
                   },
