@@ -1,6 +1,6 @@
 import { Request, Response } from "express"; // Use general Request, Response for broader compatibility
 import { PrismaClient } from "@prisma/client";
-import fetch from "node-fetch";
+import axios from "axios";
 
 const prisma = new PrismaClient();
 
@@ -118,20 +118,18 @@ export const getNotificationSummary = async (
     */
 
     // let use Gemini 2.0 Flash Headed
-    const geminiResponse = await fetch(
+    const geminiResponse = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
-        method: "POST",
+        contents: [{ parts: [{ text: prompt }] }],
+      },
+      {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-        }),
       }
     );
-
-    const geminiData: any = await geminiResponse.json();
+    const geminiData: any = geminiResponse.data;
     console.log("Gemini Data", geminiData);
     console.log(
       "Gemini Data Content",
@@ -175,16 +173,13 @@ export const getNotificationSummary = async (
   }
 };
 
-
-
-
-// Hey Arush Sharma, 
-// ready for your social media download? 
-// Looks like yesterday was a Harry Potter kinda day! 
-// He posted a TON, like, seven times! 
-// Mostly looks like tests and then one about "ghibli trends," bet that's interesting! 
-// Oh, and then there's something about his "chota bhai 🔥," 
-// you're gonna love this one! Speaking of Sharma's, 
-// Shubham Sharma also uploaded a post with "Brothers" 
-// and let you know that his new video is coming soon. 
+// Hey Arush Sharma,
+// ready for your social media download?
+// Looks like yesterday was a Harry Potter kinda day!
+// He posted a TON, like, seven times!
+// Mostly looks like tests and then one about "ghibli trends," bet that's interesting!
+// Oh, and then there's something about his "chota bhai 🔥,"
+// you're gonna love this one! Speaking of Sharma's,
+// Shubham Sharma also uploaded a post with "Brothers"
+// and let you know that his new video is coming soon.
 // Anything pique your interest?

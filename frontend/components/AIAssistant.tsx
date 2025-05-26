@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
+import { BACKEND_API } from "../axios.config";
 
 type NotificationMessage = { text: string };
 
@@ -81,20 +82,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     NotificationMessage[] // Now returns an array of short chunks
   > => {
     try {
-      const response = await fetch(
-        "http://localhost:2000/api/ai/notificationSummary",
-        {
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-        }
-      );
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch notifications: ${response.statusText}`
-        );
-      }
-      const data = await response.json();
+      const { data } = await BACKEND_API.get("/ai/notificationSummary");
 
       // IMPORTANT CHANGE HERE: Expecting a single string 'summary' from backend
       if (typeof data.summary === "string") {
