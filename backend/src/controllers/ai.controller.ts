@@ -103,6 +103,7 @@ export const getNotificationSummary = async (
     `;
     // --- PROMPT ENDS HERE ---
 
+    /*
     const response = await fetch(`${OLLAMA_API_URL}/api/chat`, {
       method: "POST",
       headers: {
@@ -114,7 +115,30 @@ export const getNotificationSummary = async (
         stream: false, // We want the full response at once
       }),
     });
+    */
 
+    // let use Gemini 2.0 Flash Headed
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+      }
+    );
+
+    const geminiData: any = await geminiResponse.json();
+    console.log("Gemini Data", geminiData);
+    console.log(
+      "Gemini Data Content",
+      geminiData.candidates[0].content.parts[0].text
+    );
+
+    /*
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Ollama API raw error response:", errorText);
@@ -126,6 +150,7 @@ export const getNotificationSummary = async (
     if (!data?.message?.content) {
       throw new Error("Invalid or empty response from Ollama API");
     }
+    */
 
     // 4. Mark notifications as read
     // This ensures that the next brief only contains new unread notifications.
@@ -137,7 +162,9 @@ export const getNotificationSummary = async (
     `;
 
     // The frontend expects { summary: string }
-    return res.json({ summary: data.message.content.trim() }); // .trim() removes leading/trailing whitespace
+    return res.json({
+      summary: geminiData.candidates[0].content.parts[0].text.trim(),
+    }); // .trim() removes leading/trailing whitespace
   } catch (error) {
     console.error("Error generating notification summary:", error);
     return res.status(500).json({
@@ -147,3 +174,17 @@ export const getNotificationSummary = async (
     });
   }
 };
+
+
+
+
+// Hey Arush Sharma, 
+// ready for your social media download? 
+// Looks like yesterday was a Harry Potter kinda day! 
+// He posted a TON, like, seven times! 
+// Mostly looks like tests and then one about "ghibli trends," bet that's interesting! 
+// Oh, and then there's something about his "chota bhai 🔥," 
+// you're gonna love this one! Speaking of Sharma's, 
+// Shubham Sharma also uploaded a post with "Brothers" 
+// and let you know that his new video is coming soon. 
+// Anything pique your interest?

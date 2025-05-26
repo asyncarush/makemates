@@ -128,10 +128,11 @@ ingress:
 secrets:
   NODE_ENV: production
   PORT: 2000
-  DATABASE_URL: postgresql://postgres:password@makemates-pg-postgresql.makemates.svc.cluster.local:5432/makemates
+  DATABASE_URL: postgresql://postgres:postgres123@makemates-lb.makemates.svc.cluster.local:5432/makemates
   REDIS_URL: redis://redis-master.redis.svc.cluster.local:6379
   JWT_PRIVATE_KEY: secret-key
   MINIO_ENDPOINT: minio-api.asyncarush.com
   MINIO_USE_SSL: true
   MINIO_ACCESS_KEY: wB7S6lLEkGBOIQQEPrNk
   MINIO_SECRET_KEY: jf9yT8DHhkTmazn6O1tTFLEQIZ8pZ9fGCOHouUcH
+  GEMINI_API_KEY: AIzaSyByOlpTA2YVndh6yxqGUQOZh9vdxOxsqKA

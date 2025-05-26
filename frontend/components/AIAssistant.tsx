@@ -78,7 +78,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 
   // Fetch notification summary
   const fetchNotificationSummary = useCallback(async (): Promise<
-    NotificationMessage[] // Still return an array, but now with one object for the full brief
+    NotificationMessage[] // Now returns an array of short chunks
   > => {
     try {
       const response = await fetch(
@@ -86,6 +86,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
         {
           credentials: "include",
           headers: { "Content-Type": "application/json" },
+          cache: "no-store",
         }
       );
       if (!response.ok) {
@@ -97,7 +98,17 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 
       // IMPORTANT CHANGE HERE: Expecting a single string 'summary' from backend
       if (typeof data.summary === "string") {
-        return [{ text: data.summary }]; // Wrap the single string in an array for showNotifications
+        // Split the summary into 10-15 word chunks
+        const words = data.summary.split(/\s+/);
+        const chunks: NotificationMessage[] = [];
+        for (let i = 0; i < words.length; i += 12) {
+          // 12 is a good middle ground between 10-15
+          const chunk = words.slice(i, i + 12).join(" ");
+          if (chunk.trim().length > 0) {
+            chunks.push({ text: chunk });
+          }
+        }
+        return chunks;
       }
 
       console.error(
