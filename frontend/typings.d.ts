@@ -94,3 +94,58 @@ export interface NotificationType {
     img?: string;
   };
 }
+
+interface AIAssistantProps {
+  position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
+  initialMessage?: string;
+  theme?: "light" | "dark";
+}
+
+interface Notification {
+  id: string;
+  message: string;
+  type: "post" | "message" | "system";
+  read: boolean;
+}
+
+interface NotificationResponse {
+  summary: string;
+}
+
+// Declare the SpeechRecognition interface for TypeScript
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onend: () => void;
+  onerror: (event: any) => void;
+}
+
+interface SpeechRecognitionEvent {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionResultList {
+  [index: number]: SpeechRecognitionResult;
+  length: number;
+}
+
+interface SpeechRecognitionResult {
+  [index: number]: SpeechRecognitionAlternative;
+  isFinal: boolean;
+  length: number;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface Window {
+  SpeechRecognition?: new () => SpeechRecognition;
+  webkitSpeechRecognition?: new () => SpeechRecognition;
+}
