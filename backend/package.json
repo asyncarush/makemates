@@ -30,6 +30,7 @@
     "@types/node": "^20.17.8",
     "@types/node-fetch": "^2.6.12",
     "@types/pg": "^8.15.2",
+    "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "bullmq": "^5.49.1",
