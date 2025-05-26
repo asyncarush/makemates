@@ -18,7 +18,7 @@ import Post from "./routes/post.routes";
 import Search from "./routes/search.routes";
 import upload from "./routes/upload.routes";
 import chat from "./routes/chat.routes";
-import media from "./routes/media.routes";
+import AIRoute from "./routes/ai.routes";
 
 dotenv.config();
 
@@ -54,7 +54,7 @@ app.use("/posts", Post);
 app.use("/search", Search);
 app.use("/upload", upload);
 app.use("/chat", chat);
-// app.use("/api/media", media);
+app.use("/api/ai", AIRoute);
 
 const PORT: number = parseInt(process.env.PORT || "2000", 10);
 

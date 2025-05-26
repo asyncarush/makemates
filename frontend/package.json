@@ -9,6 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity": "^3.812.0",
+    "@aws-sdk/client-polly": "^3.812.0",
+    "@aws-sdk/credential-provider-cognito-identity": "^3.812.0",
+    "@aws-sdk/polly-request-presigner": "^3.812.0",
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-brands-svg-icons": "^6.5.2",
     "@fortawesome/free-regular-svg-icons": "^6.5.2",
