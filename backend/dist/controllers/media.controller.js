@@ -45,20 +45,41 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadProfilePicture = exports.uploadFileController = void 0;
-const path = __importStar(require("path"));
+exports.uploadMedia = void 0;
 const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 const util = __importStar(require("util"));
 const child_process_1 = require("child_process");
 const sharp_1 = __importDefault(require("sharp"));
 const uuid_1 = require("uuid");
-const minio_service_1 = require("../services/minio.service");
-const execPromise = util.promisify(child_process_1.exec);
+const winston_1 = require("../config/winston");
+const minio_config_1 = require("../config/minio.config");
+const minio_1 = require("minio");
+// Constants
+const BUCKET_NAME = process.env.MINIO_BUCKET || "makemates";
 const UPLOAD_DIR = "/tmp/uploads";
-// Ensure upload directory exists
+// Create upload directory if it doesn't exist
 if (!fs.existsSync(UPLOAD_DIR)) {
     fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
+const execPromise = util.promisify(child_process_1.exec);
+const minioClient = new minio_1.Client({
+    endPoint: minio_config_1.minioConfig.endpoint,
+    useSSL: minio_config_1.minioConfig.useSSL,
+    accessKey: minio_config_1.minioConfig.accessKey,
+    secretKey: minio_config_1.minioConfig.secretKey,
+    pathStyle: minio_config_1.minioConfig.forcePathStyle,
+});
+const ensureBucketExists = () => __awaiter(void 0, void 0, void 0, function* () {
+    const bucketExists = yield minioClient.bucketExists(BUCKET_NAME);
+    if (!bucketExists) {
+        yield minioClient.makeBucket(BUCKET_NAME, "us-east-1");
+        console.log(`Created bucket: ${BUCKET_NAME}`);
+    }
+});
+// Initialize the bucket on startup
+ensureBucketExists().catch(console.error);
+// Process a single file upload
 const processFileUpload = (file) => __awaiter(void 0, void 0, void 0, function* () {
     const fileExt = path.extname(file.originalname).toLowerCase().substring(1);
     const isVideo = ["mp4", "mov", "avi", "mkv", "webm"].includes(fileExt);
@@ -79,49 +100,42 @@ const processFileUpload = (file) => __awaiter(void 0, void 0, void 0, function* 
         // Write the uploaded file to a temporary location
         yield fs.promises.writeFile(tempFilePath, file.buffer);
         let processedBuffer;
-        let contentType;
         if (isImage) {
-            // Process image using sharp - resize and compress
+            // Process image using sharp
             const image = (0, sharp_1.default)(file.buffer);
             processedBuffer = yield image
-                .resize({
-                width: 1200,
-                height: 1200,
+                .jpeg({ quality: 80, mozjpeg: true })
+                .resize(1200, 1200, {
                 fit: "inside",
                 withoutEnlargement: true,
             })
-                .jpeg({
-                quality: 80,
-                mozjpeg: true,
-                progressive: true,
-                optimizeCoding: true,
-            })
                 .toBuffer();
-            contentType = "image/jpeg";
         }
         else {
-            // Process video using ffmpeg - compress and optimize
-            // Escape the file paths to handle spaces in filenames
-            const escapedInputPath = `"${tempFilePath}"`;
-            const escapedOutputPath = `"${outputPath}"`;
-            yield execPromise(`ffmpeg -i ${escapedInputPath} ` +
-                `-c:v libx264 -preset slow -crf 28 ` +
-                `-vf "scale='min(1920,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease" ` +
-                `-c:a aac -b:a 128k -movflags +faststart -y ${escapedOutputPath}`);
+            // Process video using ffmpeg
+            yield new Promise((resolve, reject) => {
+                const ffmpegCmd = `ffmpeg -i ${tempFilePath} -vcodec libx264 -crf 28 -preset faster -pix_fmt yuv420p -movflags +faststart ${outputPath}`;
+                (0, child_process_1.exec)(ffmpegCmd, (error) => {
+                    if (error) {
+                        reject(new Error(`FFmpeg error: ${error.message}`));
+                        return;
+                    }
+                    resolve();
+                });
+            });
             processedBuffer = yield fs.promises.readFile(outputPath);
-            contentType = "video/mp4";
         }
-        // Upload to MinIO using the existing service
-        const fileUrl = yield (0, minio_service_1.uploadFile)(Object.assign(Object.assign({}, file), { buffer: processedBuffer, originalname: outputFileName, mimetype: contentType, size: processedBuffer.length }), outputFileName);
-        // Ensure we have a valid URL string
-        if (typeof fileUrl !== 'string') {
-            throw new Error('Invalid file URL received from storage service');
-        }
+        // Upload to MinIO
+        yield minioClient.putObject(BUCKET_NAME, outputFileName, processedBuffer, processedBuffer.length, {
+            "Content-Type": isVideo ? "video/mp4" : "image/jpeg",
+        });
+        // Generate public URL (adjust based on your MinIO configuration)
+        const publicUrl = `${`http://${minio_config_1.minioConfig.endpoint}`}/${BUCKET_NAME}/${outputFileName}`;
         return {
             originalName: file.originalname,
-            url: fileUrl,
-            type: isVideo ? 'video' : 'image',
-            size: processedBuffer.length
+            url: publicUrl,
+            type: isVideo ? "video" : "image",
+            size: processedBuffer.length,
         };
     }
     catch (error) {
@@ -132,34 +146,37 @@ const processFileUpload = (file) => __awaiter(void 0, void 0, void 0, function* 
         // Clean up temporary files
         try {
             if (fs.existsSync(tempFilePath))
-                yield fs.promises.unlink(tempFilePath).catch(() => { });
+                yield fs.promises.unlink(tempFilePath);
             if (fs.existsSync(outputPath))
-                yield fs.promises.unlink(outputPath).catch(() => { });
+                yield fs.promises.unlink(outputPath);
         }
         catch (cleanupError) {
             console.error("Error cleaning up temporary files:", cleanupError);
         }
     }
 });
-const uploadFileController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("Reaching here for file upload", req.files);
+const uploadMedia = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("reaching here... In upload Media");
+    console.log();
     try {
-        if (!req.files || (Array.isArray(req.files) && req.files.length === 0)) {
+        if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
             return res.status(400).json({
                 success: false,
                 error: "No files uploaded",
             });
         }
-        const files = Array.isArray(req.files)
-            ? req.files
-            : Object.values(req.files).flat();
-        const results = yield Promise.all(files.map((file) => processFileUpload(file).catch((error) => ({
+        // Process all files in parallel
+        const results = yield Promise.all(req.files.map((file) => processFileUpload(file).catch((error) => ({
             originalName: file.originalname,
             error: error.message,
             success: false,
         }))));
-        const successfulUploads = results.filter((result) => "url" in result);
+        // Check for any failed uploads
         const failedUploads = results.filter((result) => "error" in result);
+        const successfulUploads = results.filter((result) => "url" in result);
+        if (failedUploads.length > 0) {
+            console.error("Some files failed to upload:", failedUploads);
+        }
         if (successfulUploads.length === 0) {
             return res.status(400).json({
                 success: false,
@@ -179,38 +196,12 @@ const uploadFileController = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
-        console.error("Error in uploadFileController:", error);
+        winston_1.logger.error("Error in uploadMedia:", errorMessage);
         res.status(500).json({
             success: false,
-            error: "Failed to process file upload",
+            error: "Failed to process media upload",
             details: errorMessage,
         });
     }
 });
-exports.uploadFileController = uploadFileController;
-const uploadProfilePicture = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: "No file uploaded",
-            });
-        }
-        const result = yield processFileUpload(req.file);
-        res.status(200).json({
-            success: true,
-            message: "Profile picture uploaded successfully",
-            file: result,
-        });
-    }
-    catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
-        console.error("Error uploading profile picture:", error);
-        res.status(500).json({
-            success: false,
-            error: "Failed to upload profile picture",
-            details: errorMessage,
-        });
-    }
-});
-exports.uploadProfilePicture = uploadProfilePicture;
+exports.uploadMedia = uploadMedia;

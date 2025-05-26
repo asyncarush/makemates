@@ -32,6 +32,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 // Validation utilities
 const validate_1 = require("../utils/validate");
+const index_1 = require("../index");
 const prisma = new client_1.PrismaClient();
 // Login Function
 function login(req, res) {
@@ -193,7 +194,7 @@ function updateUserInfo(req, res) {
 // Follow User
 function followUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        var _a;
+        var _a, _b, _c, _d;
         const id = ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) || -1;
         const { friendId } = req.body;
         // console.log("User Id:", id);
@@ -205,7 +206,26 @@ function followUser(req, res) {
                     follower_id: id,
                 },
             });
-            return res.status(200).send("Followed Successfully.");
+            res.status(200).send("Followed Successfully.");
+            const sender = yield prisma.users.findUnique({
+                where: {
+                    id: ((_b = req.user) === null || _b === void 0 ? void 0 : _b.id) || -1,
+                },
+                select: {
+                    name: true,
+                },
+            });
+            console.log("SenderName ", sender);
+            const notificationData = {
+                user_sender_id: ((_c = req.user) === null || _c === void 0 ? void 0 : _c.id) || -1,
+                type: "followRequest",
+                resource_id: 1,
+                message: `${(sender === null || sender === void 0 ? void 0 : sender.name) || ((_d = req.user) === null || _d === void 0 ? void 0 : _d.id)} has followed you 👋🏻`,
+                isRead: false,
+            };
+            console.log("Sending notification to : ", notificationData);
+            index_1.notificationManager.addNotification("follow", notificationData);
+            return;
         }
         catch (err) {
             return res.status(500).send("An error occurred while following user.");

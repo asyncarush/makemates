@@ -89,9 +89,21 @@ const uploadFile = (file, fileName) => __awaiter(void 0, void 0, void 0, functio
         throw new MinioServiceError("Invalid file provided");
     }
     // Validate file type
-    const allowedMimeTypes = ["image/jpeg", "image/png"];
+    const allowedMimeTypes = [
+        // Images
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        // Videos
+        "video/mp4",
+        "video/quicktime",
+        "video/x-msvideo",
+        "video/x-matroska",
+        "video/webm",
+    ];
     if (!allowedMimeTypes.includes(file.mimetype)) {
-        throw new MinioServiceError(`Invalid file type. Allowed types: ${allowedMimeTypes.join(", ")}`);
+        throw new MinioServiceError(`Invalid file type. Allowed types: images (JPEG, PNG, GIF, WebP) and videos (MP4, MOV, AVI, MKV, WebM)`);
     }
     try {
         // Upload file to MinIO with metadata

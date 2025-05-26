@@ -27,8 +27,16 @@ const auth = (req, res, next) => {
         return res.status(401).send("Access denied. No token provided.");
     try {
         const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_PRIVATE_KEY || "jwt-secret-key");
+        // Ensure the ID is a number to match the User type
+        const userId = typeof decoded.id === 'string' ? parseInt(decoded.id, 10) : decoded.id;
+        // Create user object with proper typing
+        const user = { id: userId };
+        // Add email if it exists in the token
+        if (decoded.email) {
+            user.email = decoded.email;
+        }
         // Set the user property on req
-        req.user = { id: decoded.id };
+        req.user = user;
         next();
     }
     catch (error) {
