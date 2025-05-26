@@ -82,7 +82,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     NotificationMessage[] // Now returns an array of short chunks
   > => {
     try {
-      const { data } = await BACKEND_API.get("/ai/notificationSummary");
+      const { data } = await BACKEND_API.get("/api/ai/notificationSummary");
 
       // IMPORTANT CHANGE HERE: Expecting a single string 'summary' from backend
       if (typeof data.summary === "string") {
