@@ -114,15 +114,18 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
 
   // Sequentially show and speak notifications
   const showNotifications = useCallback(
-    async (messages: NotificationMessage[], initialDelay = 1000) => {
+    async (messages: NotificationMessage[], initialDelay = 500) => {
       await new Promise((res) => setTimeout(res, 300));
+
       for (let i = 0; i < messages.length; i++) {
         setCurrentMessage(messages[i].text);
-        await new Promise((res) => setTimeout(res, 400));
-        await speakWith11Labs(messages[i].text);
+        // await new Promise((res) => setTimeout(res, 200));
+
+        //come back to this
+        // await speakWith11Labs(messages[i].text);
         await new Promise((res) => setTimeout(res, initialDelay));
         if (i < messages.length - 1) {
-          await new Promise((res) => setTimeout(res, 400));
+          await new Promise((res) => setTimeout(res, 200));
         }
       }
       // After all messages, auto-dismiss the popup

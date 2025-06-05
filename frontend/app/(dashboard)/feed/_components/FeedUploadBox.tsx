@@ -75,6 +75,7 @@ function FeedUploadBox() {
       return toast.error("Please select files");
 
     const arrayOfFileList = Array.from(selectedFiles);
+
     // Validate file types and sizes
     const validFileTypes = [
       "image/jpeg",
@@ -90,6 +91,7 @@ function FeedUploadBox() {
       "video/x-flv",
       "video/3gpp",
     ];
+
     const maxFileSize = 100 * 1024 * 1024; // 5MB
 
     const invalidFiles = arrayOfFileList.filter(
@@ -98,7 +100,7 @@ function FeedUploadBox() {
 
     if (invalidFiles.length > 0) {
       toast.error(
-        "Some files are invalid. Please only upload images under 5MB."
+        "Some files are invalid. Please only upload images under 100MB."
       );
       return;
     }

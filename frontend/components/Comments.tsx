@@ -1,19 +1,18 @@
+import React from "react";
 import { AuthContext } from "@/app/context/AuthContext";
 import { SendIcon } from "lucide-react";
 import Image from "next/image";
 import { useContext, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
-import React from "react";
 import { useNewComment } from "@/lib/mutations";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchPostComments } from "@/axios.config";
+import Comment from "./Comment";
 
-export function Comments({ 
-  postId, 
+export function Comments({
+  postId,
   onCommentAdded,
-  onCommentRemoved
-}: { 
-  postId: any; 
+}: {
+  postId: any;
   onCommentAdded?: () => void;
   onCommentRemoved?: () => void;
 }) {
@@ -26,69 +25,36 @@ export function Comments({
     if (!desc.trim()) return;
     mutation.mutate({ desc, postId });
     onCommentAdded?.();
-    queryClient.invalidateQueries({ queryKey: ['newPost'] });
+    queryClient.invalidateQueries({ queryKey: ["newComment"] });
     setDesc("");
   };
 
-  const { data: allComments }: any = useQuery({
+  const {
+    data: allComments,
+    isLoading,
+    error,
+  }: any = useQuery({
     queryKey: ["newComment", postId],
     queryFn: ({ queryKey }) => fetchPostComments(queryKey[1]),
   });
+
+  if (isLoading) {
+    return (
+      <div className="text-xs flex items-center justify-center p-2">
+        Loading all comments 🪄
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
     <div className="">
       <div className="flex flex-col gap-2">
         {allComments &&
-          allComments.map((cmnt: any) => {
-            console.log(cmnt);
-            return (
-              <div
-                key={cmnt.id}
-                className="group pl-4 flex items-start space-x-1"
-              >
-                <div className="flex items-center justify-center">
-                  <Image
-                    src={cmnt.users.img || "/avatar.png"}
-                    className="rounded-full bg-blue-500 flex items-center justify-center border-2 border-gray-200"
-                    width="30"
-                    height="30"
-                    alt={`${cmnt.users.name}'s profile picture`}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1 w-full ">
-                  <div className="flex gap-1 items-center justify-center w-fit">
-                    <p className="font-medium text-[10px] text-gray-900 truncate px-1 py-0.5 bg-slate-200 rounded-full">
-                      {cmnt.users.name}
-                    </p>
-                    <span className="text-[10px] text-gray-500">
-                      {cmnt.datetime ? (
-                        <TimeAgo timestamp={cmnt.datetime} />
-                      ) : (
-                        "2m ago"
-                      )}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-700">{cmnt.desc}</p>
-                  </div>
-
-                  {/* need to work on this */}
-
-                  <div className="hidden items-center space-x-4 mt-1 px-4">
-                    <div className="opacity-100 group-hover:opacity-100 transition-opacity flex items-center space-x-4">
-                      <button className="text-sm text-gray-500 hover:text-gray-700">
-                        Like
-                      </button>
-                      <button className="text-sm text-gray-500 hover:text-gray-700">
-                        Reply
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          allComments.map((cmnt: any) => <Comment key={cmnt.id} cmnt={cmnt} />)}
       </div>
 
       <div className="flex w-full p-2 items-center space-x-4">
@@ -121,9 +87,3 @@ export function Comments({
     </div>
   );
 }
-
-const TimeAgo = ({ timestamp }: { timestamp: string | number | Date }) => {
-  return (
-    <span>{formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>
-  );
-};

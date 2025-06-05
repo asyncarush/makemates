@@ -66,7 +66,7 @@ export default function RootLayout({
       />
 
       <body
-        className={`${plusJakarta.className} bg-slate-200`}
+        className={`${plusJakarta.className} bg-gradient-to-b from-blue-50 to-blue-200`}
         suppressHydrationWarning
       >
         <AuthContextProvider>

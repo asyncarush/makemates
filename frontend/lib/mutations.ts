@@ -1,5 +1,5 @@
 import { EditPost, NewComment, NewPost } from "@/typings";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { API_ENDPOINT } from "@/axios.config";
 
@@ -53,5 +53,40 @@ export const useNewComment = () => {
     onSuccess: () => {
       queryclient.invalidateQueries({ queryKey: ["newComment"] });
     },
+  });
+};
+
+type NewReply = any;
+
+export const useNewReply = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<NewReply, Error, NewReply>({
+    mutationFn: (newReply) => {
+      return axios.post(`${API_ENDPOINT}/posts/comments/reply`, newReply, {
+        withCredentials: true,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["newComment"] });
+    },
+  });
+};
+
+export const useGetCommentReplies = (commentId: number) => {
+  return useQuery({
+    queryKey: ["newComment", commentId],
+    queryFn: async () => {
+      const response = await axios.get(
+        `${API_ENDPOINT}/posts/comments/reply/${commentId}`,
+        {
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    },
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 };

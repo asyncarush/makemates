@@ -10,152 +10,167 @@ datasource db {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model comments {
-  id       Int       @id @default(autoincrement())
-  user_id Int
-  post_id Int
-  datetime DateTime? @db.Timestamp @default(now())
-  desc       String?      @db.Text
-  posts    posts     @relation(fields: [post_id], references: [id], onDelete: Cascade, map: "fk_comments_posts1")
-  users    users     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_comments_users1")
+  id                Int        @id @default(autoincrement())
+  user_id           Int
+  post_id           Int
+  datetime          DateTime?  @default(now()) @db.Timestamp(6)
+  desc              String?
+  parent_comment_id Int?
+  comments          comments?  @relation("commentsTocomments", fields: [parent_comment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  other_comments    comments[] @relation("commentsTocomments")
+  posts             posts      @relation(fields: [post_id], references: [id], onDelete: Cascade, map: "fk_comments_posts1")
+  users             users      @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_comments_users1")
 
-  @@index([post_id], map: "comments_post_id_idx")
-  @@index([user_id], map: "comments_user_id_idx")
+  @@index([post_id])
+  @@index([user_id])
 }
 
 model likes {
-  post_id Int
-  user_id Int
-  datetime DateTime? @db.Timestamp
+  post_id  Int
+  user_id  Int
+  datetime DateTime? @db.Timestamp(6)
   posts    posts     @relation(fields: [post_id], references: [id], onDelete: Cascade, map: "fk_likes_posts1")
   users    users     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_likes_users1")
 
   @@id([post_id, user_id])
-  @@index([post_id], map: "likes_post_id_idx")
-  @@index([user_id], map: "likes_user_id_idx")
+  @@index([post_id])
+  @@index([user_id])
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model post_media {
   id        Int    @id @default(autoincrement())
   post_id   Int
-  media_url String @db.Text
+  media_url String
   user_id   Int
   posts     posts  @relation(fields: [post_id], references: [id], onDelete: Cascade, map: "fk_post_media_posts1")
   users     users  @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_post_media_users1")
 
-  @@index([post_id], map: "post_media_post_id_idx")
-  @@index([user_id], map: "post_media_user_id_idx")
+  @@index([post_id])
+  @@index([user_id])
 }
 
 model posts {
-  id         Int          @id @default(autoincrement())
-  user_id    Int
-  date       DateTime     @default(now()) @db.Timestamp
-  desc       String?      @db.Text
-  comments   comments[]
-  likes      likes[]
-  post_media post_media[]
-  users      users        @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_user_id")
+  id              Int              @id @default(autoincrement())
+  user_id         Int
+  date            DateTime         @default(now()) @db.Timestamp(6)
+  desc            String?
+  tags            String?          @db.VarChar(200)
+  comments        comments[]
+  likes           likes[]
+  post_embeddings post_embeddings?
+  post_media      post_media[]
+  users           users            @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_user_id")
 
   @@index([user_id], map: "posts_users_user_id_idx")
 }
 
 model profileimages {
-  id         Int          @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   user_id    Int
-  image_url  String   @db.Text
-  date       DateTime @default(now()) @db.Timestamp
+  image_url  String
+  date       DateTime @default(now()) @db.Timestamp(6)
   currentImg Boolean  @default(false)
   users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@index([user_id], map: "profileimages_user_id_idx")
+  @@index([user_id])
 }
 
 model relationships {
   follow_id                              Int
   follower_id                            Int
-  date                                   String? @db.Text
+  date                                   String?
   users_relationships_follow_idTousers   users   @relation("relationships_follow_idTousers", fields: [follow_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_follow_id")
   users_relationships_follower_idTousers users   @relation("relationships_follower_idTousers", fields: [follower_id], references: [id], onDelete: Cascade, map: "fk_follower_id")
 
   @@id([follow_id, follower_id])
-  @@index([follower_id], map: "relationships_follower_id_idx")
+  @@index([follower_id])
 }
 
-// Chat model for storing conversations between users
 model chats {
   id         Int        @id @default(autoincrement())
   user1_id   Int
   user2_id   Int
   created_at DateTime
   updated_at DateTime?  @updatedAt
-  
-  // Messages in this chat
-  messages   messages[]
-  
-  // Relations to users
   user1      users      @relation("ChatUser1", fields: [user1_id], references: [id])
   user2      users      @relation("ChatUser2", fields: [user2_id], references: [id])
+  messages   messages[]
 }
 
-// Messages model for storing individual messages
 model messages {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   chat_id    Int
   sender_id  Int
-  message    String   @db.Text
+  message    String
   created_at DateTime
   updated_at DateTime? @updatedAt
-  
-  // Relations
-  chat       chats    @relation(fields: [chat_id], references: [id])
-  sender     users    @relation(fields: [sender_id], references: [id])
+  chat       chats     @relation(fields: [chat_id], references: [id])
+  sender     users     @relation(fields: [sender_id], references: [id])
 }
 
 model users {
   id                                             Int             @id @default(autoincrement())
   name                                           String          @db.VarChar(50)
   email                                          String          @unique @db.VarChar(45)
-  password                                       String          @db.Text
+  password                                       String
   gender                                         String          @db.VarChar(10)
   dob                                            DateTime        @db.Date
-  img                                            String?         @db.Text
+  img                                            String?
   mobile_number                                  String?         @unique @db.VarChar(20)
   country                                        String?         @db.VarChar(20)
   state                                          String?         @db.VarChar(20)
   city                                           String?         @db.VarChar(20)
+  chatsAsUser1                                   chats[]         @relation("ChatUser1")
+  chatsAsUser2                                   chats[]         @relation("ChatUser2")
   comments                                       comments[]
   likes                                          likes[]
+  sentMessages                                   messages[]
+  notificationsReceived                          notifications[] @relation("NotificationsReceived")
+  notificationsSent                              notifications[] @relation("NotificationsSent")
   post_media                                     post_media[]
   posts                                          posts[]
   profileimages                                  profileimages[]
   relationships_relationships_follow_idTousers   relationships[] @relation("relationships_follow_idTousers")
   relationships_relationships_follower_idTousers relationships[] @relation("relationships_follower_idTousers")
-  
-  // Chat relations
-  sentMessages     messages[]
-  chatsAsUser1     chats[]    @relation("ChatUser1")
-  chatsAsUser2     chats[]    @relation("ChatUser2")
-  
-  // Notification relations
-  notificationsReceived notifications[] @relation("NotificationsReceived")
-  notificationsSent     notifications[] @relation("NotificationsSent")
 }
 
 model notifications {
-  id                Int @id @default(autoincrement())
-  user_reciever_id  Int 
-  user_sender_id    Int
-  type              String
-  resource_id       Int
-  message           String
-  isRead            Boolean @default(false)
-  createdAt         DateTime @default(now()) @db.Timestamp
-
-  // relations
-  receiver          users    @relation("NotificationsReceived", fields: [user_reciever_id], references: [id], onDelete: Cascade)
-  sender            users    @relation("NotificationsSent", fields: [user_sender_id], references: [id], onDelete: Cascade)
+  id               Int      @id @default(autoincrement())
+  user_reciever_id Int
+  user_sender_id   Int
+  type             String
+  resource_id      Int
+  message          String
+  isRead           Boolean  @default(false)
+  createdAt        DateTime @default(now()) @db.Timestamp(6)
+  receiver         users    @relation("NotificationsReceived", fields: [user_reciever_id], references: [id], onDelete: Cascade)
+  sender           users    @relation("NotificationsSent", fields: [user_sender_id], references: [id], onDelete: Cascade)
 
   @@index([user_reciever_id], map: "notifications_receiver_id_idx")
   @@index([user_sender_id], map: "notifications_sender_id_idx")
+}
+
+model embedding_models {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(50)
+  dimensions  Int
+  description String?
+  active      Boolean?  @default(true)
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model post_embeddings {
+  id              Int                   @id @default(autoincrement())
+  post_id         Int                   @unique
+  embedding       Unsupported("vector")
+  embedding_part2 Unsupported("vector")
+  model_name      String                @db.VarChar(50)
+  created_at      DateTime?             @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?             @default(now()) @db.Timestamp(6)
+  posts           posts                 @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_post_id")
+
+  @@index([embedding], map: "post_embeddings_hnsw_idx")
+  @@index([embedding_part2], map: "post_embeddings_part2_idx")
+  @@index([post_id])
 }
