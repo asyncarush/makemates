@@ -2,7 +2,6 @@
 
 import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
-import Head from "next/head";
 
 import { Button } from "@/components/ui/button";
 
@@ -12,9 +11,11 @@ import { AuthContextType } from "@/typings";
 import Signup from "./_component/signup";
 import InputWithLabel from "./_component/InputWithLabel";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 function Login() {
   const router = useRouter();
+
   const [inputs, setInputs] = useState({
     email: "",
     password: "",
@@ -42,14 +43,12 @@ function Login() {
 
   return (
     <div>
-      <Image
-        src="/logo-light.png"
-        width="240"
-        height="30"
-        className="absolute top-5 left-5"
-        alt="logo"
-      />
-      <div className="flex flex-col items-center h-screen justify-center bg-white/80 gap-4 px-20 py-12 shadow-lg rounded-lg">
+      <div className="flex flex-col items-center h-screen justify-center gap-4">
+        <div className="flex items-center gap-4">
+          <h1 className="text-4xl text-blue-500 tracking-wide transition-colors">
+            make<span className="font-semibold text-blue-500">mates</span>
+          </h1>
+        </div>
         <h3 className="text-xl">Join us now</h3>
         <form
           onSubmit={handleSubmit}

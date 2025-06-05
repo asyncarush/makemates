@@ -12,7 +12,6 @@ function Posts({ userId }: { userId: number }) {
     queryFn: () => fetchUserPosts(userId),
   });
 
-  // console.log("All Posts", data);
   const router = useRouter();
 
   if (isPending) {

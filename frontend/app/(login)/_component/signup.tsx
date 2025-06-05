@@ -1,11 +1,8 @@
-import React, { FormEvent, useContext, useRef, useState } from "react";
-
+import React, { FormEvent, useContext, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-
 import { AuthContext } from "@/app/context/AuthContext";
-import { AuthContextType, SignUpInputType } from "@/typings";
-import { CreateNewUser } from "@/axios.config";
+import { AuthContextType} from "@/typings";
 
 import InputWithLabel from "./InputWithLabel";
 import Select from "./Select";
@@ -44,6 +41,7 @@ function Signup() {
   ];
 
   const gender = ["male", "female", "other"];
+  
   const years = getArray(1950, 2023);
 
   const handleSignUpSubmit = (e: FormEvent<HTMLFormElement>) => {

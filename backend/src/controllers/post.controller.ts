@@ -364,9 +364,16 @@ export const getPostComments = async (req: Request, res: Response) => {
 
   try {
     const comments = await prisma.comments.findMany({
-      where: { post_id: parseInt(postId, 10) },
+      where: { post_id: parseInt(postId, 10), parent_comment_id: null },
       include: {
-        users: true,
+        users: {
+          select: {
+            id: true,
+            name: true,
+            profileimages: true,
+            img: true,
+          },
+        },
       },
     });
 
@@ -408,6 +415,48 @@ export const removeThisImage = async (req: RequestWithUser, res: Response) => {
     return res.status(200).send(true);
   } catch (error) {
     console.error(error);
+    return res.status(400).send(error);
+  }
+};
+
+export const postNewReply = async (req: RequestWithUser, res: Response) => {
+  const { parentCommentId, desc, postId } = req.body;
+  // save reply to comment
+
+  try {
+    await prisma.comments.create({
+      data: {
+        post_id: postId,
+        user_id: req.user?.id || -1,
+        desc: desc,
+        parent_comment_id: parseInt(parentCommentId),
+      },
+    });
+    return res.status(200).send("success");
+  } catch (err) {
+    return res.status(400).send(err);
+  }
+};
+
+export const getCommentReplies = async (req: Request, res: Response) => {
+  const { commentId } = req.params;
+
+  try {
+    const replies = await prisma.comments.findMany({
+      where: { parent_comment_id: parseInt(commentId) },
+      include: {
+        users: {
+          select: {
+            id: true,
+            name: true,
+            profileimages: true,
+            img: true,
+          },
+        },
+      },
+    });
+    return res.status(200).send(replies);
+  } catch (error) {
     return res.status(400).send(error);
   }
 };

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Users, TrendingUp, Bookmark, Plus } from "lucide-react";
 
-export default function ChannelsList() {
+const ChannelsList = memo(() => {
   const [channels, setChannels] = useState([
     {
       id: 1,
@@ -98,4 +98,8 @@ export default function ChannelsList() {
       </div>
     </div>
   );
-}
+});
+
+ChannelsList.displayName = "ChannelsList";
+
+export default ChannelsList;
