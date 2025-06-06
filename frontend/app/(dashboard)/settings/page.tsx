@@ -51,7 +51,7 @@ function Page() {
     <div className="bg-gradient-to-b from-indigo-50/30 to-white min-h-screen">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Profile header */}
-        <div className="bg-white p-6 mb-6 rounded-xl shadow-sm flex flex-col sm:flex-row items-center">
+        <div className="bg-white/50 p-6 mb-6 rounded-xl shadow-sm flex flex-col sm:flex-row items-center">
           <Image
             src={currentUser.img || "/avatar.png"}
             className="rounded-full border-4 border-white shadow-md"
@@ -69,7 +69,7 @@ function Page() {
         <div className="flex flex-col md:flex-row">
           {/* Sidebar */}
           <div className="w-full md:w-64 mb-8 md:mb-0 md:mr-8">
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-white/50 rounded-xl shadow-sm overflow-hidden">
               <ul>
                 {sections.map((section) => (
                   <li key={section.id} className="border-b last:border-0">
@@ -91,7 +91,7 @@ function Page() {
 
           {/* Main content */}
           <div className="flex-1">
-            <div className="bg-white p-8 rounded-xl shadow-sm">
+            <div className="bg-white/50 p-8 rounded-xl shadow-sm">
               {activeSection === "profile" && (
                 <div>
                   <h2 className="text-lg font-medium text-gray-900 mb-6 pb-2 border-b">

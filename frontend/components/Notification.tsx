@@ -27,7 +27,7 @@ export default function Notification({
                 key={index}
                 className={`p-3 rounded-lg border transition-all duration-200 ${
                   notification.isRead
-                    ? "bg-white hover:bg-gray-50 border-gray-100"
+                    ? "bg-white/50 hover:bg-gray-50 border-gray-100"
                     : "bg-indigo-50 hover:bg-indigo-100 border-indigo-100 shadow-sm"
                 }`}
               >

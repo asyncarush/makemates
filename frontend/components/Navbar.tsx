@@ -27,6 +27,8 @@ import Notification from "./Notification";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchUserNotifications } from "@/axios.config";
+import { User } from "lucide-react";
+import { RiProfileFill } from "react-icons/ri";
 
 function Navbar() {
   const { currentUser }: any = useContext(AuthContext);
@@ -59,6 +61,7 @@ function Navbar() {
         </Link>
       ),
     },
+
     {
       name: "messenger",
       Icon: (
@@ -89,9 +92,9 @@ function Navbar() {
         <FaUserAlt className="w-5 h-5 text-white hover:text-white transition-colors" />
       ),
       Data: (
-        <div className="p-3">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50">
-            <div className="relative w-10 h-10 ring-2 ring-white ring-offset-2 ring-offset-indigo-50">
+        <div className="">
+          <div className="flex items-center gap-3 p-3 bg-white/10">
+            <div className="relative w-10 h-10 ">
               <Image
                 src={currentUser?.img || "/avatar.png"}
                 alt="Profile pic"
@@ -117,6 +120,13 @@ function Navbar() {
             >
               <span className="text-sm font-medium">Settings</span>
               <IoSettingsSharp className="w-4 h-4" />
+            </Link>
+            <Link
+              href={`/profile/${currentUser.id}`}
+              className="flex items-center justify-between p-2 rounded-md hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 transition-all duration-200"
+            >
+              <span className="text-sm font-medium">Profile</span>
+              <RiProfileFill className="w-4 h-4" />
             </Link>
             <div
               onClick={handleLogout}
@@ -157,7 +167,7 @@ function Navbar() {
                 {Icon}
               </NavigationMenuTrigger>
               {Data && (
-                <NavigationMenuContent className="absolute right-0 mt-2 min-w-[240px] rounded-lg bg-white/95 backdrop-blur-sm p-2 shadow-lg ring-1 ring-black/5">
+                <NavigationMenuContent className="absolute right-0 mt-2 min-w-[240px] rounded-lg bg-white/80 backdrop-blur-sm p-2 shadow-lg ring-1 ring-black/5">
                   {Data}
                 </NavigationMenuContent>
               )}

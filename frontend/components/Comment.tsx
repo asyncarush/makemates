@@ -129,7 +129,7 @@ function Comment({ cmnt }: any) {
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
                       placeholder="Write a reply..."
-                      className="flex-1 w-full px-3 py-2 pr-14 text-xs bg-gray-50 rounded-xl border-0 shadow-sm focus:ring-1 focus:ring-blue-300/50 focus:bg-white transition-all duration-200 placeholder:text-gray-400"
+                      className="flex-1 w-full px-3 py-2 pr-14 text-xs bg-gray-50 rounded-xl border-0 shadow-sm focus:ring-1 focus:ring-blue-300/50 focus:bg-white/50 transition-all duration-200 placeholder:text-gray-400"
                       onKeyDown={(e) =>
                         e.key === "Enter" &&
                         replyText.trim() &&

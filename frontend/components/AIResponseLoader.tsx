@@ -23,7 +23,7 @@ export const AIResponseLoader = () => {
               key={dot}
               className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${
                 activeDot === dot
-                  ? "bg-white scale-100"
+                  ? "bg-white/50 scale-100"
                   : "bg-blue-200 bg-opacity-50 scale-75"
               }`}
             ></div>

@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeThisImage = exports.getPostComments = exports.postNewComment = exports.checkPostLikeStatus = exports.unLikeThePost = exports.likeThePost = exports.getUserPosts = exports.editPost = exports.addPost = void 0;
+exports.getCommentReplies = exports.postNewReply = exports.removeThisImage = exports.getPostComments = exports.postNewComment = exports.checkPostLikeStatus = exports.unLikeThePost = exports.likeThePost = exports.getUserPosts = exports.editPost = exports.addPost = void 0;
 // Database client
 const client_1 = require("@prisma/client");
 // Logger
@@ -322,9 +322,16 @@ const getPostComments = (req, res) => __awaiter(void 0, void 0, void 0, function
     const { postId } = req.params;
     try {
         const comments = yield prisma.comments.findMany({
-            where: { post_id: parseInt(postId, 10) },
+            where: { post_id: parseInt(postId, 10), parent_comment_id: null },
             include: {
-                users: true,
+                users: {
+                    select: {
+                        id: true,
+                        name: true,
+                        profileimages: true,
+                        img: true,
+                    },
+                },
             },
         });
         return res.status(200).send(comments);
@@ -367,3 +374,46 @@ const removeThisImage = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.removeThisImage = removeThisImage;
+const postNewReply = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { parentCommentId, desc, postId } = req.body;
+    // save reply to comment
+    try {
+        yield prisma.comments.create({
+            data: {
+                post_id: postId,
+                user_id: ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) || -1,
+                desc: desc,
+                parent_comment_id: parseInt(parentCommentId),
+            },
+        });
+        return res.status(200).send("success");
+    }
+    catch (err) {
+        return res.status(400).send(err);
+    }
+});
+exports.postNewReply = postNewReply;
+const getCommentReplies = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { commentId } = req.params;
+    try {
+        const replies = yield prisma.comments.findMany({
+            where: { parent_comment_id: parseInt(commentId) },
+            include: {
+                users: {
+                    select: {
+                        id: true,
+                        name: true,
+                        profileimages: true,
+                        img: true,
+                    },
+                },
+            },
+        });
+        return res.status(200).send(replies);
+    }
+    catch (error) {
+        return res.status(400).send(error);
+    }
+});
+exports.getCommentReplies = getCommentReplies;

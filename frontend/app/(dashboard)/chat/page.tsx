@@ -111,12 +111,12 @@ const Page = () => {
   };
 
   return (
-    <div className="flex w-full max-w-6xl mx-auto h-[calc(100vh-140px)] bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="flex w-full max-w-6xl mx-auto h-[calc(100vh-140px)] bg-white/40 rounded-xl shadow-lg overflow-hidden">
       {/* Incoming Call Notification */}
 
       {incomingCall && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+          <div className="bg-white/50 p-6 rounded-lg shadow-xl max-w-md w-full">
             <h3 className="text-xl font-semibold mb-2">Incoming Video Call</h3>
             <p className="text-gray-600 mb-4">
               {incomingCall.callerName} is calling you...
@@ -146,7 +146,7 @@ const Page = () => {
           <input
             type="text"
             placeholder="Search users..."
-            className="w-full px-4 py-2 bg-white rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-4 py-2 bg-white/50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
             onChange={(e) => setSearchUser(e.target.value)}
             value={searchUser}
           />
@@ -296,7 +296,7 @@ const Page = () => {
                 <Button
                   onClick={() => initiateCall(activeChat.id)}
                   variant="outline"
-                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/20"
+                  className="bg-white/40 hover:bg-white/50/30 backdrop-blur-sm border border-white/20"
                   disabled={isWaitingForResponse}
                 >
                   <VideoIcon className="w-5 h-5" />
@@ -324,7 +324,7 @@ const Page = () => {
                       className={`max-w-[70%] px-4 py-2 rounded-lg ${
                         message.senderId === currentUser?.id
                           ? "bg-indigo-600 text-white"
-                          : "bg-white text-gray-900 shadow-sm"
+                          : "bg-white/50 text-gray-900 shadow-sm"
                       }`}
                     >
                       <p className="break-words">{message.text}</p>
@@ -345,7 +345,7 @@ const Page = () => {
             </div>
 
             {/* Message Input */}
-            <div className="px-6 py-4 bg-white border-t border-gray-200">
+            <div className="px-6 py-4 bg-white/50 border-t border-gray-200">
               <div className="flex gap-2">
                 <input
                   type="text"
