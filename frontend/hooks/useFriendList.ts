@@ -1,10 +1,9 @@
 import { API_ENDPOINT } from "@/axios.config";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 function useFriendList() {
   const [list, setList] = useState([]);
-
   useEffect(() => {
     const getList = async () => {
       try {

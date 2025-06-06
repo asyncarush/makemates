@@ -167,14 +167,14 @@ function Page() {
               {isFollowed ? (
                 <Button
                   onClick={handleUnFollow}
-                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/20"
+                  className="bg-white/40 hover:bg-white/50/30 backdrop-blur-sm text-white border border-white/20"
                 >
                   Unfollow
                 </Button>
               ) : (
                 <Button
                   onClick={handleFollow}
-                  className="bg-white text-indigo-600 hover:bg-white/90"
+                  className="bg-white/50 text-indigo-600 hover:bg-white/50/90"
                 >
                   Follow
                 </Button>
@@ -182,7 +182,7 @@ function Page() {
 
               <Button
                 variant="outline"
-                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/20"
+                className="bg-white/40 hover:bg-white/50/30 backdrop-blur-sm text-white border border-white/20"
               >
                 <BsMessenger className="w-5 h-5" />
               </Button>
@@ -195,7 +195,7 @@ function Page() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column - Bio & Info */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="bg-white/50 rounded-2xl p-6 shadow-sm">
             <h2 className="text-xl font-semibold mb-4">About</h2>
             <p className="text-gray-600 mb-6">
               {user.bio || "No bio available"}
@@ -217,7 +217,7 @@ function Page() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="bg-white/50 rounded-2xl p-6 shadow-sm">
             <h2 className="text-xl font-semibold mb-4">Interests</h2>
             <div className="flex flex-wrap gap-2">
               <Badge
@@ -250,7 +250,7 @@ function Page() {
 
         {/* Right Column - Posts */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl shadow-sm">
+          <div className="bg-white/50 rounded-2xl shadow-sm">
             <div className="border-b border-gray-200">
               <nav className="flex -mb-px">
                 <button

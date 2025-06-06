@@ -9,11 +9,11 @@ export default function LoaderExample() {
   return (
     <div className="p-6">
       {loading ? (
-        <div className="bg-white rounded-lg shadow p-4 mb-4">
+        <div className="bg-white/50 rounded-lg shadow p-4 mb-4">
           <Loader />
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow p-4 mb-4">
+        <div className="bg-white/50 rounded-lg shadow p-4 mb-4">
           <h1 className="text-2xl font-bold">Content Loaded!</h1>
           <p className="mt-2">Your content has finished loading.</p>
         </div>

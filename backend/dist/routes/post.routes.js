@@ -23,6 +23,10 @@ router.post("/unlike", auth_1.default, post_controller_1.unLikeThePost);
 router.post("/like/status", auth_1.default, post_controller_1.checkPostLikeStatus);
 // Add a new comment to a post
 router.post("/comments/add", auth_1.default, post_controller_1.postNewComment);
+// Add a new reply to a comment
+router.post("/comments/reply", auth_1.default, post_controller_1.postNewReply);
 // Retrieve comments for a specific post
 router.get("/comments/:postId", auth_1.default, post_controller_1.getPostComments);
+// Retrieve replies for a specific comment
+router.get("/comments/reply/:commentId", auth_1.default, post_controller_1.getCommentReplies);
 exports.default = router;

@@ -51,7 +51,7 @@ const ChannelsList = memo(() => {
   };
 
   return (
-    <div className="bg-white rounded-md shadow p-4 mb-4">
+    <div className="bg-white/40 rounded-bl-lg shadow p-4 mb-4">
       <div className="flex items-center mb-4">
         <Users className="text-blue-500 mr-2" size={18} />
         <h2 className="text-sm font-semibold text-gray-800">

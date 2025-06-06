@@ -20,7 +20,7 @@ function Posts({ userId }: { userId: number }) {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+            className="bg-white/50 rounded-xl shadow-sm border border-gray-100 overflow-hidden"
           >
             <div className="p-4 flex items-center gap-3">
               <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
@@ -47,7 +47,7 @@ function Posts({ userId }: { userId: number }) {
         router.push("/");
       }, 2000);
       return (
-        <div className="bg-white rounded-xl shadow-sm p-6 text-center border border-gray-100">
+        <div className="bg-white/50 rounded-xl shadow-sm p-6 text-center border border-gray-100">
           <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
             <svg
               className="w-6 h-6 text-red-500"
@@ -70,7 +70,7 @@ function Posts({ userId }: { userId: number }) {
     }
 
     return (
-      <div className="bg-white rounded-xl shadow-sm p-6 text-center border border-gray-100">
+      <div className="bg-white/50 rounded-xl shadow-sm p-6 text-center border border-gray-100">
         <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
           <svg
             className="w-6 h-6 text-red-500"
@@ -95,7 +95,7 @@ function Posts({ userId }: { userId: number }) {
   // If we have no posts
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-100">
+      <div className="bg-white/50 rounded-xl shadow-sm p-8 text-center border border-gray-100">
         <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg
             className="w-8 h-8 text-indigo-500"

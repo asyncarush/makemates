@@ -36,7 +36,7 @@ export default function TrendingTopics() {
   ]);
 
   return (
-    <div className="bg-white rounded-md shadow p-4 mb-4">
+    <div className="bg-white/40 rounded-br-lg shadow p-4 mb-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <TrendingUp className="text-blue-500 mr-2" size={18} />
@@ -66,7 +66,7 @@ export default function TrendingTopics() {
         ))}
       </div>
 
-      <div className="mt-4 pt-3 border-t border-gray-100">
+      <div className="mt-4 pt-3">
         <button className="text-sm text-blue-500 hover:underline">
           Show more
         </button>

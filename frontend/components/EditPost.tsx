@@ -259,7 +259,7 @@ export const EditPostComponent = ({
                         />
                       )}
                       <div
-                        className="absolute p-2 bg-white rounded-full right-2 top-2 cursor-pointer"
+                        className="absolute p-2 bg-white/50 rounded-full right-2 top-2 cursor-pointer"
                         onClick={() => clearImage(item)}
                       >
                         X

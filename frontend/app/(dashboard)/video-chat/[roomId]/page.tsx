@@ -265,7 +265,7 @@ export default function VideoChatPage() {
           <Button
             onClick={toggleVideo}
             variant="outline"
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/20"
+            className="bg-white/40 hover:bg-white/50/30 backdrop-blur-sm text-white border border-white/20"
           >
             {isVideoEnabled ? (
               <FaVideo className="w-5 h-5" />
@@ -276,7 +276,7 @@ export default function VideoChatPage() {
           <Button
             onClick={toggleAudio}
             variant="outline"
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/20"
+            className="bg-white/40 hover:bg-white/50/30 backdrop-blur-sm text-white border border-white/20"
           >
             {isAudioEnabled ? (
               <FaMicrophone className="w-5 h-5" />
