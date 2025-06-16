@@ -122,7 +122,7 @@ function Navbar() {
               <IoSettingsSharp className="w-4 h-4" />
             </Link>
             <Link
-              href={`/profile/${currentUser.id}`}
+              href={`/profile/${currentUser?.id}`}
               className="flex items-center justify-between p-2 rounded-md hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 transition-all duration-200"
             >
               <span className="text-sm font-medium">Profile</span>
