@@ -15,6 +15,7 @@ export default function AuthContextProvider({
   children: React.ReactNode;
 }) {
   const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const userSignUp = async (inputs: SignUpInputType) => {
@@ -54,25 +55,50 @@ export default function AuthContextProvider({
   };
 
   const userLogout = async () => {
-    const response = await LogOutUser();
-    window.localStorage.removeItem("currentUser");
-    router.push("/");
+    try {
+      await LogOutUser();
+      window.localStorage.removeItem("currentUser");
+      window.localStorage.removeItem("auth_token");
+      setCurrentUser(null);
+      router.push("/");
+    } catch (error) {
+      console.log("logout Error:", error);
+    }
   };
 
-  // this will check on page reload if user is saved in LS
   // Check on page reload if user is saved in local storage
   useEffect(() => {
-    const loggedUser = window.localStorage.getItem("currentUser");
-    if (loggedUser) {
-      const user = JSON.parse(loggedUser);
-      setCurrentUser(user);
-    }
+    try {
+      const loggedUser = window.localStorage.getItem("currentUser");
+      const token = window.localStorage.getItem("auth_token");
 
-    () => {
-      console.log("Moving to login");
-      return router.push("/");
-    };
-  }, [router]);
+      if (loggedUser && token) {
+        const user = JSON.parse(loggedUser);
+        setCurrentUser(user);
+      } else {
+        // Clear any partial state
+        window.localStorage.removeItem("currentUser");
+        window.localStorage.removeItem("auth_token");
+        setCurrentUser(null);
+      }
+    } catch (error) {
+      console.error("Error loading user from localStorage:", error);
+      // Clear any corrupted data
+      window.localStorage.removeItem("currentUser");
+      window.localStorage.removeItem("auth_token");
+      setCurrentUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-blue-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   // // Use this effect to track changes in currentUser
   // useEffect(() => {

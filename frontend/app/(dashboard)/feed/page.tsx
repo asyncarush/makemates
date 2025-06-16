@@ -29,11 +29,18 @@ function Page() {
 
   useEffect(() => {
     const getUserData = async () => {
-      const { data } = await axios.get(`${API_ENDPOINT}/user/me`, {
-        withCredentials: true,
-      });
-      window.localStorage.setItem("currentUser", JSON.stringify(data));
-      setCurrentUser(data);
+      try {
+        const { data } = await axios.get(`${API_ENDPOINT}/user/me`, {
+          withCredentials: true,
+        });
+        window.localStorage.setItem("currentUser", JSON.stringify(data));
+        setCurrentUser(data);
+      } catch (error) {
+        // // Clear any partial state
+        window.localStorage.removeItem("currentUser");
+        window.localStorage.removeItem("auth_token");
+        window.location.href = "/";
+      }
     };
 
     getUserData();
