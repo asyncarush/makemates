@@ -20,20 +20,20 @@ function Posts({ userId }: { userId: number }) {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="bg-white/50 rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+            className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 dark:border-gray-600/30 overflow-hidden"
           >
             <div className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
               <div className="space-y-2 flex-1">
-                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                <div className="h-3 bg-gray-100 rounded w-1/4"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+                <div className="h-3 bg-gray-100 dark:bg-gray-600 rounded w-1/4"></div>
               </div>
             </div>
             <div className="px-4 pb-3">
-              <div className="h-4 bg-gray-100 rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-gray-100 rounded w-1/2"></div>
+              <div className="h-4 bg-gray-100 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
+              <div className="h-4 bg-gray-100 dark:bg-gray-600 rounded w-1/2"></div>
             </div>
-            <div className="h-64 bg-gray-100"></div>
+            <div className="h-64 bg-gray-100 dark:bg-gray-600"></div>
           </div>
         ))}
       </div>
@@ -47,10 +47,10 @@ function Posts({ userId }: { userId: number }) {
         router.push("/");
       }, 2000);
       return (
-        <div className="bg-white/50 rounded-xl shadow-sm p-6 text-center border border-gray-100">
-          <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
+        <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 text-center border border-white/30 dark:border-gray-600/30">
+          <div className="w-12 h-12 bg-red-50/80 dark:bg-red-900/40 rounded-full flex items-center justify-center mx-auto mb-3">
             <svg
-              className="w-6 h-6 text-red-500"
+              className="w-6 h-6 text-red-500 dark:text-red-400"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -61,8 +61,10 @@ function Posts({ userId }: { userId: number }) {
               />
             </svg>
           </div>
-          <p className="text-gray-700 font-medium">Session Expired</p>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-gray-700 dark:text-gray-300 font-medium">
+            Session Expired
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Redirecting you to login...
           </p>
         </div>
@@ -70,10 +72,10 @@ function Posts({ userId }: { userId: number }) {
     }
 
     return (
-      <div className="bg-white/50 rounded-xl shadow-sm p-6 text-center border border-gray-100">
-        <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
+      <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 text-center border border-white/30 dark:border-gray-600/30">
+        <div className="w-12 h-12 bg-red-50/80 dark:bg-red-900/40 rounded-full flex items-center justify-center mx-auto mb-3">
           <svg
-            className="w-6 h-6 text-red-500"
+            className="w-6 h-6 text-red-500 dark:text-red-400"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -84,8 +86,10 @@ function Posts({ userId }: { userId: number }) {
             />
           </svg>
         </div>
-        <p className="text-gray-700 font-medium">Error Loading Posts</p>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-gray-700 dark:text-gray-300 font-medium">
+          Error Loading Posts
+        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           {error.message || "Please try again later"}
         </p>
       </div>
@@ -95,10 +99,10 @@ function Posts({ userId }: { userId: number }) {
   // If we have no posts
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white/50 rounded-xl shadow-sm p-8 text-center border border-gray-100">
-        <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 text-center border border-white/30 dark:border-gray-600/30">
+        <div className="w-16 h-16 bg-indigo-50/80 dark:bg-indigo-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg
-            className="w-8 h-8 text-indigo-500"
+            className="w-8 h-8 text-indigo-500 dark:text-indigo-400"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -109,10 +113,10 @@ function Posts({ userId }: { userId: number }) {
             />
           </svg>
         </div>
-        <p className="text-gray-700 font-medium text-lg mb-1 font-display">
+        <p className="text-gray-700 dark:text-gray-300 font-medium text-lg mb-1 font-display">
           No Posts Yet
         </p>
-        <p className="text-sm text-gray-500 max-w-xs mx-auto">
+        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
           When you or your friends create posts, they&apos;ll appear here.
         </p>
       </div>

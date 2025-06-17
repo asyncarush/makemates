@@ -63,7 +63,7 @@ function Post({
     }
   };
   return (
-    <div className="bg-white/40  shadow-sm overflow-hidden">
+    <div className="bg-gradient-card/80 backdrop-blur-sm shadow-lg overflow-hidden border border-white/30 dark:border-gray-600/30 rounded-2xl">
       {/* Post Header */}
       <div className="flex items-center justify-between px-3 py-2.5">
         <div className="flex items-center gap-2.5">
@@ -71,17 +71,17 @@ function Post({
             <Image
               src={profileImage || "/avatar.png"}
               alt={name}
-              className="rounded-full object-cover ring-1 ring-gray-100"
+              className="rounded-full object-cover ring-1 ring-gray-100 dark:ring-gray-700"
               fill
               sizes="32px"
               loading="lazy"
             />
           </div>
           <div>
-            <h3 className="font-medium text-gray-800 text-sm font-display">
+            <h3 className="font-medium text-gray-800 dark:text-gray-200 text-sm font-display">
               {name}
             </h3>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {moment(postDate).fromNow()}
             </p>
           </div>
@@ -100,7 +100,7 @@ function Post({
       {/* Post Content */}
       {caption && (
         <div className="px-3 py-1.5">
-          <p className="text-gray-700 text-sm">{caption}</p>
+          <p className="text-gray-700 dark:text-gray-300 text-sm">{caption}</p>
         </div>
       )}
 
@@ -115,11 +115,11 @@ function Post({
         )}
 
       {/* Post Actions */}
-      <div className="px-3 py-2 border-t border-gray-100">
+      <div className="px-3 py-2 border-t border-gray-100/80 dark:border-gray-700/50">
         <div className="flex items-center gap-3">
           <button
             onClick={handlePostLike}
-            className="flex items-cenxter gap-1.5 text-gray-700 hover:text-red-500 transition-colors duration-1000"
+            className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 hover:text-red-500 transition-colors duration-1000 rounded-lg px-2 py-1 hover:bg-gray-50/50 dark:hover:bg-gray-800/30"
           >
             <FontAwesomeIcon
               icon={isPostLiked ? likeIcon : unlikeIcon}
@@ -137,7 +137,7 @@ function Post({
           </button>
           <button
             onClick={() => setCommentBox(!commentBox)}
-            className="flex items-center gap-1.5 text-gray-700 hover:text-indigo-500 transition-colors"
+            className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 hover:text-indigo-500 transition-colors rounded-lg px-2 py-1 hover:bg-gray-50/50 dark:hover:bg-gray-800/30"
           >
             <svg
               className="w-4 h-4"
@@ -162,7 +162,7 @@ function Post({
 
       {/* Comments */}
       {commentBox && (
-        <div className="border-t border-gray-100 px-3 py-2">
+        <div className="border-t border-gray-100/80 dark:border-gray-700/50 px-3 py-2">
           <Comments
             postId={postId}
             onCommentAdded={() => setCurrentTotalComments((prev) => prev + 1)}

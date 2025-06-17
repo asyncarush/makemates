@@ -45,7 +45,7 @@ export default function RootLayout({
       lang="en"
       className={`${spaceGrotesk.variable} ${plusJakarta.variable}`}
     >
-      <body className={`${plusJakarta.className} bg-blue-50`}>
+      <body className={`${plusJakarta.className} bg-background`}>
         <Providers>
           <Toaster position="bottom-center" />
           {children}

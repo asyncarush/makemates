@@ -117,7 +117,9 @@ function Page() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">User not found</p>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">
+            User not found
+          </p>
           <Button onClick={() => route.push("/")}>Go Home</Button>
         </div>
       </div>
@@ -128,7 +130,7 @@ function Page() {
     <div className="max-w-6xl mx-auto px-4">
       {/* Hero Section */}
       <div className="relative h-[400px] rounded-2xl overflow-hidden mb-8">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500" />
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-600 dark:via-purple-600 dark:to-pink-600" />
         <div className="absolute inset-0 bg-black/20" />
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
           <div className="flex items-end justify-between">
@@ -195,52 +197,59 @@ function Page() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column - Bio & Info */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white/50 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">About</h2>
-            <p className="text-gray-600 mb-6">
+          <div className="bg-gradient-card rounded-2xl p-6 shadow-sm border border-white/20 dark:border-gray-700/50">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+              About
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               {user.bio || "No bio available"}
             </p>
 
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <FaLink className="w-5 h-5 text-gray-400" />
-                <a href="#" className="text-indigo-600 hover:underline">
+                <FaLink className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                <a
+                  href="#"
+                  className="text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
                   Add website
                 </a>
               </div>
               <div className="flex items-center gap-3">
-                <IoMdPhotos className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-600">
+                <IoMdPhotos className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                <span className="text-gray-600 dark:text-gray-400">
                   Joined {new Date().toLocaleDateString()}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white/50 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">Interests</h2>
+          <div className="bg-gradient-card rounded-2xl p-6 shadow-sm border border-white/20 dark:border-gray-700/50">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+              Interests
+            </h2>
             <div className="flex flex-wrap gap-2">
               <Badge
                 variant="outline"
-                className="bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100"
+                className="bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-800"
               >
                 💻 Coding
               </Badge>
               <Badge
                 variant="outline"
-                className="bg-purple-50 text-purple-600 border-purple-100 hover:bg-purple-100"
+                className="bg-purple-50 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-800"
               >
                 🚅 Traveling
               </Badge>
               <Badge
                 variant="outline"
-                className="bg-pink-50 text-pink-600 border-pink-100 hover:bg-pink-100"
+                className="bg-pink-50 dark:bg-pink-900/50 text-pink-600 dark:text-pink-400 border-pink-100 dark:border-pink-800 hover:bg-pink-100 dark:hover:bg-pink-800"
               >
                 🎶 Music
               </Badge>
               <Badge
                 variant="outline"
-                className="bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100"
+                className="bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-800"
               >
                 🕹️ Video Games
               </Badge>
@@ -250,15 +259,15 @@ function Page() {
 
         {/* Right Column - Posts */}
         <div className="lg:col-span-2">
-          <div className="bg-white/50 rounded-2xl shadow-sm">
-            <div className="border-b border-gray-200">
+          <div className="bg-gradient-card rounded-2xl shadow-sm border border-white/20 dark:border-gray-700/50">
+            <div className="border-b border-gray-200 dark:border-gray-700">
               <nav className="flex -mb-px">
                 <button
                   onClick={() => setActiveTab("posts")}
                   className={`flex-1 py-4 px-6 text-center font-medium flex items-center justify-center gap-2 ${
                     activeTab === "posts"
-                      ? "text-indigo-600 border-b-2 border-indigo-600"
-                      : "text-gray-500 hover:text-gray-700"
+                      ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                   }`}
                 >
                   <BsGrid3X3 className="w-5 h-5" />
@@ -268,8 +277,8 @@ function Page() {
                   onClick={() => setActiveTab("liked")}
                   className={`flex-1 py-4 px-6 text-center font-medium flex items-center justify-center gap-2 ${
                     activeTab === "liked"
-                      ? "text-indigo-600 border-b-2 border-indigo-600"
-                      : "text-gray-500 hover:text-gray-700"
+                      ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                   }`}
                 >
                   <FaRegHeart className="w-5 h-5" />
@@ -279,8 +288,8 @@ function Page() {
                   onClick={() => setActiveTab("saved")}
                   className={`flex-1 py-4 px-6 text-center font-medium flex items-center justify-center gap-2 ${
                     activeTab === "saved"
-                      ? "text-indigo-600 border-b-2 border-indigo-600"
-                      : "text-gray-500 hover:text-gray-700"
+                      ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                   }`}
                 >
                   <BsBookmark className="w-5 h-5" />
@@ -293,14 +302,18 @@ function Page() {
               {activeTab === "posts" && <Posts userId={Number(id)} />}
               {activeTab === "liked" && (
                 <div className="text-center py-12">
-                  <FaRegHeart className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">No liked posts yet</p>
+                  <FaRegHeart className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No liked posts yet
+                  </p>
                 </div>
               )}
               {activeTab === "saved" && (
                 <div className="text-center py-12">
-                  <FaRegBookmark className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">No saved posts yet</p>
+                  <FaRegBookmark className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No saved posts yet
+                  </p>
                 </div>
               )}
             </div>

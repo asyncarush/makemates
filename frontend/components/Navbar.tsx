@@ -29,6 +29,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchUserNotifications } from "@/axios.config";
 import { User } from "lucide-react";
 import { RiProfileFill } from "react-icons/ri";
+import { ThemeToggle } from "./theme-toggle";
 
 function Navbar() {
   const { currentUser }: any = useContext(AuthContext);
@@ -142,7 +143,7 @@ function Navbar() {
   ];
 
   return (
-    <nav className="flex h-16 items-center justify-between px-4 bg-gradient-to-r from-blue-600 via-blue-500 to-teal-400 rounded-b-xl">
+    <nav className="flex h-16 items-center justify-between px-4 bg-gradient-to-r from-blue-600 via-blue-500 to-teal-400 dark:from-gray-900 dark:via-indigo-900 dark:to-purple-900 rounded-b-xl">
       {/* Logo and Upload */}
       <div className="flex items-center gap-4">
         <Link href="/feed" className="group">
@@ -161,6 +162,9 @@ function Navbar() {
       {/* Navigation */}
       <NavigationMenu>
         <NavigationMenuList className="flex items-center gap-2">
+          <NavigationMenuItem className="relative">
+            <ThemeToggle />
+          </NavigationMenuItem>
           {navigation.map(({ name, Icon, Data }) => (
             <NavigationMenuItem className={`relative`} key={name}>
               <NavigationMenuTrigger className="h-10 w-10 p-0 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full flex items-center justify-center border border-white/20 focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200">

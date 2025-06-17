@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { getUserDataById } from "@/axios.config";
 import { AuthContext } from "@/app/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 import UpdateName from "./_component/UpdateName";
 import UpdateBirthday from "./_component/updateBirthday";
@@ -28,7 +30,7 @@ function Page() {
 
   if (isPending) {
     return (
-      <div className="flex items-center justify-center h-[400px] text-gray-500">
+      <div className="flex items-center justify-center h-[400px] text-gray-500 dark:text-gray-400">
         Loading...
       </div>
     );
@@ -36,7 +38,7 @@ function Page() {
 
   if (isError) {
     return (
-      <div className="flex items-center justify-center h-[400px] text-gray-500">
+      <div className="flex items-center justify-center h-[400px] text-gray-500 dark:text-gray-400">
         Error loading data
       </div>
     );
@@ -48,100 +50,196 @@ function Page() {
   ];
 
   return (
-    <div className="bg-gradient-to-b from-indigo-50/30 to-white min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Profile header */}
-        <div className="bg-white/50 p-6 mb-6 rounded-xl shadow-sm flex flex-col sm:flex-row items-center">
-          <Image
-            src={currentUser.img || "/avatar.png"}
-            className="rounded-full border-4 border-white shadow-md"
-            width={96}
-            height={96}
-            alt="Profile"
-          />
-          <div className="mt-4 sm:mt-0 sm:ml-6 text-center sm:text-left">
-            <h1 className="text-2xl font-light text-gray-900">{data.name}</h1>
-            <p className="text-sm text-gray-500">{data.email}</p>
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          Settings
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Manage your account preferences and privacy settings
+        </p>
+      </div>
+
+      <div className="grid gap-6">
+        {/* Profile Settings */}
+        <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/30 dark:border-gray-600/30">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            Profile Settings
+          </h2>
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="relative w-20 h-20">
+                <Image
+                  src={currentUser?.img || "/avatar.png"}
+                  alt="Profile"
+                  className="rounded-2xl object-cover ring-2 ring-white/50 dark:ring-gray-600/50"
+                  fill
+                  sizes="80px"
+                />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                  {currentUser?.name || "User"}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {currentUser?.email || "user@example.com"}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                className="bg-white/60 dark:bg-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-600/80 backdrop-blur-sm border border-white/30 dark:border-gray-600/50 rounded-xl"
+              >
+                Change Photo
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex flex-col md:flex-row">
-          {/* Sidebar */}
-          <div className="w-full md:w-64 mb-8 md:mb-0 md:mr-8">
-            <div className="bg-white/50 rounded-xl shadow-sm overflow-hidden">
-              <ul>
-                {sections.map((section) => (
-                  <li key={section.id} className="border-b last:border-0">
-                    <button
-                      onClick={() => setActiveSection(section.id)}
-                      className={`w-full text-left py-4 px-6 transition-colors ${
-                        activeSection === section.id
-                          ? "bg-indigo-50 text-indigo-700 font-medium"
-                          : "hover:bg-gray-50 text-gray-700"
-                      }`}
-                    >
-                      {section.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+        {/* Account Settings */}
+        <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/30 dark:border-gray-600/30">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            Account Settings
+          </h2>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Display Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 bg-white/60 dark:bg-gray-700/60 rounded-xl border border-gray-200/80 dark:border-gray-600/60 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm"
+                  placeholder="Enter display name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 bg-white/60 dark:bg-gray-700/60 rounded-xl border border-gray-200/80 dark:border-gray-600/60 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm"
+                  placeholder="Enter username"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Bio
+              </label>
+              <textarea
+                rows={3}
+                className="w-full px-4 py-2 bg-white/60 dark:bg-gray-700/60 rounded-xl border border-gray-200/80 dark:border-gray-600/60 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm resize-none"
+                placeholder="Tell us about yourself..."
+              />
             </div>
           </div>
+        </div>
 
-          {/* Main content */}
-          <div className="flex-1">
-            <div className="bg-white/50 p-8 rounded-xl shadow-sm">
-              {activeSection === "profile" && (
-                <div>
-                  <h2 className="text-lg font-medium text-gray-900 mb-6 pb-2 border-b">
-                    Profile Information
-                  </h2>
+        {/* Privacy Settings */}
+        <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/30 dark:border-gray-600/30">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            Privacy Settings
+          </h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl">
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                  Profile Visibility
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Control who can see your profile
+                </p>
+              </div>
+              <Switch />
+            </div>
+            <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl">
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                  Show Online Status
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Let others see when you're online
+                </p>
+              </div>
+              <Switch />
+            </div>
+            <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl">
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                  Allow Messages
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Receive messages from other users
+                </p>
+              </div>
+              <Switch />
+            </div>
+          </div>
+        </div>
 
-                  <div className="space-y-8">
-                    <div className="bg-gray-50 p-6 rounded-lg">
-                      <h3 className="text-sm font-medium text-gray-700 mb-4">
-                        Your Photo
-                      </h3>
-                      <UpdateProfilePhoto value={data.img} />
-                    </div>
+        {/* Notification Settings */}
+        <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/30 dark:border-gray-600/30">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            Notification Settings
+          </h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl">
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                  Push Notifications
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Receive notifications on your device
+                </p>
+              </div>
+              <Switch />
+            </div>
+            <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl">
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                  Email Notifications
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Receive notifications via email
+                </p>
+              </div>
+              <Switch />
+            </div>
+            <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl">
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                  Message Notifications
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Notify when you receive new messages
+                </p>
+              </div>
+              <Switch />
+            </div>
+          </div>
+        </div>
 
-                    <div className="bg-gray-50 p-6 rounded-lg">
-                      <h3 className="text-sm font-medium text-gray-700 mb-4">
-                        Personal Information
-                      </h3>
-                      <div className="space-y-6">
-                        <UpdateName value={data.name} />
-                        <UpdateBirthday value={data.dob} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeSection === "account" && (
-                <div>
-                  <h2 className="text-lg font-medium text-gray-900 mb-6 pb-2 border-b">
-                    Account Settings
-                  </h2>
-
-                  <div className="space-y-8">
-                    <div className="bg-gray-50 p-6 rounded-lg">
-                      <h3 className="text-sm font-medium text-gray-700 mb-4">
-                        Email
-                      </h3>
-                      <UpdateEmail value={data.email} />
-                    </div>
-
-                    <div className="bg-gray-50 p-6 rounded-lg">
-                      <h3 className="text-sm font-medium text-gray-700 mb-4">
-                        Password
-                      </h3>
-                      <UpdatePassword value={data.password} />
-                    </div>
-                  </div>
-                </div>
-              )}
+        {/* Danger Zone */}
+        <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-red-200/80 dark:border-red-800/50">
+          <h2 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-4">
+            Danger Zone
+          </h2>
+          <div className="space-y-4">
+            <div className="p-4 bg-red-50/80 dark:bg-red-900/40 rounded-xl">
+              <h3 className="font-medium text-red-700 dark:text-red-400 mb-2">
+                Delete Account
+              </h3>
+              <p className="text-sm text-red-600 dark:text-red-300 mb-3">
+                This action cannot be undone. This will permanently delete your
+                account and remove all your data.
+              </p>
+              <Button
+                variant="destructive"
+                className="bg-red-600 hover:bg-red-700 rounded-xl"
+              >
+                Delete Account
+              </Button>
             </div>
           </div>
         </div>
