@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { BsMessenger, BsGrid3X3, BsBookmark } from "react-icons/bs";
 import { FaRegHeart, FaRegBookmark, FaLink } from "react-icons/fa";
 import { IoMdPhotos, IoMdPeople } from "react-icons/io";
-import { RiUserFollowLine } from "react-icons/ri";
+import { RiUserFollowLine, RiUserUnfollowLine } from "react-icons/ri";
 import { useFollowed } from "@/hooks/isFriend";
 import Posts from "@/components/Posts";
 import { BACKEND_API } from "@/axios.config";
@@ -165,28 +165,30 @@ function Page() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {isFollowed ? (
                 <Button
                   onClick={handleUnFollow}
-                  className="bg-white/40 hover:bg-white/50/30 backdrop-blur-sm text-white border border-white/20"
+                  className="bg-white/40 hover:bg-white/50/30 backdrop-blur-sm text-white border border-white/20 p-1.5"
+                  title="Unfollow"
                 >
-                  Unfollow
+                  <RiUserUnfollowLine className="w-4 h-4" />
                 </Button>
               ) : (
                 <Button
                   onClick={handleFollow}
-                  className="bg-white/50 text-indigo-600 hover:bg-white/50/90"
+                  className="bg-white/50 text-indigo-600 hover:bg-white/50/90 p-1.5"
+                  title="Follow"
                 >
-                  Follow
+                  <RiUserFollowLine className="w-4 h-4" />
                 </Button>
               )}
 
               <Button
                 variant="outline"
-                className="bg-white/40 hover:bg-white/50/30 backdrop-blur-sm text-white border border-white/20"
+                className="bg-white/40 hover:bg-white/50/30 backdrop-blur-sm text-white border border-white/20 p-1.5"
               >
-                <BsMessenger className="w-5 h-5" />
+                <BsMessenger className="w-4 h-4" />
               </Button>
             </div>
           </div>

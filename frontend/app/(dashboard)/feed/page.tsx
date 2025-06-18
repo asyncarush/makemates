@@ -188,7 +188,7 @@ function Page() {
                       </div>
                     </Link>
                   </HoverCardTrigger>
-                  <HoverCardContent className="w-72 p-0 overflow-hidden rounded-lg border border-gray-200/90 dark:border-gray-700/70 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
+                  <HoverCardContent className="w-72 overflow-hidden rounded-lg border-2 border-gray-200/90 dark:border-gray-700/70 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm z-50">
                     <div className="bg-gray-100/90 dark:bg-gray-800/90 h-16" />
                     <div className="p-3 -mt-8">
                       <div className="flex items-center gap-3">

@@ -69,9 +69,9 @@ function Page() {
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="relative w-20 h-20">
-                <Image
+          <Image
                   src={currentUser?.img || "/avatar.png"}
-                  alt="Profile"
+            alt="Profile"
                   className="rounded-2xl object-cover ring-2 ring-white/50 dark:ring-gray-600/50"
                   fill
                   sizes="80px"
@@ -133,8 +133,8 @@ function Page() {
                 placeholder="Tell us about yourself..."
               />
             </div>
+            </div>
           </div>
-        </div>
 
         {/* Privacy Settings */}
         <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-6 border border-gray-200/50 dark:border-gray-600/40">
@@ -154,29 +154,29 @@ function Page() {
               <Switch />
             </div>
             <div className="flex items-center justify-between p-4 bg-gray-100/90 dark:bg-gray-800/90 rounded-xl">
-              <div>
+                <div>
                 <h3 className="font-medium text-gray-900 dark:text-gray-100">
                   Show Online Status
-                </h3>
+                      </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Let others see when you're online
                 </p>
               </div>
               <Switch />
-            </div>
+                    </div>
             <div className="flex items-center justify-between p-4 bg-gray-100/90 dark:bg-gray-800/90 rounded-xl">
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-gray-100">
                   Allow Messages
-                </h3>
+                      </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Receive messages from other users
                 </p>
-              </div>
+                      </div>
               <Switch />
-            </div>
-          </div>
-        </div>
+                    </div>
+                  </div>
+                </div>
 
         {/* Notification Settings */}
         <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-6 border border-gray-200/50 dark:border-gray-600/40">
@@ -196,29 +196,29 @@ function Page() {
               <Switch />
             </div>
             <div className="flex items-center justify-between p-4 bg-gray-100/90 dark:bg-gray-800/90 rounded-xl">
-              <div>
+                <div>
                 <h3 className="font-medium text-gray-900 dark:text-gray-100">
                   Email Notifications
-                </h3>
+                      </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Receive notifications via email
                 </p>
               </div>
               <Switch />
-            </div>
+                    </div>
             <div className="flex items-center justify-between p-4 bg-gray-100/90 dark:bg-gray-800/90 rounded-xl">
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-gray-100">
                   Message Notifications
-                </h3>
+                      </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Notify when you receive new messages
                 </p>
               </div>
               <Switch />
-            </div>
-          </div>
-        </div>
+                    </div>
+                  </div>
+                </div>
 
         {/* Danger Zone */}
         <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-6 border border-red-200/90 dark:border-red-800/70">

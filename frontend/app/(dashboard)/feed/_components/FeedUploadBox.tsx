@@ -21,6 +21,7 @@ import { useFileUploader } from "@/hooks/useFileUploader";
 import AIResponseLoader from "@/components/AIResponseLoader";
 import { BiSolidImageAdd } from "react-icons/bi";
 import { IoMdClose, IoMdSend } from "react-icons/io";
+import { MdCloudUpload } from "react-icons/md";
 
 interface PreviewURL {
   type: string;
@@ -201,107 +202,122 @@ function FeedUploadBox() {
     <Dialog>
       <DialogTrigger asChild className="border-none outline-none">
         <Button
-          variant="ghost"
-          className="hover:bg-transparent outline-none border-none ring-0"
+          variant="link"
+          className="outline-none border-none ring-0 rounded-full p-2 transition-all hover:scale-110 duration-100"
         >
-          <BiSolidImageAdd className="w-6 h-6 text-gray-200 hover:text-gray-50 outline-none border-none" />
+          <BiSolidImageAdd className="w-6 h-6 text-white dark:text-gray-300 outline-none border-none transition-colors" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-lg border border-gray-200/50 dark:border-gray-700/50">
-        <DialogTitle className="flex gap-8 text-gray-900 dark:text-gray-100">
-          <div>Share new Post</div>
+      <DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl border border-gray-200/50 dark:border-gray-700/50 max-w-lg">
+        <DialogTitle className="flex items-center justify-between text-gray-900 dark:text-gray-100 text-base font-semibold mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
+              <BiSolidImageAdd className="w-3 h-3 text-white" />
+            </div>
+            Share New Post
+          </div>
           <div>{captionLoader && <AIResponseLoader />}</div>
         </DialogTitle>
         <form
           ref={formRef}
           onSubmit={(e) => handleUploadPost(e)}
           encType="multipart/form-data"
+          className="space-y-3"
         >
-          <textarea
-            rows={3}
-            cols={60}
-            value={desc}
-            placeholder="What's on your mind?"
-            className="bg-transparent w-full outline-none resize-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-            onChange={(e) => setDesc(e.target.value)}
-          />
+          <div className="relative">
+            <textarea
+              rows={3}
+              value={desc}
+              placeholder="What's on your mind? Share your thoughts..."
+              className="bg-gray-50/80 dark:bg-gray-800/80 w-full outline-none resize-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg p-3 border border-gray-200/50 dark:border-gray-600/50 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors text-sm"
+              onChange={(e) => setDesc(e.target.value)}
+            />
+          </div>
+
           {/* caption suggestions area */}
           {captions.length > 0 && (
-            <div className="mb-5 flex flex-wrap gap-2">
-              {captions.map((caption) => {
-                return (
-                  <p
-                    onClick={(e) => setDesc(e.currentTarget.innerText)}
-                    key={caption}
-                    className="text-[12px] bg-gradient-to-r from-blue-500 to-purple-500 text-white w-max px-2 py-0.5 rounded-lg hover:scale-105 transition-all duration-150 cursor-pointer"
-                  >
-                    {caption}
-                  </p>
-                );
-              })}
+            <div className="mb-3">
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Suggested captions:
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {captions.map((caption) => {
+                  return (
+                    <button
+                      onClick={(e) => setDesc(e.currentTarget.innerText)}
+                      key={caption}
+                      className="text-xs bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-2 py-1 rounded-full hover:from-indigo-600 hover:to-purple-600 hover:scale-105 transition-all duration-200 cursor-pointer shadow-sm"
+                    >
+                      {caption}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 
-          <div>
-            <div className="flex max-h-[200px] gap-1 overflow-y-auto">
-              {previewUrls &&
-                previewUrls.map((preview, index) => (
+          {/* Preview Images/Videos */}
+          {previewUrls && previewUrls.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                Preview:
+              </p>
+              <div className="flex gap-1 overflow-x-auto pb-1">
+                {previewUrls.map((preview, index) => (
                   <div
                     key={index}
-                    className="relative my-2 w-[80px] h-[100px] rounded-lg"
+                    className="relative w-16 h-20 rounded-lg overflow-hidden border border-gray-200/50 dark:border-gray-600/50 flex-shrink-0"
                   >
                     {preview.type === "image" ? (
                       <Image
                         src={preview.url}
                         alt={`preview-${index}`}
-                        className="object-cover rounded-lg"
+                        className="object-cover"
                         fill
                         loading="lazy"
-                        // priority={index === 0}
                       />
                     ) : (
                       <video
                         ref={videoRef}
                         src={preview.url}
-                        width="300"
                         muted
                         preload="metadata"
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
-                        className="object-cover rounded-lg w-18 h-24"
-                        //
+                        className="object-cover w-full h-full"
                       />
                     )}
+                    <div className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                      <IoMdClose className="w-2 h-2 text-white" />
+                    </div>
                   </div>
                 ))}
+              </div>
             </div>
+          )}
 
-            {/* // INpt box for file uploader */}
-
-            <div className="flex items-center justify-center w-full ">
+          {/* File Upload Area */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              Add media:
+            </p>
+            <div className="flex items-center justify-center w-full">
               <label
                 htmlFor="dropzone-file"
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm hover:bg-gray-50/80 dark:hover:bg-gray-600/80 transition-colors"
+                className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer bg-gray-50/80 dark:bg-gray-800/80 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-200 group"
               >
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <svg
-                    className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 20 16"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                    />
-                  </svg>
-                  <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span> or
-                    drag and drop
+                <div className="flex flex-col items-center justify-center pt-3 pb-4">
+                  <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <MdCloudUpload className="w-4 h-4 text-white" />
+                  </div>
+                  <p className="mb-1 text-xs text-gray-600 dark:text-gray-400">
+                    <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                      Click to upload
+                    </span>{" "}
+                    or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                    Images and videos up to 100MB
                   </p>
                 </div>
                 <input
@@ -311,57 +327,55 @@ function FeedUploadBox() {
                   className="hidden"
                   onChange={handleFileChange}
                   accept="image/png, image/jpeg, image/jpg, video/*"
+                  multiple
                 />
               </label>
             </div>
-
-            {/* <input
-              multiple={true}
-              type="file"
-              name="postImage"
-              onChange={handleFileChange}
-              accept="image/png, image/jpeg, image/jpg, video/*"
-            /> */}
           </div>
-          <DialogFooter className="mt-4 flex gap-2">
+
+          <DialogFooter className="mt-4 flex gap-2 pt-3 border-t border-gray-200/50 dark:border-gray-700/50">
             <DialogClose asChild>
               <Button
                 onClick={() => clearFileInput()}
                 ref={closeButton}
-                variant={"destructive"}
-                size={"sm"}
-                className="flex items-center gap-2 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold shadow-md px-5 py-2 transition-all duration-150 hover:from-red-600 hover:to-pink-600 active:scale-95"
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1 rounded-full border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 px-4 py-1.5 text-xs"
               >
-                <IoMdClose className="w-4 h-4" />
+                <IoMdClose className="w-3 h-3" />
                 Cancel
               </Button>
             </DialogClose>
             <Button
               type="submit"
-              variant={"default"}
-              size={"sm"}
-              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow-md px-5 py-2 transition-all duration-150 hover:from-blue-600 hover:to-purple-600 active:scale-95"
+              variant="default"
+              size="sm"
+              disabled={isUploading}
+              className="flex items-center gap-1 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium shadow-lg hover:from-indigo-600 hover:to-purple-600 hover:shadow-xl transition-all duration-200 px-4 py-1.5 text-xs disabled:opacity-50"
             >
-              <IoMdSend className="w-4 h-4" />
-              Share
+              <IoMdSend className="w-3 h-3" />
+              {isUploading ? "Sharing..." : "Share Post"}
             </Button>
           </DialogFooter>
         </form>
-        <div className="w-full flex flex-col justify-center">
-          {isUploading && (
-            <span className="text-center font-medium text-gray-900 dark:text-gray-100">
-              Post is Uploading...
-            </span>
-          )}
-          {isUploading && (
-            <div className="flex items-center gap-1">
-              <Progress value={progress} />
-              <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+
+        {/* Upload Progress */}
+        {isUploading && (
+          <div className="mt-3 space-y-2 p-3 bg-gray-50/80 dark:bg-gray-800/80 rounded-lg border border-gray-200/50 dark:border-gray-600/50">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                Uploading post...
+              </span>
+              <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                 {progress}%
               </span>
             </div>
-          )}
-        </div>
+            <Progress
+              value={progress}
+              className="h-1.5 bg-gray-200 dark:bg-gray-700"
+            />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

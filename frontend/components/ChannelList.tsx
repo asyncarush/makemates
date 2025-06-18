@@ -1,5 +1,12 @@
 import { memo, useState } from "react";
-import { Users, TrendingUp, Bookmark, Plus } from "lucide-react";
+import {
+  Users,
+  TrendingUp,
+  Bookmark,
+  Plus,
+  UserPlus,
+  UserCheck,
+} from "lucide-react";
 
 const ChannelsList = memo(() => {
   const [channels, setChannels] = useState([
@@ -51,22 +58,22 @@ const ChannelsList = memo(() => {
   };
 
   return (
-    <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-4 mb-4 border border-gray-200/50 dark:border-gray-600/40">
-      <div className="flex items-center mb-4">
-        <Users className="text-blue-500 dark:text-blue-400 mr-2" size={18} />
+    <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-3 mb-4 border border-gray-200/50 dark:border-gray-600/40">
+      <div className="flex items-center mb-3">
+        <Users className="text-blue-500 dark:text-blue-400 mr-2" size={16} />
         <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
           Popular Channels
         </h2>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {channels.map((channel) => (
           <div
             key={channel.id}
-            className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-100/90 dark:hover:bg-gray-800/90 transition-colors"
+            className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100/90 dark:hover:bg-gray-800/90 transition-colors"
           >
             <div className="flex items-center">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-lg">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-sm">
                 {channel.avatar}
               </div>
               <div className="ml-2">
@@ -74,28 +81,33 @@ const ChannelsList = memo(() => {
                   {channel.name}
                 </p>
                 <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                  <TrendingUp size={12} className="mr-1" />
+                  <TrendingUp size={10} className="mr-1" />
                   <span>{channel.followers} followers</span>
                 </div>
               </div>
             </div>
             <button
               onClick={() => toggleFollow(channel.id)}
-              className={`text-xs px-3 py-1.5 rounded-full transition-all duration-200 ${
+              className={`p-1.5 rounded-full transition-all duration-200 ${
                 channel.isFollowing
                   ? "bg-blue-100/90 dark:bg-blue-900/90 text-blue-600 dark:text-blue-400 hover:bg-blue-200/90 dark:hover:bg-blue-800/90"
                   : "bg-gray-100/90 dark:bg-gray-800/90 text-gray-600 dark:text-gray-300 hover:bg-gray-200/90 dark:hover:bg-gray-700/90"
               }`}
+              title={channel.isFollowing ? "Unfollow" : "Follow"}
             >
-              {channel.isFollowing ? "Following" : "Follow"}
+              {channel.isFollowing ? (
+                <UserCheck className="w-3.5 h-3.5" />
+              ) : (
+                <UserPlus className="w-3.5 h-3.5" />
+              )}
             </button>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 pt-3 border-t border-gray-200/90 dark:border-gray-700/70">
-        <button className="text-sm text-blue-500 dark:text-blue-400 flex items-center hover:text-blue-600 dark:hover:text-blue-300 rounded-lg p-2 hover:bg-gray-100/90 dark:hover:bg-gray-800/90 transition-colors">
-          <Plus size={16} className="mr-1" />
+      <div className="mt-3 pt-2 border-t border-gray-200/90 dark:border-gray-700/70">
+        <button className="text-xs text-blue-500 dark:text-blue-400 flex items-center hover:text-blue-600 dark:hover:text-blue-300 rounded-lg p-1.5 hover:bg-gray-100/90 dark:hover:bg-gray-800/90 transition-colors">
+          <Plus size={14} className="mr-1" />
           Discover more channels
         </button>
       </div>
