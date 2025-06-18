@@ -13,9 +13,9 @@ export const AIResponseLoader = () => {
   }, []);
 
   return (
-    <div className="relative inline-flex items-center justify-center w-[110px] font-semibold">
+    <div className="relative items-center justify-center font-semibold">
       {/* Main container - smaller and more compact */}
-      <div className="relative z-10 flex items-center w-52 px-2 py-1 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-400 shadow-lg">
+      <div className="relative z-10 flex items-center p-1 rounded-2xl">
         {/* Animated dots - smaller size */}
         <div className="flex items-center space-x-1 mr-2">
           {[0, 1, 2].map((dot) => (

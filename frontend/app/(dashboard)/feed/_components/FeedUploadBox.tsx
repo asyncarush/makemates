@@ -208,15 +208,14 @@ function FeedUploadBox() {
           <BiSolidImageAdd className="w-6 h-6 text-white dark:text-gray-300 outline-none border-none transition-colors" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl border border-gray-200/50 dark:border-gray-700/50 max-w-lg">
-        <DialogTitle className="flex items-center justify-between text-gray-900 dark:text-gray-100 text-base font-semibold mb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <BiSolidImageAdd className="w-3 h-3 text-white" />
-            </div>
+      <DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl border border-gray-200/50 dark:border-gray-700/50 max-w-lg ">
+        <DialogTitle className="flex items-center justify-start gap-4 text-gray-900 dark:text-gray-100 text-base font-semibold mb-3">
+          <div className="text-xs p-2 bg-gradient-to-r rounded-full from-indigo-500 to-purple-500  flex items-center justify-center">
+            <BiSolidImageAdd className="w-4 h-4 mr-1 rounded-full text-white" />
+            {"  "}
             Share New Post
           </div>
-          <div>{captionLoader && <AIResponseLoader />}</div>
+          {captionLoader && <AIResponseLoader />}
         </DialogTitle>
         <form
           ref={formRef}
@@ -287,7 +286,7 @@ function FeedUploadBox() {
                         className="object-cover w-full h-full"
                       />
                     )}
-                    <div className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                    <div className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center cursor-pointer hover:scale-105 duration-150">
                       <IoMdClose className="w-2 h-2 text-white" />
                     </div>
                   </div>
