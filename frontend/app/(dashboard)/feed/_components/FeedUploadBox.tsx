@@ -207,8 +207,8 @@ function FeedUploadBox() {
           <BiSolidImageAdd className="w-6 h-6 text-gray-200 hover:text-gray-50 outline-none border-none" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-white/90 backdrop-blur-sm shadow-lg">
-        <DialogTitle className="flex gap-8">
+      <DialogContent className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+        <DialogTitle className="flex gap-8 text-gray-900 dark:text-gray-100">
           <div>Share new Post</div>
           <div>{captionLoader && <AIResponseLoader />}</div>
         </DialogTitle>
@@ -222,7 +222,7 @@ function FeedUploadBox() {
             cols={60}
             value={desc}
             placeholder="What's on your mind?"
-            className="bg-transparent w-full outline-none resize-none"
+            className="bg-transparent w-full outline-none resize-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
             onChange={(e) => setDesc(e.target.value)}
           />
           {/* caption suggestions area */}
@@ -233,7 +233,7 @@ function FeedUploadBox() {
                   <p
                     onClick={(e) => setDesc(e.currentTarget.innerText)}
                     key={caption}
-                    className="text-[12px] bg-gradient-to-r from-blue-500 to-purple-500 text-white w-max px-2 py-0.5 rounded-xl hover:scale-105 transition-all duration-150 cursor-pointer"
+                    className="text-[12px] bg-gradient-to-r from-blue-500 to-purple-500 text-white w-max px-2 py-0.5 rounded-lg hover:scale-105 transition-all duration-150 cursor-pointer"
                   >
                     {caption}
                   </p>
@@ -281,7 +281,7 @@ function FeedUploadBox() {
             <div className="flex items-center justify-center w-full ">
               <label
                 htmlFor="dropzone-file"
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white/80 backdrop-blur-sm"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm hover:bg-gray-50/80 dark:hover:bg-gray-600/80 transition-colors"
               >
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <svg
@@ -349,14 +349,16 @@ function FeedUploadBox() {
         </form>
         <div className="w-full flex flex-col justify-center">
           {isUploading && (
-            <span className="text-center font-medium">
+            <span className="text-center font-medium text-gray-900 dark:text-gray-100">
               Post is Uploading...
             </span>
           )}
           {isUploading && (
             <div className="flex items-center gap-1">
               <Progress value={progress} />
-              <span className="font-semibold text-sm">{progress}%</span>
+              <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+                {progress}%
+              </span>
             </div>
           )}
         </div>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 const RenderMedia = ({ mediaUrls }: { mediaUrls: string[] }) => {
   const [media, setMedia] = useState<string[]>(mediaUrls || []);
@@ -14,12 +15,14 @@ const RenderMedia = ({ mediaUrls }: { mediaUrls: string[] }) => {
 
   // Function to open modal with specific media index
   const openMediaModal = (index: number) => {
+    // console.log("Opening modal for index:", index);
     setSelectedMediaIndex(index);
     setShowModal(true);
   };
 
   // Function to close modal
   const closeModal = () => {
+    // console.log("Closing modal");
     setShowModal(false);
   };
 
@@ -57,14 +60,17 @@ const RenderMedia = ({ mediaUrls }: { mediaUrls: string[] }) => {
     <>
       {mediaDisplay}
 
-      {/* Full-screen Modal */}
-      {showModal && (
-        <MediaModal
-          mediaUrls={media}
-          initialIndex={selectedMediaIndex}
-          onClose={closeModal}
-        />
-      )}
+      {/* Full-screen Modal using Portal */}
+      {showModal &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <MediaModal
+            mediaUrls={media}
+            initialIndex={selectedMediaIndex}
+            onClose={closeModal}
+          />,
+          document.body
+        )}
     </>
   );
 };
@@ -87,11 +93,19 @@ const OneMedia = ({
 }) => {
   const type = mediaType(mediaUrl);
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // e.stopPropagation();
+    console.log("OneMedia clicked");
+    onMediaClick();
+  };
+
   if (type === "video") {
     return (
       <div
-        className="relative w-full max-w-full overflow-hidden  bg-black aspect-video cursor-pointer"
-        onClick={onMediaClick}
+        className="relative w-full max-w-full overflow-hidden bg-black aspect-video cursor-pointer"
+        onClick={handleClick}
+        style={{ pointerEvents: "auto" }}
       >
         <video
           src={mediaUrl}
@@ -106,15 +120,18 @@ const OneMedia = ({
   return (
     <div
       className="relative overflow-hidden bg-gray-100 w-full max-h-[600px] cursor-pointer"
-      onClick={onMediaClick}
+      onClick={handleClick}
+      style={{ pointerEvents: "auto" }}
     >
       <Image
         src={mediaUrl}
         alt="Media content"
         width={500}
         height={500}
-        className="w-full h-full object-contain"
+        className="w-full h-full object-contain cursor-pointer"
         priority
+        onClick={handleClick}
+        style={{ pointerEvents: "auto" }}
       />
     </div>
   );
@@ -273,16 +290,19 @@ const MediaItem = ({
 }) => {
   const type = mediaType(mediaUrl);
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClick && onClick();
+  };
+
   if (type === "video") {
     return (
       <div
         className={`relative overflow-hidden bg-black ${className} ${
           onClick ? "cursor-pointer" : ""
         }`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onClick && onClick();
-        }}
+        onClick={handleClick}
       >
         <video
           src={mediaUrl}
@@ -310,41 +330,18 @@ const MediaItem = ({
       className={`relative overflow-hidden bg-gray-100 ${className} ${
         onClick ? "cursor-pointer" : ""
       }`}
-      onClick={onClick}
+      onClick={handleClick}
     >
       <Image
         src={mediaUrl}
         alt="Media content"
         fill
-        className="object-cover"
+        className="object-cover cursor-pointer"
         sizes="(max-width: 768px) 100vw, 50vw"
+        onClick={handleClick}
       />
     </div>
   );
-};
-
-// Helper function to get image dimensions
-const getImageDimension = async (src: string) => {
-  if (!src) return { width: 500, height: 500 };
-
-  try {
-    const img = new window.Image();
-    img.src = src;
-
-    // Wait for the image to load
-    return new Promise<{ width: number; height: number }>((resolve) => {
-      img.onload = () => {
-        resolve({ width: img.width, height: img.height });
-      };
-      img.onerror = () => {
-        // If image fails to load, return default dimensions
-        resolve({ width: 500, height: 500 });
-      };
-    });
-  } catch (error) {
-    // If any error occurs, return default dimensions
-    return { width: 500, height: 500 };
-  }
 };
 
 // Modal component for full-screen media view
@@ -378,12 +375,14 @@ const MediaModal = ({
 
     window.addEventListener("keydown", handleKeyDown);
 
-    // Prevent scrolling while modal is open
+    // Prevent scrolling while modal is open and ensure body positioning
     document.body.style.overflow = "hidden";
+    document.body.style.position = "relative";
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
+      document.body.style.position = "";
     };
   }, [onClose, mediaUrls.length]);
 
@@ -396,10 +395,26 @@ const MediaModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
+    <div
+      className="fixed inset-0 z-[9999] bg-black bg-opacity-95 flex flex-col items-center justify-center"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        margin: 0,
+        padding: 0,
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       {/* Close button */}
       <button
-        className="absolute top-4 right-4 p-2 text-white bg-black bg-opacity-50 rounded-full z-10"
+        className="absolute top-4 right-4 p-2 text-white bg-black bg-opacity-50 rounded-full z-10 hover:bg-opacity-70 transition-all duration-200"
         onClick={onClose}
       >
         <svg
@@ -421,7 +436,7 @@ const MediaModal = ({
       {mediaUrls.length > 1 && (
         <>
           <button
-            className="absolute left-4 p-3 text-white bg-black bg-opacity-50 rounded-full z-10"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 text-white bg-black bg-opacity-50 rounded-full z-10 hover:bg-opacity-70 transition-all duration-200"
             onClick={goToPrevious}
           >
             <svg
@@ -439,7 +454,7 @@ const MediaModal = ({
             </svg>
           </button>
           <button
-            className="absolute right-4 p-3 text-white bg-black bg-opacity-50 rounded-full z-10"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 text-white bg-black bg-opacity-50 rounded-full z-10 hover:bg-opacity-70 transition-all duration-200"
             onClick={goToNext}
           >
             <svg
@@ -459,17 +474,38 @@ const MediaModal = ({
         </>
       )}
 
-      {/* Media content */}
-      <div className="w-full h-full flex items-center justify-center p-4">
+      {/* Media content container */}
+      <div
+        className="w-full h-full flex items-center justify-center p-4"
+        style={{
+          maxWidth: "100vw",
+          maxHeight: "100vh",
+          boxSizing: "border-box",
+        }}
+      >
         {type === "video" ? (
           <video
             src={mediaUrls[currentIndex]}
             controls
             autoPlay
             className="max-w-full max-h-full object-contain"
+            style={{
+              width: "auto",
+              height: "auto",
+              maxWidth: "calc(100vw - 2rem)",
+              maxHeight: "calc(100vh - 2rem)",
+            }}
           />
         ) : (
-          <div className="relative w-full h-full flex items-center justify-center">
+          <div
+            className="relative flex items-center justify-center"
+            style={{
+              width: "100%",
+              height: "100%",
+              maxWidth: "calc(100vw - 2rem)",
+              maxHeight: "calc(100vh - 2rem)",
+            }}
+          >
             <Image
               src={mediaUrls[currentIndex]}
               alt="Media content"

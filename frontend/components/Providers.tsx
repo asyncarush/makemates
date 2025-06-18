@@ -3,10 +3,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { ThemeProvider } from "@/components/theme-provider";
 
-import AuthContextProvider from "../context/AuthContext";
-import ChatContextProvider from "../context/ChatContext";
-import LoadingProvider from "../context/LoadingContext";
+import AuthContextProvider from "@/app/context/AuthContext";
+import ChatContextProvider from "@/app/context/ChatContext";
+import LoadingProvider from "@/app/context/LoadingContext";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -79,19 +80,21 @@ export default function Providers({ children }: ProvidersProps) {
   // Show loading spinner while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-blue-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-indigo-400"></div>
       </div>
     );
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthContextProvider>
-        <ChatContextProvider>
-          <LoadingProvider>{children}</LoadingProvider>
-        </ChatContextProvider>
-      </AuthContextProvider>
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <QueryClientProvider client={queryClient}>
+        <AuthContextProvider>
+          <ChatContextProvider>
+            <LoadingProvider>{children}</LoadingProvider>
+          </ChatContextProvider>
+        </AuthContextProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

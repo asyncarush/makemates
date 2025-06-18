@@ -11,7 +11,9 @@ const poppins = Poppins({
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`flex flex-col ${poppins.className} min-h-screen`}>
+    <div
+      className={`flex flex-col ${poppins.className} min-h-screen bg-gradient-main`}
+    >
       <div className="sticky top-0 z-50 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Navbar />

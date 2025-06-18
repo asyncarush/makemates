@@ -56,12 +56,12 @@ function Page() {
   }, [currentUser]);
 
   return currentUser ? (
-    <div className="flex gap-8 max-w-7xl mx-auto ">
+    <div className="flex gap-8 max-w-7xl mx-auto">
       {/* Left Sidebar */}
       <div className="w-[260px] flex flex-col sticky gap-4 top-[100px] h-fit">
         {/* Profile Card */}
-        <div className="bg-white/40 shadow-sm rounded-tl-lg overflow-hidden">
-          <div className="h-16 bg-gradient-to-r from-blue-600 via-blue-500 to-teal-400" />
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-lg rounded-lg overflow-hidden border border-gray-200/50 dark:border-gray-600/40">
+          <div className="h-16 bg-gradient-to-r from-blue-600 via-blue-500 to-teal-400 dark:from-gray-900 dark:via-indigo-900 dark:to-purple-900" />
           <div className="px-3 pb-3 -mt-8">
             <div className="relative w-16 h-16 mx-auto mb-2">
               <Image
@@ -73,10 +73,10 @@ function Page() {
               />
             </div>
             <div className="text-center">
-              <h3 className="font-medium text-gray-900 text-sm">
+              <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                 {currentUser?.name || "User"}
               </h3>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 @{currentUser?.name?.toLowerCase().replace(/\s+/g, "")}
               </p>
             </div>
@@ -84,21 +84,21 @@ function Page() {
         </div>
 
         {/* Navigation Menu */}
-        <div className="bg-white/40 shadow-sm p-2">
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-lg rounded-lg p-2 border border-gray-200/50 dark:border-gray-600/40">
           <nav className="space-y-0.5">
             <Link
               href="/chat"
-              className="flex items-center gap-2 px-3 py-1.5 text-gray-700 hover:bg-gradient-to-r from-indigo-50 to-purple-50 rounded-md group transition-all duration-200 text-sm"
+              className="flex items-center gap-2 px-3 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100/90 dark:hover:bg-gray-800/90 rounded-xl group transition-all duration-200 text-sm"
             >
-              <BsMessenger className="w-4 h-4 text-indigo-600" />
+              <BsMessenger className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <span className="font-medium">Messages</span>
             </Link>
             <Link
               href="/profile/liked"
-              className="flex items-center gap-2 px-3 py-1.5 text-gray-700 hover:bg-gradient-to-r from-indigo-50 to-purple-50 rounded-md group transition-all duration-200 text-sm"
+              className="flex items-center gap-2 px-3 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100/90 dark:hover:bg-gray-800/90 rounded-xl group transition-all duration-200 text-sm"
             >
               <svg
-                className="w-4 h-4 text-pink-500"
+                className="w-4 h-4 text-pink-500 dark:text-pink-400"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -108,10 +108,10 @@ function Page() {
             </Link>
             <Link
               href="/profile/saved"
-              className="flex items-center gap-2 px-3 py-1.5 text-gray-700 hover:bg-gradient-to-r from-indigo-50 to-purple-50 rounded-md group transition-all duration-200 text-sm"
+              className="flex items-center gap-2 px-3 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100/90 dark:hover:bg-gray-800/90 rounded-xl group transition-all duration-200 text-sm"
             >
               <svg
-                className="w-4 h-4 text-yellow-500"
+                className="w-4 h-4 text-yellow-500 dark:text-yellow-400"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -133,14 +133,14 @@ function Page() {
 
       {/* Right Sidebar - Following */}
       <div className="w-[280px] flex flex-col gap-3 sticky top-[100px] h-fit">
-        <div className="bg-white/40 backdrop-blur-sm bg-opacity-95 rounded-tr-lg shadow-sm p-3">
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-3 border border-gray-200/50 dark:border-gray-600/40">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold text-gray-800 flex items-center gap-1.5 text-sm">
-              <span className="h-1 w-1 rounded-full bg-indigo-500"></span>
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5 text-sm">
+              <span className="h-1 w-1 rounded-full bg-indigo-500 dark:bg-indigo-400"></span>
               Following
             </h4>
             {friendsList.length > 0 && (
-              <span className="text-xs bg-indigo-50 text-indigo-600 rounded-full px-1.5 py-0.5">
+              <span className="text-xs bg-indigo-100/90 dark:bg-indigo-900/90 text-indigo-600 dark:text-indigo-400 rounded-full px-1.5 py-0.5">
                 {friendsList.length}
               </span>
             )}
@@ -153,9 +153,9 @@ function Page() {
                   <HoverCardTrigger asChild>
                     <Link
                       href={`/profile/${friend.follow_id}`}
-                      className="flex items-center gap-2 py-1.5 px-2 hover:bg-gray-50 rounded-md transition-all duration-200 group"
+                      className="flex items-center gap-2 py-1.5 px-2 hover:bg-gray-100/90 dark:hover:bg-gray-800/90 rounded-xl transition-all duration-200 group"
                     >
-                      <div className="relative w-8 h-8 rounded-full overflow-hidden ring-1 ring-white">
+                      <div className="relative w-8 h-8 rounded-full overflow-hidden ring-1 ring-white dark:ring-gray-700">
                         <Image
                           src={friend.profileImage || "/avatar.png"}
                           alt={friend.name}
@@ -165,27 +165,31 @@ function Page() {
                         />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-800 group-hover:text-indigo-600 transition-colors text-sm">
+                        <p className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors text-sm">
                           {friend.name}
                         </p>
                         <div className="flex items-center">
                           {isUserOnline(friend.follow_id) ? (
                             <>
                               <span className="h-1 w-1 rounded-full bg-green-500 mr-1"></span>
-                              <p className="text-xs text-gray-500">Online</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Online
+                              </p>
                             </>
                           ) : (
                             <>
                               <span className="h-1 w-1 rounded-full bg-red-500 mr-1"></span>
-                              <p className="text-xs text-gray-500">Offline</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Offline
+                              </p>
                             </>
                           )}
                         </div>
                       </div>
                     </Link>
                   </HoverCardTrigger>
-                  <HoverCardContent className="w-72 p-0 overflow-hidden rounded-xl border border-gray-100">
-                    <div className="bg-gradient-to-r from-indigo-50 to-blue-50 h-16" />
+                  <HoverCardContent className="w-72 p-0 overflow-hidden rounded-lg border border-gray-200/90 dark:border-gray-700/70 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
+                    <div className="bg-gray-100/90 dark:bg-gray-800/90 h-16" />
                     <div className="p-3 -mt-8">
                       <div className="flex items-center gap-3">
                         <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-white shadow-sm">
