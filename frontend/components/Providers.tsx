@@ -3,11 +3,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { ThemeProvider } from "../../components/theme-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 
-import AuthContextProvider from "../context/AuthContext";
-import ChatContextProvider from "../context/ChatContext";
-import LoadingProvider from "../context/LoadingContext";
+import AuthContextProvider from "@/app/context/AuthContext";
+import ChatContextProvider from "@/app/context/ChatContext";
+import LoadingProvider from "@/app/context/LoadingContext";
 
 interface ProvidersProps {
   children: React.ReactNode;

@@ -63,9 +63,9 @@ function Post({
   };
   return (
     <div
-      className="bg-white/95 relative dark:bg-gray-900/95 backdrop-blur-sm shadow-lg overflow-hidden border border-gray-200/50 dark:border-gray-600/40 rounded-lg"
+      className="bg-white/80 relative dark:bg-gray-900/95 backdrop-blur-sm shadow-lg overflow-hidden border border-gray-200/50 dark:border-gray-600/40 rounded-lg"
       onClick={(e) => {
-        console.log("Post container clicked");
+        // Handle post container click if needed
       }}
     >
       {/* Post Header */}
@@ -113,7 +113,7 @@ function Post({
         rawMediaUrls.length > 0 &&
         rawMediaUrls[0] !== null &&
         rawMediaUrls[0] !== undefined && (
-          <div className="relative" style={{ pointerEvents: "auto" }}>
+          <div className="relative">
             <RenderMedia mediaUrls={rawMediaUrls} />
           </div>
         )}

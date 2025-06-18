@@ -15,14 +15,14 @@ const RenderMedia = ({ mediaUrls }: { mediaUrls: string[] }) => {
 
   // Function to open modal with specific media index
   const openMediaModal = (index: number) => {
-    console.log("Opening modal for index:", index);
+    // console.log("Opening modal for index:", index);
     setSelectedMediaIndex(index);
     setShowModal(true);
   };
 
   // Function to close modal
   const closeModal = () => {
-    console.log("Closing modal");
+    // console.log("Closing modal");
     setShowModal(false);
   };
 
@@ -379,27 +379,10 @@ const MediaModal = ({
     document.body.style.overflow = "hidden";
     document.body.style.position = "relative";
 
-    // Create backdrop element to ensure proper layering
-    const backdrop = document.createElement("div");
-    backdrop.style.position = "fixed";
-    backdrop.style.top = "0";
-    backdrop.style.left = "0";
-    backdrop.style.width = "100vw";
-    backdrop.style.height = "100vh";
-    backdrop.style.zIndex = "9998";
-    backdrop.style.backgroundColor = "rgba(0, 0, 0, 0.95)";
-    backdrop.id = "media-modal-backdrop";
-
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
       document.body.style.position = "";
-
-      // Remove backdrop if it exists
-      const existingBackdrop = document.getElementById("media-modal-backdrop");
-      if (existingBackdrop) {
-        existingBackdrop.remove();
-      }
     };
   }, [onClose, mediaUrls.length]);
 

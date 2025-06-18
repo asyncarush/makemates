@@ -4,7 +4,7 @@ import "./globals.css";
 
 import { Toaster } from "react-hot-toast";
 
-import Providers from "./components/Providers";
+import Providers from "@/components/Providers";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
