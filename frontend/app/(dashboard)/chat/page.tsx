@@ -304,61 +304,76 @@ const Page = () => {
                 <Button
                   onClick={() => initiateCall(activeChat.id)}
                   variant="outline"
-                  className="bg-white/80 dark:bg-gray-700/80 hover:bg-gray-100/90 dark:hover:bg-gray-600/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/40 rounded-xl"
+                  className="flex gap-2 bg-white/80 dark:bg-gray-700/80 hover:bg-gray-100/90 dark:hover:bg-gray-600/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/40 rounded-xl"
                   disabled={isWaitingForResponse}
                 >
                   <VideoIcon className="w-5 h-5" />
+                  <span className="hidden sm:inline">Video</span>
                 </Button>
-                <button className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200/90 dark:hover:bg-gray-700/90 rounded-xl transition-all duration-200">
+                <Button
+                  variant="outline"
+                  className="flex gap-2 bg-white/80 dark:bg-gray-700/80 hover:bg-gray-100/90 dark:hover:bg-gray-600/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/40 rounded-xl"
+                  disabled={isWaitingForResponse}
+                >
                   <AudioLinesIcon className="w-5 h-5" />
                   <span className="hidden sm:inline">Audio</span>
-                </button>
+                </Button>
               </div>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-100/95 dark:bg-gray-800/95">
-              <div className="space-y-4">
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${
-                      message.senderId === currentUser?.id
-                        ? "justify-end"
-                        : "justify-start"
-                    }`}
-                  >
+            <div className="flex-1 overflow-y-auto px-6 py-4 bg-gradient-to-br from-gray-100/90 via-white/80 to-blue-100/60 dark:from-gray-900/90 dark:via-gray-800/90 dark:to-blue-950/60">
+              <div className="space-y-2">
+                {messages.map((message, index) => {
+                  const isOwn =
+                    String(message.senderId) === String(currentUser?.id);
+                  return (
                     <div
-                      className={`max-w-[70%] px-4 py-2 rounded-2xl ${
-                        message.senderId === currentUser?.id
-                          ? "bg-indigo-600 text-white"
-                          : "bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-gray-100 shadow-sm backdrop-blur-sm"
+                      key={index}
+                      className={`flex ${
+                        isOwn ? "justify-end" : "justify-start"
                       }`}
                     >
-                      <p className="break-words">{message.text}</p>
-                      <p
-                        className={`text-xs mt-1 ${
-                          message.senderId === currentUser?.id
-                            ? "text-indigo-200"
-                            : "text-gray-500 dark:text-gray-400"
-                        }`}
+                      <div
+                        className={`relative max-w-[70%] px-3 py-2 rounded-2xl shadow-md transition-all
+                          ${
+                            isOwn
+                              ? "bg-gradient-to-br from-indigo-500 via-indigo-600 to-blue-500 text-white ml-6"
+                              : "bg-white/80 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 border border-gray-200/60 dark:border-gray-700/60 mr-6"
+                          }
+                        `}
+                        style={{ wordBreak: "break-word" }}
                       >
-                        {new Date(message.timestamp).toLocaleTimeString()}
-                      </p>
+                        <p className="break-words text-sm leading-snug">
+                          {message.text}
+                        </p>
+                        <p
+                          className={`text-[10px] mt-1 ${
+                            isOwn
+                              ? "text-indigo-200 text-right"
+                              : "text-gray-400 dark:text-gray-400 text-left"
+                          }`}
+                        >
+                          {new Date(message.timestamp).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div ref={messagesEndRef} />
             </div>
 
             {/* Message Input */}
-            <div className="px-6 py-4 bg-white/80 dark:bg-gray-700/80 border-t border-gray-200/90 dark:border-gray-700/70 backdrop-blur-sm">
-              <div className="flex gap-2">
+            <div className="px-6 py-4 bg-white/70 dark:bg-gray-800/70 border-t border-gray-200/80 dark:border-gray-700/60 backdrop-blur-xl shadow-inner">
+              <div className="flex gap-2 items-center">
                 <input
                   type="text"
                   placeholder="Type your message..."
-                  className="flex-1 px-4 py-2 bg-gray-100/90 dark:bg-gray-800/90 rounded-xl border border-gray-200/90 dark:border-gray-600/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm"
+                  className="flex-1 px-4 py-2 bg-white/60 dark:bg-gray-900/60 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-md shadow-sm"
                   value={newMessage}
                   onChange={(e) => {
                     setNewMessage(e.target.value);
@@ -371,7 +386,7 @@ const Page = () => {
                 />
                 <Button
                   onClick={sendMessage}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors duration-200"
+                  className="px-4 py-2 bg-gradient-to-br from-indigo-500 to-blue-500 text-white rounded-2xl shadow-md hover:from-indigo-600 hover:to-blue-600 transition-colors duration-200"
                 >
                   <Send className="w-5 h-5" />
                 </Button>

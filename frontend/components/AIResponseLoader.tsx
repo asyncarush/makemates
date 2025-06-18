@@ -17,7 +17,7 @@ export const AIResponseLoader = () => {
       {/* Main container - smaller and more compact */}
       <div className="relative z-10 flex items-center p-1 rounded-2xl">
         {/* Animated dots - smaller size */}
-        <div className="flex items-center space-x-1 mr-2">
+        <div className="flex items-center space-x-1 mr-2 text-black dark:text-gray-300">
           {[0, 1, 2].map((dot) => (
             <div
               key={dot}
@@ -31,7 +31,7 @@ export const AIResponseLoader = () => {
         </div>
 
         {/* Text - smaller size */}
-        <span className="text-[10px] font-medium text-white whitespace-nowrap">
+        <span className="text-[10px] font-medium text-white dark:text-gray-400 whitespace-nowrap">
           Generating captions
         </span>
       </div>

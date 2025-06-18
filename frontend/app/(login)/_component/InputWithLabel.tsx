@@ -16,7 +16,7 @@ function InputWithLabel(inputProps: InputProps) {
       </label>
       <input
         {...inputProps}
-        className="w-full rounded-md placeholder:text-black/70 px-2 py-2 bg-transparent ring-1 outline-none text-black focus-within:ring-2"
+        className="w-full rounded-md placeholder:text-gray-400 dark:placeholder:text-gray-500 px-2 py-2 bg-transparent ring-1 outline-none text-gray-900 dark:text-gray-100 focus-within:ring-2"
         onChange={(e) => inputProps.onChange(e)}
       />
     </div>

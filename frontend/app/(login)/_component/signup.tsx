@@ -2,7 +2,7 @@ import React, { FormEvent, useContext, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AuthContext } from "@/app/context/AuthContext";
-import { AuthContextType} from "@/typings";
+import { AuthContextType } from "@/typings";
 
 import InputWithLabel from "./InputWithLabel";
 import Select from "./Select";
@@ -41,7 +41,7 @@ function Signup() {
   ];
 
   const gender = ["male", "female", "other"];
-  
+
   const years = getArray(1950, 2023);
 
   const handleSignUpSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -62,8 +62,12 @@ function Signup() {
       <DialogTrigger>Click here</DialogTrigger>
       <DialogContent>
         <div>
-          <h3 className="font-semibold text-xl">Sign Up Now</h3>
-          <p>Your mates are waiting...</p>
+          <h3 className="font-semibold text-xl text-gray-700 dark:text-white">
+            Sign Up Now
+          </h3>
+          <p className="text-gray-600 dark:text-gray-100">
+            Your mates are waiting...
+          </p>
         </div>
         <form onSubmit={handleSignUpSubmit} className="flex flex-col gap-3">
           <InputWithLabel
@@ -89,7 +93,10 @@ function Signup() {
           />
           <div className="flex justify-between items-center">
             <div>
-              <label htmlFor="dob" className="text-sm">
+              <label
+                htmlFor="dob"
+                className="text-sm text-gray-700 dark:text-white"
+              >
                 Date of Birth :
               </label>
               <div className="flex gap-2">
@@ -114,7 +121,10 @@ function Signup() {
               </div>
             </div>
             <div>
-              <label htmlFor="dob" className="text-sm">
+              <label
+                htmlFor="dob"
+                className="text-sm text-gray-700 dark:text-white"
+              >
                 Gender
               </label>
               <br />
