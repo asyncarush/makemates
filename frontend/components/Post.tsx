@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
 import moment from "moment";
-import dynamic from "next/dynamic";
-import "react-photo-view/dist/react-photo-view.css";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as unlikeIcon } from "@fortawesome/free-regular-svg-icons";
@@ -17,6 +15,7 @@ import EditPostComponent from "./EditPost";
 import { PostProps } from "@/typings";
 import { API_ENDPOINT } from "@/axios.config";
 import { AuthContext } from "@/app/context/AuthContext";
+
 import RenderMedia from "./RenderMedia";
 
 function Post({
@@ -63,7 +62,12 @@ function Post({
     }
   };
   return (
-    <div className="bg-gradient-card/80 backdrop-blur-sm shadow-lg overflow-hidden border border-white/30 dark:border-gray-600/30 rounded-2xl">
+    <div
+      className="bg-white/95 relative dark:bg-gray-900/95 backdrop-blur-sm shadow-lg overflow-hidden border border-gray-200/50 dark:border-gray-600/40 rounded-lg"
+      onClick={(e) => {
+        console.log("Post container clicked");
+      }}
+    >
       {/* Post Header */}
       <div className="flex items-center justify-between px-3 py-2.5">
         <div className="flex items-center gap-2.5">
@@ -109,17 +113,17 @@ function Post({
         rawMediaUrls.length > 0 &&
         rawMediaUrls[0] !== null &&
         rawMediaUrls[0] !== undefined && (
-          <div className="relative w-full h-full">
+          <div className="relative" style={{ pointerEvents: "auto" }}>
             <RenderMedia mediaUrls={rawMediaUrls} />
           </div>
         )}
 
       {/* Post Actions */}
-      <div className="px-3 py-2 border-t border-gray-100/80 dark:border-gray-700/50">
+      <div className="px-3 py-2 border-t border-gray-200/90 dark:border-gray-700/70">
         <div className="flex items-center gap-3">
           <button
             onClick={handlePostLike}
-            className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 hover:text-red-500 transition-colors duration-1000 rounded-lg px-2 py-1 hover:bg-gray-50/50 dark:hover:bg-gray-800/30"
+            className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 hover:text-red-500 transition-colors duration-1000 rounded-lg px-2 py-1 hover:bg-gray-100/90 dark:hover:bg-gray-800/90"
           >
             <FontAwesomeIcon
               icon={isPostLiked ? likeIcon : unlikeIcon}
@@ -137,7 +141,7 @@ function Post({
           </button>
           <button
             onClick={() => setCommentBox(!commentBox)}
-            className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 hover:text-indigo-500 transition-colors rounded-lg px-2 py-1 hover:bg-gray-50/50 dark:hover:bg-gray-800/30"
+            className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 hover:text-indigo-500 transition-colors rounded-lg px-2 py-1 hover:bg-gray-100/90 dark:hover:bg-gray-800/90"
           >
             <svg
               className="w-4 h-4"
@@ -162,7 +166,7 @@ function Post({
 
       {/* Comments */}
       {commentBox && (
-        <div className="border-t border-gray-100/80 dark:border-gray-700/50 px-3 py-2">
+        <div className="border-t border-gray-200/90 dark:border-gray-700/70 px-3 py-2">
           <Comments
             postId={postId}
             onCommentAdded={() => setCurrentTotalComments((prev) => prev + 1)}

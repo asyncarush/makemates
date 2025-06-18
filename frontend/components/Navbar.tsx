@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext } from "react";
 import { TiHome } from "react-icons/ti";
 import { BsMessenger } from "react-icons/bs";
 import { BiSolidBell } from "react-icons/bi";
@@ -15,6 +15,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@radix-ui/react-navigation-menu";
+
 import Image from "next/image";
 import Link from "next/link";
 import Search from "./Search";
@@ -27,9 +28,9 @@ import Notification from "./Notification";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchUserNotifications } from "@/axios.config";
-import { User } from "lucide-react";
 import { RiProfileFill } from "react-icons/ri";
 import { ThemeToggle } from "./theme-toggle";
+import { Separator } from "@radix-ui/react-dropdown-menu";
 
 function Navbar() {
   const { currentUser }: any = useContext(AuthContext);
@@ -94,7 +95,7 @@ function Navbar() {
       ),
       Data: (
         <div className="">
-          <div className="flex items-center gap-3 p-3 bg-white/10">
+          <div className="flex items-center gap-3 p-3">
             <div className="relative w-10 h-10 ">
               <Image
                 src={currentUser?.img || "/avatar.png"}
@@ -106,10 +107,10 @@ function Navbar() {
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-gray-900 dark:text-gray-100">
                 {currentUser?.name}
               </span>
-              <span className="text-sm text-indigo-600">
+              <span className="text-sm text-indigo-600 dark:text-indigo-400">
                 @{currentUser?.name?.toLowerCase().replace(/\s+/g, "")}
               </span>
             </div>
@@ -117,21 +118,21 @@ function Navbar() {
           <div className="mt-3 space-y-1">
             <Link
               href="/settings"
-              className="flex items-center justify-between p-2 rounded-md hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 transition-all duration-200"
+              className="flex items-center justify-between p-2 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/50 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200"
             >
               <span className="text-sm font-medium">Settings</span>
               <IoSettingsSharp className="w-4 h-4" />
             </Link>
             <Link
               href={`/profile/${currentUser?.id}`}
-              className="flex items-center justify-between p-2 rounded-md hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 transition-all duration-200"
+              className="flex items-center justify-between p-2 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/50 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200"
             >
               <span className="text-sm font-medium">Profile</span>
               <RiProfileFill className="w-4 h-4" />
             </Link>
             <div
               onClick={handleLogout}
-              className="flex items-center cursor-pointer justify-between p-2 rounded-md hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 transition-all duration-200"
+              className="flex items-center cursor-pointer justify-between p-2 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/50 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200"
             >
               <span className="text-sm font-medium">Logout</span>
               <IoLogOut className="w-4 h-4" />
@@ -143,7 +144,7 @@ function Navbar() {
   ];
 
   return (
-    <nav className="flex h-16 items-center justify-between px-4 bg-gradient-to-r from-blue-600 via-blue-500 to-teal-400 dark:from-gray-900 dark:via-indigo-900 dark:to-purple-900 rounded-b-xl">
+    <nav className="flex h-16 items-center justify-between px-4 bg-gradient-to-r from-blue-600 via-blue-500 to-teal-400 dark:from-gray-900 dark:via-indigo-900 dark:to-purple-900 rounded-b-lg">
       {/* Logo and Upload */}
       <div className="flex items-center gap-4">
         <Link href="/feed" className="group">
@@ -162,21 +163,21 @@ function Navbar() {
       {/* Navigation */}
       <NavigationMenu>
         <NavigationMenuList className="flex items-center gap-2">
-          <NavigationMenuItem className="relative">
-            <ThemeToggle />
-          </NavigationMenuItem>
           {navigation.map(({ name, Icon, Data }) => (
             <NavigationMenuItem className={`relative`} key={name}>
               <NavigationMenuTrigger className="h-10 w-10 p-0 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full flex items-center justify-center border border-white/20 focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200">
                 {Icon}
               </NavigationMenuTrigger>
               {Data && (
-                <NavigationMenuContent className="absolute right-0 mt-2 min-w-[240px] rounded-lg bg-white/80 backdrop-blur-sm p-2 shadow-lg ring-1 ring-black/5">
+                <NavigationMenuContent className="absolute right-0 mt-2 min-w-[240px] rounded-lg bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-2 shadow-lg ring-1 ring-black/5 dark:ring-white/10 border border-gray-200/50 dark:border-gray-600/40">
                   {Data}
                 </NavigationMenuContent>
               )}
             </NavigationMenuItem>
           ))}
+          <NavigationMenuItem className="relative">
+            <ThemeToggle />
+          </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
     </nav>

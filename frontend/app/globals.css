@@ -32,24 +32,24 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 0 0% 0%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 0 0% 3%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 0 0% 3%;
     --popover-foreground: 210 40% 98%;
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 0 0% 5%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 0 0% 5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 0 0% 5%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 0 0% 8%;
+    --input: 0 0% 5%;
     --ring: 212.7 26.8% 83.9%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
@@ -65,17 +65,25 @@
   }
   body {
     @apply bg-background text-foreground;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+  .dark body {
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+  }
+  html {
+    background: hsl(var(--background));
   }
 }
 
 @layer utilities {
   .bg-gradient-main {
-    @apply bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-gray-900 dark:via-indigo-900 dark:to-purple-900;
+    @apply bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-black dark:via-black dark:to-black;
   }
   .bg-gradient-accent {
-    @apply bg-gradient-to-r from-pink-200 via-yellow-100 to-green-200 dark:from-purple-800 dark:via-fuchsia-900 dark:to-yellow-700;
+    @apply bg-gradient-to-r from-gray-100 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900;
   }
   .bg-gradient-card {
-    @apply bg-gradient-to-tr from-white via-gray-100 to-blue-50 dark:from-gray-800 dark:via-gray-900 dark:to-indigo-900;
+    @apply bg-white/95 dark:bg-gray-900/95;
   }
 }

@@ -20,7 +20,7 @@ function Posts({ userId }: { userId: number }) {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 dark:border-gray-600/30 overflow-hidden"
+            className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200/50 dark:border-gray-600/40 overflow-hidden"
           >
             <div className="p-4 flex items-center gap-3">
               <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
@@ -47,8 +47,8 @@ function Posts({ userId }: { userId: number }) {
         router.push("/");
       }, 2000);
       return (
-        <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 text-center border border-white/30 dark:border-gray-600/30">
-          <div className="w-12 h-12 bg-red-50/80 dark:bg-red-900/40 rounded-full flex items-center justify-center mx-auto mb-3">
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-6 text-center border border-gray-200/50 dark:border-gray-600/40">
+          <div className="w-12 h-12 bg-red-100/90 dark:bg-red-900/90 rounded-full flex items-center justify-center mx-auto mb-3">
             <svg
               className="w-6 h-6 text-red-500 dark:text-red-400"
               viewBox="0 0 20 20"
@@ -72,8 +72,8 @@ function Posts({ userId }: { userId: number }) {
     }
 
     return (
-      <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 text-center border border-white/30 dark:border-gray-600/30">
-        <div className="w-12 h-12 bg-red-50/80 dark:bg-red-900/40 rounded-full flex items-center justify-center mx-auto mb-3">
+      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-6 text-center border border-gray-200/50 dark:border-gray-600/40">
+        <div className="w-12 h-12 bg-red-100/90 dark:bg-red-900/90 rounded-full flex items-center justify-center mx-auto mb-3">
           <svg
             className="w-6 h-6 text-red-500 dark:text-red-400"
             viewBox="0 0 20 20"
@@ -99,8 +99,8 @@ function Posts({ userId }: { userId: number }) {
   // If we have no posts
   if (!data || data.length === 0) {
     return (
-      <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 text-center border border-white/30 dark:border-gray-600/30">
-        <div className="w-16 h-16 bg-indigo-50/80 dark:bg-indigo-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-8 text-center border border-gray-200/50 dark:border-gray-600/40">
+        <div className="w-16 h-16 bg-indigo-100/90 dark:bg-indigo-900/90 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg
             className="w-8 h-8 text-indigo-500 dark:text-indigo-400"
             viewBox="0 0 20 20"

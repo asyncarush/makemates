@@ -106,7 +106,7 @@ function Page() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
+          <p className="text-red-500 dark:text-red-400 mb-4">{error}</p>
           <Button onClick={() => route.push("/")}>Go Home</Button>
         </div>
       </div>
@@ -129,7 +129,7 @@ function Page() {
   return (
     <div className="max-w-6xl mx-auto px-4">
       {/* Hero Section */}
-      <div className="relative h-[400px] rounded-2xl overflow-hidden mb-8">
+      <div className="relative h-[400px] rounded-lg overflow-hidden mb-8">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-600 dark:via-purple-600 dark:to-pink-600" />
         <div className="absolute inset-0 bg-black/20" />
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
@@ -197,7 +197,7 @@ function Page() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column - Bio & Info */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-gradient-card rounded-2xl p-6 shadow-sm border border-white/20 dark:border-gray-700/50">
+          <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg p-6 shadow-sm border border-gray-200/50 dark:border-gray-700/50">
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
               About
             </h2>
@@ -224,7 +224,7 @@ function Page() {
             </div>
           </div>
 
-          <div className="bg-gradient-card rounded-2xl p-6 shadow-sm border border-white/20 dark:border-gray-700/50">
+          <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg p-6 shadow-sm border border-gray-200/50 dark:border-gray-700/50">
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
               Interests
             </h2>
@@ -259,7 +259,7 @@ function Page() {
 
         {/* Right Column - Posts */}
         <div className="lg:col-span-2">
-          <div className="bg-gradient-card rounded-2xl shadow-sm border border-white/20 dark:border-gray-700/50">
+          <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200/50 dark:border-gray-700/50">
             <div className="border-b border-gray-200 dark:border-gray-700">
               <nav className="flex -mb-px">
                 <button

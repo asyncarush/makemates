@@ -207,7 +207,7 @@ function FeedUploadBox() {
           <BiSolidImageAdd className="w-6 h-6 text-gray-200 hover:text-gray-50 outline-none border-none" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg border border-white/20 dark:border-gray-700/50">
+      <DialogContent className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-lg border border-gray-200/50 dark:border-gray-700/50">
         <DialogTitle className="flex gap-8 text-gray-900 dark:text-gray-100">
           <div>Share new Post</div>
           <div>{captionLoader && <AIResponseLoader />}</div>
@@ -233,7 +233,7 @@ function FeedUploadBox() {
                   <p
                     onClick={(e) => setDesc(e.currentTarget.innerText)}
                     key={caption}
-                    className="text-[12px] bg-gradient-to-r from-blue-500 to-purple-500 text-white w-max px-2 py-0.5 rounded-xl hover:scale-105 transition-all duration-150 cursor-pointer"
+                    className="text-[12px] bg-gradient-to-r from-blue-500 to-purple-500 text-white w-max px-2 py-0.5 rounded-lg hover:scale-105 transition-all duration-150 cursor-pointer"
                   >
                     {caption}
                   </p>
@@ -356,7 +356,9 @@ function FeedUploadBox() {
           {isUploading && (
             <div className="flex items-center gap-1">
               <Progress value={progress} />
-              <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">{progress}%</span>
+              <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+                {progress}%
+              </span>
             </div>
           )}
         </div>

@@ -62,7 +62,7 @@ function Page() {
 
       <div className="grid gap-6">
         {/* Profile Settings */}
-        <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/30 dark:border-gray-600/30">
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-6 border border-gray-200/50 dark:border-gray-600/40">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Profile Settings
           </h2>
@@ -87,7 +87,7 @@ function Page() {
               </div>
               <Button
                 variant="outline"
-                className="bg-white/60 dark:bg-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-600/80 backdrop-blur-sm border border-white/30 dark:border-gray-600/50 rounded-xl"
+                className="bg-white/80 dark:bg-gray-700/80 hover:bg-gray-100/90 dark:hover:bg-gray-600/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/40 rounded-xl"
               >
                 Change Photo
               </Button>
@@ -96,7 +96,7 @@ function Page() {
         </div>
 
         {/* Account Settings */}
-        <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/30 dark:border-gray-600/30">
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-6 border border-gray-200/50 dark:border-gray-600/40">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Account Settings
           </h2>
@@ -108,7 +108,7 @@ function Page() {
                 </label>
                 <input
                   type="text"
-                  className="w-full px-4 py-2 bg-white/60 dark:bg-gray-700/60 rounded-xl border border-gray-200/80 dark:border-gray-600/60 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm"
+                  className="w-full px-4 py-2 bg-white/80 dark:bg-gray-700/80 rounded-xl border border-gray-200/90 dark:border-gray-600/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm"
                   placeholder="Enter display name"
                 />
               </div>
@@ -118,7 +118,7 @@ function Page() {
                 </label>
                 <input
                   type="text"
-                  className="w-full px-4 py-2 bg-white/60 dark:bg-gray-700/60 rounded-xl border border-gray-200/80 dark:border-gray-600/60 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm"
+                  className="w-full px-4 py-2 bg-white/80 dark:bg-gray-700/80 rounded-xl border border-gray-200/90 dark:border-gray-600/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm"
                   placeholder="Enter username"
                 />
               </div>
@@ -129,7 +129,7 @@ function Page() {
               </label>
               <textarea
                 rows={3}
-                className="w-full px-4 py-2 bg-white/60 dark:bg-gray-700/60 rounded-xl border border-gray-200/80 dark:border-gray-600/60 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm resize-none"
+                className="w-full px-4 py-2 bg-white/80 dark:bg-gray-700/80 rounded-xl border border-gray-200/90 dark:border-gray-600/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm resize-none"
                 placeholder="Tell us about yourself..."
               />
             </div>
@@ -137,12 +137,12 @@ function Page() {
         </div>
 
         {/* Privacy Settings */}
-        <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/30 dark:border-gray-600/30">
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-6 border border-gray-200/50 dark:border-gray-600/40">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Privacy Settings
           </h2>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-gray-100/90 dark:bg-gray-800/90 rounded-xl">
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-gray-100">
                   Profile Visibility
@@ -153,7 +153,7 @@ function Page() {
               </div>
               <Switch />
             </div>
-            <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-gray-100/90 dark:bg-gray-800/90 rounded-xl">
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-gray-100">
                   Show Online Status
@@ -164,7 +164,7 @@ function Page() {
               </div>
               <Switch />
             </div>
-            <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-gray-100/90 dark:bg-gray-800/90 rounded-xl">
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-gray-100">
                   Allow Messages
@@ -179,12 +179,12 @@ function Page() {
         </div>
 
         {/* Notification Settings */}
-        <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/30 dark:border-gray-600/30">
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-6 border border-gray-200/50 dark:border-gray-600/40">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Notification Settings
           </h2>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-gray-100/90 dark:bg-gray-800/90 rounded-xl">
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-gray-100">
                   Push Notifications
@@ -195,7 +195,7 @@ function Page() {
               </div>
               <Switch />
             </div>
-            <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-gray-100/90 dark:bg-gray-800/90 rounded-xl">
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-gray-100">
                   Email Notifications
@@ -206,7 +206,7 @@ function Page() {
               </div>
               <Switch />
             </div>
-            <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-gray-100/90 dark:bg-gray-800/90 rounded-xl">
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-gray-100">
                   Message Notifications
@@ -221,12 +221,12 @@ function Page() {
         </div>
 
         {/* Danger Zone */}
-        <div className="bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-red-200/80 dark:border-red-800/50">
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg p-6 border border-red-200/90 dark:border-red-800/70">
           <h2 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-4">
             Danger Zone
           </h2>
           <div className="space-y-4">
-            <div className="p-4 bg-red-50/80 dark:bg-red-900/40 rounded-xl">
+            <div className="p-4 bg-red-100/90 dark:bg-red-900/90 rounded-xl">
               <h3 className="font-medium text-red-700 dark:text-red-400 mb-2">
                 Delete Account
               </h3>

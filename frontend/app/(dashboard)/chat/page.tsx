@@ -111,12 +111,12 @@ const Page = () => {
   };
 
   return (
-    <div className="flex w-full max-w-6xl mx-auto h-[calc(100vh-140px)] bg-gradient-card/80 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden border border-white/30 dark:border-gray-600/30">
+    <div className="flex w-full max-w-6xl mx-auto h-[calc(100vh-140px)] bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden border border-gray-200/50 dark:border-gray-600/40">
       {/* Incoming Call Notification */}
 
       {incomingCall && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white/90 dark:bg-gray-800/90 p-6 rounded-2xl shadow-xl max-w-md w-full border border-white/30 dark:border-gray-600/30 backdrop-blur-sm">
+          <div className="bg-white/95 dark:bg-gray-800/95 p-6 rounded-lg shadow-xl max-w-md w-full border border-gray-200/50 dark:border-gray-600/40 backdrop-blur-sm">
             <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">
               Incoming Video Call
             </h3>
@@ -143,12 +143,12 @@ const Page = () => {
       )}
 
       {/* Sidebar - Chat List */}
-      <div className="w-[320px] flex flex-col bg-gray-50/80 dark:bg-gray-800/80 border-r border-gray-200/80 dark:border-gray-700/50 backdrop-blur-sm">
-        <div className="p-4 border-b border-gray-200/80 dark:border-gray-700/50">
+      <div className="w-[320px] flex flex-col bg-gray-100/95 dark:bg-gray-800/95 border-r border-gray-200/90 dark:border-gray-700/70 backdrop-blur-sm">
+        <div className="p-4 border-b border-gray-200/90 dark:border-gray-700/70">
           <input
             type="text"
             placeholder="Search users..."
-            className="w-full px-4 py-2 bg-white/60 dark:bg-gray-700/60 rounded-xl border border-gray-200/80 dark:border-gray-600/60 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm"
+            className="w-full px-4 py-2 bg-white/80 dark:bg-gray-700/80 rounded-xl border border-gray-200/90 dark:border-gray-600/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm"
             onChange={(e) => setSearchUser(e.target.value)}
             value={searchUser}
           />
@@ -160,10 +160,10 @@ const Page = () => {
             searchResult.map((user) => (
               <div
                 key={user.id}
-                className="flex items-center gap-3 p-4 hover:bg-gray-50/80 dark:hover:bg-gray-700/60 cursor-pointer transition-all duration-200 rounded-xl mx-2"
+                className="flex items-center gap-3 p-4 hover:bg-gray-200/90 dark:hover:bg-gray-700/90 cursor-pointer transition-all duration-200 rounded-xl mx-2"
                 onClick={() => startChat(user)}
               >
-                <div className="w-10 h-10 bg-indigo-100/80 dark:bg-indigo-900/60 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-indigo-100/90 dark:bg-indigo-900/90 rounded-full flex items-center justify-center">
                   <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <span className="font-medium text-gray-700 dark:text-gray-300">
@@ -190,12 +190,12 @@ const Page = () => {
                 key={chat.id}
                 className={`flex items-center gap-3 p-4 cursor-pointer transition-all duration-200 mx-2 rounded-xl ${
                   activeChat?.id === chat.id
-                    ? "bg-indigo-50/80 dark:bg-indigo-900/40 border-l-4 border-indigo-500 dark:border-indigo-400"
-                    : "hover:bg-gray-50/80 dark:hover:bg-gray-700/60 border-l-4 border-transparent"
+                    ? "bg-indigo-100/90 dark:bg-indigo-900/90 border-l-4 border-indigo-500 dark:border-indigo-400"
+                    : "hover:bg-gray-200/90 dark:hover:bg-gray-700/90 border-l-4 border-transparent"
                 }`}
                 onClick={() => setActiveChat(chat)}
               >
-                <div className="relative w-12 h-12 bg-indigo-100/80 dark:bg-indigo-900/60 rounded-full flex items-center justify-center">
+                <div className="relative w-12 h-12 bg-indigo-100/90 dark:bg-indigo-900/90 rounded-full flex items-center justify-center">
                   <div
                     className={`w-3 h-3 rounded-full absolute bottom-0 right-0 ${
                       isUserOnline(chat.user.id)
@@ -243,9 +243,9 @@ const Page = () => {
       <div className="flex-1 flex flex-col">
         {/* Welcome Screen */}
         {!activeChat && (
-          <div className="flex-1 flex flex-col items-center justify-center bg-gray-50/80 dark:bg-gray-800/80">
+          <div className="flex-1 flex flex-col items-center justify-center bg-gray-100/95 dark:bg-gray-800/95">
             <div className="text-center">
-              <div className="w-16 h-16 bg-indigo-100/80 dark:bg-indigo-900/60 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-indigo-100/90 dark:bg-indigo-900/90 rounded-full flex items-center justify-center mx-auto mb-4">
                 <UserIcon className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
               </div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
@@ -260,16 +260,16 @@ const Page = () => {
 
         {/* Active Chat View */}
         {chatError && (
-          <div className="p-4 bg-red-100/80 dark:bg-red-900/40 text-red-700 dark:text-red-400 text-center w-full rounded-xl mx-4 mt-4">
+          <div className="p-4 bg-red-100/90 dark:bg-red-900/90 text-red-700 dark:text-red-400 text-center w-full rounded-xl mx-4 mt-4">
             {chatError}
           </div>
         )}
         {activeChat && activeChat.user && (
           <>
             {/* Chat Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200/80 dark:border-gray-700/50">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200/90 dark:border-gray-700/70">
               <div className="flex items-center gap-3">
-                <div className="relative w-10 h-10 bg-indigo-100/80 dark:bg-indigo-900/60 rounded-full flex items-center justify-center">
+                <div className="relative w-10 h-10 bg-indigo-100/90 dark:bg-indigo-900/90 rounded-full flex items-center justify-center">
                   <div
                     className={`w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 ${
                       isUserOnline(activeChat?.user?.id)
@@ -304,12 +304,12 @@ const Page = () => {
                 <Button
                   onClick={() => initiateCall(activeChat.id)}
                   variant="outline"
-                  className="bg-white/60 dark:bg-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-600/80 backdrop-blur-sm border border-white/30 dark:border-gray-600/50 rounded-xl"
+                  className="bg-white/80 dark:bg-gray-700/80 hover:bg-gray-100/90 dark:hover:bg-gray-600/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/40 rounded-xl"
                   disabled={isWaitingForResponse}
                 >
                   <VideoIcon className="w-5 h-5" />
                 </Button>
-                <button className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/60 rounded-xl transition-all duration-200">
+                <button className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200/90 dark:hover:bg-gray-700/90 rounded-xl transition-all duration-200">
                   <AudioLinesIcon className="w-5 h-5" />
                   <span className="hidden sm:inline">Audio</span>
                 </button>
@@ -317,7 +317,7 @@ const Page = () => {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50/80 dark:bg-gray-800/80">
+            <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-100/95 dark:bg-gray-800/95">
               <div className="space-y-4">
                 {messages.map((message, index) => (
                   <div
@@ -332,7 +332,7 @@ const Page = () => {
                       className={`max-w-[70%] px-4 py-2 rounded-2xl ${
                         message.senderId === currentUser?.id
                           ? "bg-indigo-600 text-white"
-                          : "bg-white/80 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 shadow-sm backdrop-blur-sm"
+                          : "bg-white/90 dark:bg-gray-700/90 text-gray-900 dark:text-gray-100 shadow-sm backdrop-blur-sm"
                       }`}
                     >
                       <p className="break-words">{message.text}</p>
@@ -353,12 +353,12 @@ const Page = () => {
             </div>
 
             {/* Message Input */}
-            <div className="px-6 py-4 bg-white/60 dark:bg-gray-700/60 border-t border-gray-200/80 dark:border-gray-700/50 backdrop-blur-sm">
+            <div className="px-6 py-4 bg-white/80 dark:bg-gray-700/80 border-t border-gray-200/90 dark:border-gray-700/70 backdrop-blur-sm">
               <div className="flex gap-2">
                 <input
                   type="text"
                   placeholder="Type your message..."
-                  className="flex-1 px-4 py-2 bg-gray-50/80 dark:bg-gray-800/80 rounded-xl border border-gray-200/80 dark:border-gray-600/60 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm"
+                  className="flex-1 px-4 py-2 bg-gray-100/90 dark:bg-gray-800/90 rounded-xl border border-gray-200/90 dark:border-gray-600/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm"
                   value={newMessage}
                   onChange={(e) => {
                     setNewMessage(e.target.value);
