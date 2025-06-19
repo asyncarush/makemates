@@ -57,30 +57,38 @@ export function Comments({
           allComments.map((cmnt: any) => <Comment key={cmnt.id} cmnt={cmnt} />)}
       </div>
 
-      <div className="flex w-full p-2 items-center space-x-4">
+      <div className="flex w-full p-2 items-center gap-2">
         <Image
           src={currentUser.img || "/avatar.png"}
           className="rounded-full bg-gray-100"
-          width="30"
-          height="30"
+          width="26"
+          height="26"
           alt="Your profile picture"
         />
-        <div className="flex items-center w-full justify-between px-2 rounded-full">
+        <div className="relative flex items-center w-full bg-white/60 dark:bg-gray-900/60 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-full shadow px-3 py-1">
           <input
             type="text"
             value={desc}
             onChange={(e) => setDesc(e.currentTarget.value)}
             onKeyDown={(e) => e.key === "Enter" && handleComment()}
             placeholder="Comment to your friends..."
-            className="text-[12px] w-full bg-transparent px-2 py-1 bg-gray-100 rounded-2xl focus:outline-none text-gray-700 placeholder:text-gray-400"
+            className="flex-1 w-full px-2 py-1 pr-12 text-[13px] bg-transparent rounded-full focus:outline-none transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white"
             name="postComment"
+            autoComplete="off"
           />
           <button
             onClick={handleComment}
             disabled={!desc.trim()}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-2"
+            className={`absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200
+              ${
+                desc.trim()
+                  ? "bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 shadow"
+                  : "text-gray-300 cursor-not-allowed bg-gray-200 dark:bg-gray-800"
+              }
+            `}
+            title="Send comment"
           >
-            <SendIcon className="w-5 h-5 text-gray-600" />
+            <SendIcon className="w-4 h-4" />
           </button>
         </div>
       </div>
