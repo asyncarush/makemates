@@ -1,8 +1,3 @@
-/**
- * @fileoverview Main application entry point.
- * Initializes Express server with middleware and routes.
- */
-
 import dotenv from "dotenv";
 import http from "http";
 import cors from "cors";
@@ -11,6 +6,7 @@ import { logger } from "./config/winston";
 import { ServerConfig } from "./config/server.config";
 import { SocketService } from "./services/socket.service";
 import { NotificationManger } from "./services/notification.service";
+import { RedisClient } from "./services/redis.service";
 
 // Route definitions
 import User from "./routes/user.routes";
@@ -30,9 +26,9 @@ const app = serverConfig.getApp();
 const server = http.createServer(app);
 
 // Initialize Socket.IO service
-const socketService = new SocketService(server);
+const redisClient = new RedisClient().getClient();
+const socketService = new SocketService(server, redisClient);
 const io = socketService.getIO();
-const redisClient = socketService.getRedisClient();
 const notificationManager = new NotificationManger(io);
 
 // Middleware

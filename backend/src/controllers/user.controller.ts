@@ -11,6 +11,8 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+import { CacheService } from "../services/cache.service";
+
 // Validation utilities
 import { validateNewUser, validateUser } from "../utils/validate";
 
@@ -122,6 +124,17 @@ export async function register(req: Request, res: Response) {
 export async function getUserData(req: RequestWithUser, res: Response) {
   const id = req.user?.id || -1;
 
+  if (!id) return res.status(400).send("User ID is required");
+
+  // here we will implement redis for profile data caching
+
+  const userCachedData = await CacheService.get(`user:profile:${id}`);
+
+  if (userCachedData) {
+    console.log("Cache hit for user data");
+    return res.status(200).send(JSON.parse(userCachedData));
+  }
+
   try {
     const user = await prisma.users.findUnique({
       where: { id },
@@ -139,6 +152,13 @@ export async function getUserData(req: RequestWithUser, res: Response) {
       img: user.img,
       password: "************",
     };
+
+    // Cache the user data for 1 hour
+    await CacheService.set(
+      `user:profile:${id}`,
+      JSON.stringify(userData),
+      3600
+    );
 
     return res.status(200).send(userData);
   } catch (err) {
@@ -334,6 +354,9 @@ export async function setProfilePic(req: RequestWithUser, res: Response) {
     });
 
     // console.log("profileImage");
+
+    // Invalidate the cache for the user's profile
+    await CacheService.invalidatePattern(`user:profile:${id}`);
 
     // Update the user's profile image reference
     await prisma.users.update({

@@ -11,7 +11,7 @@ export class SocketService {
   private videoChatService: VideoChatService;
   private cleanupInterval: NodeJS.Timeout | null = null;
 
-  constructor(server: any) {
+  constructor(server: any, redisClient: ReturnType<typeof createClient>) {
     this.io = new Server(server, {
       cors: {
         origin: ["http://localhost:3000", "https://makemates.asyncarush.com/"],
@@ -24,10 +24,7 @@ export class SocketService {
       transports: ["websocket", "polling"],
     });
 
-    this.redisClient = createClient({
-      url: process.env.REDIS_URL || "redis://localhost:6379",
-    });
-
+    this.redisClient = redisClient;
     this.prisma = new PrismaClient();
     this.initializeRedis();
     this.setupSocketHandlers();
