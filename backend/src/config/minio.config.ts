@@ -1,10 +1,15 @@
 import "dotenv/config";
 
-export const minioConfig = {
+const minioConfig = {
   endpoint: process.env.MINIO_ENDPOINT || "localhost",
   port: parseInt(process.env.MINIO_PORT || "9000"),
-  useSSL: process.env.MINIO_USE_SSL === "true",
+  useSSL: !(process.env.MINIO_USE_SSL === "false"),
   accessKey: process.env.MINIO_ACCESS_KEY || "minioadmin",
   secretKey: process.env.MINIO_SECRET_KEY || "minioadmin",
   forcePathStyle: true
 };
+
+
+console.log(minioConfig);
+
+export { minioConfig };

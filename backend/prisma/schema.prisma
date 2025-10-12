@@ -58,7 +58,6 @@ model posts {
   tags            String?          @db.VarChar(200)
   comments        comments[]
   likes           likes[]
-  post_embeddings post_embeddings?
   post_media      post_media[]
   users           users            @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_user_id")
 
@@ -149,28 +148,4 @@ model notifications {
 
   @@index([user_reciever_id], map: "notifications_receiver_id_idx")
   @@index([user_sender_id], map: "notifications_sender_id_idx")
-}
-
-model embedding_models {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique @db.VarChar(50)
-  dimensions  Int
-  description String?
-  active      Boolean?  @default(true)
-  created_at  DateTime? @default(now()) @db.Timestamp(6)
-}
-
-model post_embeddings {
-  id              Int                   @id @default(autoincrement())
-  post_id         Int                   @unique
-  embedding       Unsupported("vector")
-  embedding_part2 Unsupported("vector")
-  model_name      String                @db.VarChar(50)
-  created_at      DateTime?             @default(now()) @db.Timestamp(6)
-  updated_at      DateTime?             @default(now()) @db.Timestamp(6)
-  posts           posts                 @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_post_id")
-
-  @@index([embedding], map: "post_embeddings_hnsw_idx")
-  @@index([embedding_part2], map: "post_embeddings_part2_idx")
-  @@index([post_id])
 }

@@ -83,12 +83,7 @@ function Page() {
                   {currentUser?.email || "user@example.com"}
                 </p>
               </div>
-              <Button
-                variant="outline"
-                className="bg-white/80 dark:bg-gray-700/80 hover:bg-gray-100/90 dark:hover:bg-gray-600/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/40 rounded-xl"
-              >
-                Change Photo
-              </Button>
+              <UpdateProfilePhoto value={currentUser?.img || "/avatar.png"} />
             </div>
           </div>
         </div>

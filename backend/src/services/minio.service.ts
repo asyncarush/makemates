@@ -1,15 +1,5 @@
-/**
- * @fileoverview Service for handling file operations with MinIO object storage.
- * Provides utilities for uploading, downloading, and managing files.
- */
-
-// MinIO client and types
-import { Client, BucketItemFromList } from "minio";
-
-// Configuration
+import { Client } from "minio";
 import { minioConfig } from "../config/minio.config";
-
-// Logging
 import { logger } from "../config/winston";
 
 /**
@@ -22,25 +12,26 @@ export class MinioServiceError extends Error {
   }
 }
 
+const BUCKET_NAME = "posts";
+
 /**
  * MinIO client instance configuration
  */
 const minioClient = new Client({
-  endPoint: minioConfig.endpoint,
-  useSSL: minioConfig.useSSL,
-  accessKey: minioConfig.accessKey,
-  secretKey: minioConfig.secretKey,
-  pathStyle: minioConfig.forcePathStyle,
+  endPoint: minioConfig.endpoint,   // e.g. "127.0.0.1" or "minio"
+  port: minioConfig.port,           // 9000
+  useSSL: minioConfig.useSSL,       // false (since you're using http://)
+  accessKey: minioConfig.accessKey, // "minioadmin"
+  secretKey: minioConfig.secretKey, // "minioadmin"
+  region: "us-east-1",              // ✅ force region to match bucket
+  pathStyle: true,                  // ✅ safer for local MinIO
 });
 
-// Add debug logging
-logger.info("Initializing MinIO client with config:", {
+logger.info("Initialized MinIO client", {
   endpoint: minioConfig.endpoint,
+  port: minioConfig.port,
   useSSL: minioConfig.useSSL,
-  pathStyle: minioConfig.forcePathStyle,
 });
-
-const BUCKET_NAME = "posts";
 
 /**
  * Initialize bucket and set public read policy
@@ -50,8 +41,8 @@ const BUCKET_NAME = "posts";
     const bucketExists = await minioClient.bucketExists(BUCKET_NAME);
     if (!bucketExists) {
       await minioClient.makeBucket(BUCKET_NAME, "us-east-1");
+      logger.info(`Bucket '${BUCKET_NAME}' created`);
 
-      // Set bucket policy for public read access
       const policy = {
         Version: "2012-10-17",
         Statement: [
@@ -65,59 +56,43 @@ const BUCKET_NAME = "posts";
       };
 
       await minioClient.setBucketPolicy(BUCKET_NAME, JSON.stringify(policy));
+      logger.info(`Public read policy applied to bucket '${BUCKET_NAME}'`);
+    } else {
+      logger.info(`Bucket '${BUCKET_NAME}' already exists`);
     }
   } catch (error) {
-    console.error("Failed to initialize MinIO bucket:", error);
+    logger.error("Failed to initialize MinIO bucket", { error });
     throw new MinioServiceError("Failed to initialize MinIO bucket", error);
   }
 })();
 
 /**
- * Upload file to MinIO storage
- *
- * @param {Express.Multer.File} file - The file to upload from multer
- * @param {string} fileName - The name to save the file as
- * @returns {Promise<string>} Public URL for the uploaded file
- * @throws {MinioServiceError} When upload fails
+ * Upload file to MinIO
  */
-
 export const uploadFile = async (
   file: Express.Multer.File,
   fileName: string
 ): Promise<string> => {
-  if (!file || !file.buffer) {
+  if (!file?.buffer) {
     throw new MinioServiceError("Invalid file provided");
   }
 
-  // Validate file type
   const allowedMimeTypes = [
-    // Images
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/webp",
-    // Videos
-    "video/mp4",
-    "video/quicktime",
-    "video/x-msvideo",
-    "video/x-matroska",
-    "video/webm",
+    "image/jpeg", "image/png", "image/gif", "image/webp",
+    "video/mp4", "video/quicktime", "video/x-msvideo",
+    "video/x-matroska", "video/webm",
   ];
 
   if (!allowedMimeTypes.includes(file.mimetype)) {
-    throw new MinioServiceError(
-      `Invalid file type. Allowed types: images (JPEG, PNG, GIF, WebP) and videos (MP4, MOV, AVI, MKV, WebM)`
-    );
+    throw new MinioServiceError("Invalid file type uploaded");
   }
 
   try {
-    // Upload file to MinIO with metadata
     const metadata = {
       "content-type": file.mimetype,
       "x-amz-meta-original-name": file.originalname,
     };
 
-    console.log("Reaching");
     await minioClient.putObject(
       BUCKET_NAME,
       fileName,
@@ -125,12 +100,11 @@ export const uploadFile = async (
       file.size,
       metadata
     );
-    // Construct the public URL
+
     const protocol = minioConfig.useSSL ? "https" : "http";
-    const url = `${protocol}://${minioConfig.endpoint}/${BUCKET_NAME}/${fileName}`;
+    const url = `${protocol}://${minioConfig.endpoint}:${minioConfig.port}/${BUCKET_NAME}/${fileName}`;
     return url;
   } catch (error: any) {
-    console.error("MinIO upload error:", error);
     throw new MinioServiceError(
       `Failed to upload file: ${error.message || "Unknown error"}`,
       error
@@ -138,11 +112,13 @@ export const uploadFile = async (
   }
 };
 
+/**
+ * Delete file from MinIO
+ */
 export const deleteFile = async (fileName: string): Promise<void> => {
   try {
     await minioClient.removeObject(BUCKET_NAME, fileName);
   } catch (error: any) {
-    console.error("MinIO delete error:", error);
     throw new MinioServiceError(
       `Failed to delete file: ${error.message || "Unknown error"}`,
       error

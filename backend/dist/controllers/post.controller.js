@@ -157,52 +157,101 @@ exports.editPost = editPost;
  */
 const getUserPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.params;
+    const currentUserId = parseInt(userId, 10);
     try {
-        // get all the followers list
-        const followers = yield prisma.relationships.findMany({
-            where: { follower_id: parseInt(userId) },
+        // 1️⃣ Fetch all users that current user follows
+        const relationships = yield prisma.relationships.findMany({
+            where: { follower_id: currentUserId },
+            select: { follow_id: true },
         });
-        const followersId = followers.map((item) => item.follow_id);
-        // get all posts whoes post's user id are in followersId
-        // console.log("Follower Id : ", followersId);
-        // get all the post of users to whom currentUser follow and also contain currentUser own posts as well with the tag if post is liked or not
-        const posts = yield prisma.posts.findMany({
-            where: {
-                OR: [
-                    { user_id: { in: followersId } }, // Posts by followed users
-                    { user_id: parseInt(userId, 10) }, // Your own posts
-                ],
-            },
-            orderBy: { date: "desc" },
-            include: {
-                post_media: true,
-                users: {
-                    include: {
-                        profileimages: true,
-                    },
-                },
-            },
-        });
-        const allPosts = yield prisma.$queryRaw `SELECT * FROM get_user_feed(${userId}::integer)`;
-        return res.status(200).send(allPosts);
+        // 2️⃣ Collect followed user IDs + include self
+        const followedUserIds = relationships.map((r) => r.follow_id);
+        const userIdsToFetch = [...followedUserIds, currentUserId];
+        if (userIdsToFetch.length === 0) {
+            return res.status(200).json([]); // nothing to fetch
+        }
+        // 3️⃣ Build SQL query (clean & safe)
+        const query = `
+      WITH post_likes AS (
+        SELECT l.post_id, COUNT(*) AS total_likes 
+        FROM likes l 
+        GROUP BY l.post_id
+      ),
+      post_comments AS (
+        SELECT c.post_id, COUNT(*) AS total_comments 
+        FROM comments c 
+        GROUP BY c.post_id
+      ),
+      user_like_status AS (
+        SELECT post_id, 1 AS liked
+        FROM likes
+        WHERE user_id = $1
+      ),
+      latest_comments AS (
+        SELECT 
+          c.id, 
+          c.post_id, 
+          c.user_id, 
+          c."desc", 
+          c.datetime, 
+          u.name AS commenter_name,
+          ROW_NUMBER() OVER (PARTITION BY c.post_id ORDER BY c.datetime DESC) rn
+        FROM comments c
+        JOIN users u ON u.id = c.user_id
+      ),
+      post_images AS (
+        SELECT pm.post_id, ARRAY_AGG(pm.media_url) AS images
+        FROM post_media pm
+        GROUP BY pm.post_id
+      )
+      SELECT 
+        p.id AS postid,
+        p."desc" AS content,
+        p.tags,
+        p.date AS postdate,
+        p.user_id AS userid,
+        u.name AS username,
+        u.img AS userprofileimage,
+        COALESCE(pl.total_likes, 0) AS totallikes,
+        COALESCE(pc.total_comments, 0) AS totalcomments,
+        COALESCE(uls.liked, 0) AS cu_like_status,
+        COALESCE(pi.images, '{}') AS media_urls,
+        ARRAY_AGG(
+          CASE 
+            WHEN lc.rn <= 3 THEN 
+              JSON_BUILD_OBJECT(
+                'id', lc.id,
+                'desc', lc."desc",
+                'datetime', lc.datetime,
+                'commenter_name', lc.commenter_name
+              )
+            ELSE NULL
+          END
+        ) FILTER (WHERE lc.rn <= 3) AS latest_comments
+      FROM posts p
+      JOIN users u ON u.id = p.user_id
+      LEFT JOIN post_likes pl ON pl.post_id = p.id
+      LEFT JOIN post_comments pc ON pc.post_id = p.id
+      LEFT JOIN latest_comments lc ON lc.post_id = p.id
+      LEFT JOIN post_images pi ON pi.post_id = p.id
+      LEFT JOIN user_like_status uls ON uls.post_id = p.id
+      WHERE p.user_id = ANY($2::int[])
+      GROUP BY p.id, u.id, u.name, u.img, pl.total_likes, pc.total_comments, pi.images, uls.liked
+      ORDER BY p.date DESC;
+    `;
+        // 4️⃣ Execute safely — pass params individually
+        const rows = yield prisma.$queryRawUnsafe(query, currentUserId, userIdsToFetch);
+        // Convert all BigInt fields to numbers or strings
+        const sanitizedRows = JSON.parse(JSON.stringify(rows, (_, value) => typeof value === "bigint" ? Number(value) : value));
+        // 5️⃣ Return data
+        return res.status(200).json(sanitizedRows);
     }
     catch (err) {
-        if (err instanceof Error) {
-            winston_1.logger.error(err.message);
-            return res.status(500).send(err.message);
-        }
-        winston_1.logger.error("An unknown error occurred.");
-        return res.status(500).send("An unknown error occurred.");
+        winston_1.logger.error("Error fetching user posts: ", err);
+        return res.status(500).send("Unable to fetch user posts");
     }
 });
 exports.getUserPosts = getUserPosts;
-// Like the Post
-/**
- * Creates a new like for the specified post.
- *
- * @param {RequestWithUser} req - The incoming request with user information.
- * @param {Response} res - The outgoing response.
- */
 const likeThePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { postId } = req.body;
