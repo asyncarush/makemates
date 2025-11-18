@@ -178,6 +178,17 @@ export async function fetchUserNotifications() {
   }
 }
 
+// Mark notifications as read
+export async function markNotificationsAsRead() {
+  try {
+    const { data } = await BACKEND_API.post("/user/notifications/mark-read");
+    return data;
+  } catch (error) {
+    console.error("Error marking notifications as read:", error);
+    throw error;
+  }
+}
+
 // Fetch All comments
 export const fetchPostComments = async (postId: string) => {
   try {

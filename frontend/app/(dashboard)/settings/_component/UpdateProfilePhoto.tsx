@@ -15,14 +15,6 @@ import {
 
 import Cropper from "react-easy-crop";
 
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-
-import { app } from "@/firebase";
 import axios from "axios";
 import { Progress } from "@/components/ui/progress";
 import toast from "react-hot-toast";
@@ -32,7 +24,6 @@ import { AuthContext } from "@/app/context/AuthContext";
 
 function UpdateProfilePhoto({ value }: { value: string }) {
   const { currentUser, setCurrentUser }: any = useContext(AuthContext);
-
   const [image, setImage] = useState<any>("");
   const [currentPage, setCurrentPage] = useState("choose-img");
   const [imgAfterCrop, setImgAfterCrop] = useState("");
@@ -112,9 +103,20 @@ function UpdateProfilePhoto({ value }: { value: string }) {
 
         formData.append("profile_image", result, fileName);
 
+        interface uploadResponeInterface {
+          data: {
+            file: {
+              originalName: string;
+              size: number;
+              type: string;
+              url: string;
+            };
+          };
+        }
+
         try {
           setUploadState(true);
-          const uploadResponse: any = await axios.post(
+          const uploadResponse: uploadResponeInterface = await axios.post(
             `${API_ENDPOINT}/upload/profileImage`,
             formData,
             {
@@ -133,7 +135,8 @@ function UpdateProfilePhoto({ value }: { value: string }) {
             }
           );
 
-          const imageUrl = uploadResponse.data.url;
+          console.log("Upload Response", uploadResponse);
+          const imageUrl = uploadResponse.data.file.url;
 
           await axios.post(
             `${API_ENDPOINT}/user/setProfilePic`,

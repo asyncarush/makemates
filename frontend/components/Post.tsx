@@ -11,6 +11,7 @@ import { faHeart as likeIcon } from "@fortawesome/free-solid-svg-icons";
 
 import { Comments } from "./Comments";
 import EditPostComponent from "./EditPost";
+import HashtagText from "./HashtagText";
 
 import { PostProps } from "@/typings";
 import { API_ENDPOINT } from "@/axios.config";
@@ -104,7 +105,10 @@ function Post({
       {/* Post Content */}
       {caption && (
         <div className="px-3 py-1.5">
-          <p className="text-gray-700 dark:text-gray-300 text-sm">{caption}</p>
+          <HashtagText
+            text={caption}
+            className="text-gray-700 dark:text-gray-300 text-sm"
+          />
         </div>
       )}
 

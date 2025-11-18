@@ -19,6 +19,7 @@ import { NewPost } from "@/typings";
 import { useNewPostMutation } from "@/lib/mutations";
 import { useFileUploader } from "@/hooks/useFileUploader";
 import AIResponseLoader from "@/components/AIResponseLoader";
+import HashtagAutocomplete from "@/components/HashtagAutocomplete";
 import { BiSolidImageAdd } from "react-icons/bi";
 import { IoMdClose, IoMdSend } from "react-icons/io";
 import { MdCloudUpload } from "react-icons/md";
@@ -106,73 +107,100 @@ function FeedUploadBox() {
       );
       return;
     }
+
     setFiles(selectedFiles);
+
     // Create and add new preview URLs
     const newPreviewUrls = arrayOfFileList.map((file) => {
       return { type: file.type.split("/")[0], url: URL.createObjectURL(file) };
     });
+
     // Update preview URLs while maintaining the existing ones
     setPreviewUrls(newPreviewUrls);
 
-    const file = selectedFiles[0];
+    // Filter only image files for caption generation
+    const imageFiles = arrayOfFileList.filter((file) =>
+      file.type.startsWith("image/")
+    );
+
+    if (imageFiles.length === 0) {
+      setCaptionLoader(false);
+      return;
+    }
 
     const generateCaptions = async () => {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const result = reader.result as string;
-        const base64String = result.split(",")[1];
-        try {
-          const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyByOlpTA2YVndh6yxqGUQOZh9vdxOxsqKA`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                contents: [
+      try {
+        const captionPromises = imageFiles.map((file) => {
+          return new Promise<string[]>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+              const result = reader.result as string;
+              const base64String = result.split(",")[1];
+              try {
+                const response = await fetch(
+                  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
                   {
-                    parts: [
-                      {
-                        inlineData: {
-                          mimeType: "image/jpeg",
-                          data: base64String, // ✅ Actual data
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      contents: [
+                        {
+                          parts: [
+                            {
+                              inlineData: {
+                                mimeType: file.type,
+                                data: base64String,
+                              },
+                            },
+                            {
+                              text: "I want you be an agent that suggest cool captions by analysing the attached images. I expect the response in array, just give me array nothing else, Keep the captions shorts, also include some cools emojis.",
+                            },
+                          ],
                         },
-                      },
-                      {
-                        text: "I want you be an agent that suggest cool captions by analysing the attached images. I expect the response in array, just give me array nothing else, Keep the captions shorts, also include some cools emojis.",
-                      },
-                    ],
-                  },
-                ],
-              }),
-            }
-          );
+                      ],
+                    }),
+                  }
+                );
 
-          const data = await response.json();
-          const suggestedCaption =
-            data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-            "No caption found";
+                const data = await response.json();
+                const suggestedCaption =
+                  data?.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
 
-          const parsedContent = JSON.parse(suggestedCaption);
-          setCaptions((prev) => [...prev, ...parsedContent]);
-          console.log(captions);
+                // Clean up potential markdown code blocks or extra formatting
+                let cleanedCaption = suggestedCaption.trim();
+                if (cleanedCaption.startsWith("```")) {
+                  cleanedCaption = cleanedCaption
+                    .replace(/```json\n?/g, "")
+                    .replace(/```\n?/g, "")
+                    .trim();
+                }
 
-          setCaptionLoader(false);
-        } catch (err) {
-          console.error("Caption API error:", err);
-          toast.error("Currently caption generation support for single image.");
-        }
-      };
-      reader.readAsDataURL(file);
+                const parsedContent = JSON.parse(cleanedCaption);
+                resolve(Array.isArray(parsedContent) ? parsedContent : []);
+              } catch (err) {
+                console.error("Caption API error for file:", file.name, err);
+                resolve([]);
+              }
+            };
+            reader.onerror = () => reject(new Error("Failed to read file"));
+            reader.readAsDataURL(file);
+          });
+        });
+
+        const allCaptions = await Promise.all(captionPromises);
+        const flattenedCaptions = allCaptions.flat();
+        setCaptions(flattenedCaptions);
+        setCaptionLoader(false);
+      } catch (err) {
+        console.error("Caption generation error:", err);
+        toast.error("Failed to generate captions. Please try again.");
+        setCaptionLoader(false);
+      }
     };
 
     generateCaptions();
-
-    // Clean up old preview URLs when component unmounts
-    return () => {
-      newPreviewUrls.forEach((preview) => URL.revokeObjectURL(preview.url));
-    };
   };
 
   const clearFileInput = () => {
@@ -223,15 +251,13 @@ function FeedUploadBox() {
           encType="multipart/form-data"
           className="space-y-3"
         >
-          <div className="relative">
-            <textarea
-              rows={3}
-              value={desc}
-              placeholder="What's on your mind? Share your thoughts..."
-              className="bg-gray-50/80 dark:bg-gray-800/80 w-full outline-none resize-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg p-3 border border-gray-200/50 dark:border-gray-600/50 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors text-sm"
-              onChange={(e) => setDesc(e.target.value)}
-            />
-          </div>
+          <HashtagAutocomplete
+            value={desc}
+            onChange={setDesc}
+            placeholder="What's on your mind? Share your thoughts..."
+            className="bg-gray-50/80 dark:bg-gray-800/80 w-full outline-none resize-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg p-3 border border-gray-200/50 dark:border-gray-600/50 focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors text-sm"
+            rows={3}
+          />
 
           {/* caption suggestions area */}
           {captions.length > 0 && (

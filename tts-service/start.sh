@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Maya1 TTS Service Startup Script
+
+echo "Starting Maya1 TTS Service..."
+
+# Check if virtual environment exists
+if [ ! -d "venv" ]; then
+    echo "Creating virtual environment..."
+    python3 -m venv venv
+fi
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Install dependencies
+echo "Installing dependencies..."
+pip install -r requirements.txt
+
+# Start the server
+echo "Starting TTS server on port 8000..."
+python tts_server.py

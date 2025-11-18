@@ -37,6 +37,69 @@ interface Posts {
   totallikes: number;
   totalcomments: number;
 }
+
+/**
+ * Extracts hashtags from a given text.
+ * Hashtags are words starting with # symbol.
+ *
+ * @param {string} text - The text to extract hashtags from
+ * @returns {string[]} Array of unique hashtag names (without # symbol)
+ */
+const extractHashtags = (text: string): string[] => {
+  if (!text) return [];
+
+  const hashtagRegex = /#(\w+)/g;
+  const matches = text.match(hashtagRegex);
+
+  if (!matches) return [];
+
+  // Remove # symbol and convert to lowercase, then remove duplicates
+  const hashtags = matches.map(tag => tag.slice(1).toLowerCase());
+  return Array.from(new Set(hashtags));
+};
+
+/**
+ * Saves hashtags for a post and creates associations.
+ *
+ * @param {number} postId - The ID of the post
+ * @param {string[]} hashtags - Array of hashtag names
+ */
+const saveHashtagsForPost = async (postId: number, hashtags: string[]) => {
+  if (!hashtags || hashtags.length === 0) return;
+
+  for (const tagName of hashtags) {
+    try {
+      // Find or create the hashtag
+      let hashtag = await prisma.hashtags.findUnique({
+        where: { name: tagName }
+      });
+
+      if (!hashtag) {
+        hashtag = await prisma.hashtags.create({
+          data: { name: tagName, post_count: 1 }
+        });
+      } else {
+        // Increment post count
+        await prisma.hashtags.update({
+          where: { id: hashtag.id },
+          data: { post_count: { increment: 1 } }
+        });
+      }
+
+      // Create association in post_hashtags (ignore if already exists)
+      await prisma.post_hashtags.create({
+        data: {
+          post_id: postId,
+          hashtag_id: hashtag.id
+        }
+      }).catch(() => {
+        // Ignore duplicate key errors
+      });
+    } catch (err) {
+      logger.error(`Error saving hashtag ${tagName}:`, err);
+    }
+  }
+};
 // Add Post
 /**
  * Creates a new post with the provided description and image URLs.
@@ -53,6 +116,10 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
         desc,
       },
     });
+
+    // Extract and save hashtags from description
+    const hashtags = extractHashtags(desc);
+    await saveHashtagsForPost(post.id, hashtags);
 
     const urls = JSON.parse(imgUrls);
 
@@ -88,12 +155,50 @@ export const addPost = async (req: RequestWithUser, res: Response) => {
     });
     console.log("SenderName ", sender);
 
+    // Generate dynamic notification message based on post content
+    let notificationMessage = `${sender?.name || 'Someone'}`;
+
+    // Check if there are media files
+    const mediaCount = urls && Array.isArray(urls) ? urls.length : 0;
+
+    if (mediaCount > 0) {
+      // Determine if it's photos or videos based on URL extension
+      const hasVideo = urls.some((media: any) => {
+        const url = typeof media === 'string' ? media : media?.url;
+        return url && (url.includes('.mp4') || url.includes('.mov') || url.includes('.webm'));
+      });
+
+      if (hasVideo) {
+        notificationMessage += mediaCount > 1
+          ? ` posted ${mediaCount} videos`
+          : ' posted a video';
+      } else {
+        notificationMessage += mediaCount > 1
+          ? ` shared ${mediaCount} photos`
+          : ' shared a photo';
+      }
+    } else {
+      notificationMessage += ' posted an update';
+    }
+
+    // Add hashtag information if present
+    if (hashtags.length > 0) {
+      const firstTwoHashtags = hashtags.slice(0, 2).map(tag => `#${tag}`).join(' ');
+      notificationMessage += ` about ${firstTwoHashtags}`;
+    }
+
+    // Add a snippet of the description if available and no hashtags
+    if (hashtags.length === 0 && desc && desc.trim().length > 0) {
+      const descSnippet = desc.length > 30 ? desc.substring(0, 30) + '...' : desc;
+      notificationMessage += `: "${descSnippet}"`;
+    }
+
     // will be used to send notification to the followers
     const notificationData = {
       user_sender_id: req.user?.id || -1,
       type: "post",
       resource_id: post.id,
-      message: `${sender?.name || req.user?.id} has posted something.`,
+      message: notificationMessage,
       isRead: false,
     };
 
@@ -126,8 +231,13 @@ export const editPost = async (req: RequestWithUser, res: Response) => {
   }
 
   try {
-    // First update the post
+    // Get old hashtags before update
+    const oldPostHashtags = await prisma.post_hashtags.findMany({
+      where: { post_id: parsedPostId },
+      include: { hashtags: true }
+    });
 
+    // First update the post
     const updatedPost = await prisma.posts.update({
       where: {
         id: parsedPostId,
@@ -144,8 +254,28 @@ export const editPost = async (req: RequestWithUser, res: Response) => {
       return res.status(404).send("Post not found");
     }
 
-    // Parse imgUrls if it's a string
+    // Remove old hashtag associations and decrement counts
+    for (const postHashtag of oldPostHashtags) {
+      await prisma.post_hashtags.delete({
+        where: {
+          post_id_hashtag_id: {
+            post_id: parsedPostId,
+            hashtag_id: postHashtag.hashtag_id
+          }
+        }
+      });
 
+      await prisma.hashtags.update({
+        where: { id: postHashtag.hashtag_id },
+        data: { post_count: { decrement: 1 } }
+      });
+    }
+
+    // Extract and save new hashtags
+    const newHashtags = extractHashtags(desc);
+    await saveHashtagsForPost(parsedPostId, newHashtags);
+
+    // Parse imgUrls if it's a string
     if (!imgUrls) {
       return res.status(200).send("Post Saved...");
     }

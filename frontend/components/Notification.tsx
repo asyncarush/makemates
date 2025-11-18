@@ -48,12 +48,11 @@ export default function Notification({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p
-                      className={`text-sm leading-tight truncate ${
+                      className={`text-sm leading-relaxed whitespace-normal break-words ${
                         !notification.isRead
                           ? "font-medium text-gray-900 dark:text-gray-100"
                           : "text-gray-700 dark:text-gray-300"
                       }`}
-                      title={notification.message}
                     >
                       {notification.message}
                     </p>

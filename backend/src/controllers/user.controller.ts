@@ -318,10 +318,13 @@ export async function getFriendList(req: RequestWithUser, res: Response) {
 
 // Set Profile Picture
 export async function setProfilePic(req: RequestWithUser, res: Response) {
-  // console.log("Reached here...");
+  console.log("Reached here...");
 
   const id = req.user?.id || -1;
   const { profileImgUrl }: any = req.body;
+
+
+  console.log("Profile Image URL : ", profileImgUrl)
 
   try {
     // Create a new profile image record
@@ -333,7 +336,7 @@ export async function setProfilePic(req: RequestWithUser, res: Response) {
       },
     });
 
-    // console.log("profileImage");
+    console.log("profileImage");
 
     // Update the user's profile image reference
     await prisma.users.update({
@@ -395,5 +398,30 @@ export async function getUserNotifications(
   } catch (error) {
     console.error("Error fetching notifications:", error);
     return res.status(500).send("Error fetching notifications");
+  }
+}
+
+// Mark all notifications as read
+export async function markNotificationsAsRead(
+  req: RequestWithUser,
+  res: Response
+) {
+  const userId = req.user?.id || -1;
+
+  try {
+    await prisma.notifications.updateMany({
+      where: {
+        user_reciever_id: userId,
+        isRead: false,
+      },
+      data: {
+        isRead: true,
+      },
+    });
+
+    return res.status(200).json({ message: "Notifications marked as read" });
+  } catch (error) {
+    console.error("Error marking notifications as read:", error);
+    return res.status(500).send("Error marking notifications as read");
   }
 }

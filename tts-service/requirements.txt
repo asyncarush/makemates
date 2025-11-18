@@ -1,0 +1,14 @@
+# Core dependencies
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.10.0
+
+# AI/ML libraries
+torch>=2.6.0
+torchaudio>=2.6.0
+transformers>=4.37.2
+snac @ git+https://github.com/hubertsiuzdak/snac.git
+
+# Utilities
+python-multipart==0.0.6
+numpy==1.26.3

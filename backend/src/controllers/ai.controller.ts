@@ -24,22 +24,29 @@ export const getNotificationSummary = async (
   }
 
   try {
-    // 1. Fetch UNREAD notifications from the database
-    // IMPORTANT: Added `noti."isRead" = FALSE` to only get unread notifications for a true "summary"
+    // 1. Fetch recent notifications (last 24 hours) regardless of read status
+    // This ensures the AI can summarize activities even if user checked notification panel
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
     const notificationsRaw = (await prisma.$queryRaw`
       SELECT
           u.name,
+          u.img as "profileImage",
           noti.message,
           noti.type as "notificationcategory",
+          noti."isRead",
           p.date, -- post date
           p.desc as "postdesc",
-          noti."createdAt" as "notificationCreatedAt" -- actual notification creation time
+          noti."createdAt" as "notificationCreatedAt", -- actual notification creation time
+          noti.resource_id as "resourceId",
+          (SELECT COUNT(*) FROM post_media WHERE post_id = p.id) as "mediaCount"
         FROM notifications noti
         LEFT JOIN users u ON u.id::text = noti.user_sender_id::text
-        LEFT JOIN posts p ON p.id::text = noti.resource_id::text
-        WHERE noti.user_reciever_id::text = ${userId.toString()} AND noti."isRead" = FALSE
+        LEFT JOIN posts p ON p.id::text = noti.resource_id::text AND noti.type = 'post'
+        WHERE noti.user_reciever_id::text = ${userId.toString()}
+          AND noti."createdAt" >= ${twentyFourHoursAgo}
         ORDER BY noti."createdAt" DESC
-        LIMIT 10
+        LIMIT 20
       `) as any[];
 
     // Get the current user's name
@@ -47,10 +54,14 @@ export const getNotificationSummary = async (
       await prisma.$queryRaw`SELECT name FROM users WHERE id=${userId}`; // Use userId directly
     const userName = currentUserResult[0]?.name || "there"; // Fallback if name not found
 
+    // Count actual unread notifications for the indicator
+    const unreadCount = notificationsRaw.filter((n) => !n.isRead).length;
+
     if (notificationsRaw.length === 0) {
-      // If no unread notifications, provide a simple, immediate response
+      // If no notifications in the last 24 hours
       return res.json({
-        summary: `Hey ${userName}! You're all caught up. No new activities from your friends right now.`,
+        summary: `Hey ${userName}! Pretty quiet around here. No new activities from your friends in the last 24 hours.`,
+        unreadCount: 0,
       });
     }
 
@@ -68,38 +79,51 @@ export const getNotificationSummary = async (
         timeAgo = `${Math.floor(minutes / 60)} hours ago`;
       else timeAgo = "yesterday"; // Or more specific for days
 
+      const mediaCount = parseInt(notif.mediaCount) || 0;
+
       return {
         from: notif.name || "Someone", // Fallback for sender name
         type: notif.notificationcategory,
-        message: notif.message, // raw notification message
+        message: notif.message, // Now includes dynamic info like "shared 3 photos about #travel"
         postDescription: notif.postdesc, // description for post-related notifications
+        hasMedia: mediaCount > 0,
+        mediaCount: mediaCount,
         timeAgo: timeAgo, // e.g., "5 minutes ago"
       };
     });
 
-    // 3. Generate AI summary using Ollama
+    // 3. Generate AI summary using Gemini
     // --- PROMPT STARTS HERE ---
     const prompt = `
-        You are a friendly, conversational, and slightly enthusiastic AI assistant, similar to a personal digital butler. Your primary goal is to brief the user, "${userName}", on their recent social media activities. Make the briefing sound like a friend telling them the news, not a robot reading a list.
+        You are a friendly, conversational AI assistant acting as "${userName}'s" personal social media briefing assistant. Your job is to give them a natural spoken update that will be converted to speech, about what their friends have been up to on the platform.
 
-        Here are ${userName}'s recent unread notifications, ordered from most recent to oldest:
+        Here are ${userName}'s recent notifications from the last 24 hours, ordered from most recent to oldest:
         ${JSON.stringify(notificationsData, null, 2)}
 
-        **Your task is to generate ONE SINGLE, continuous message that summarizes these notifications.**
+        **Your task is to generate ONE SINGLE, flowing spoken message that will be read aloud naturally.**
 
         **Guidelines for your summary:**
-        - **Greeting:** Start with a warm, personalized greeting that includes the user's name (e.g., "Good morning, ${userName}!" or "Hey ${userName}, ready for your update?").
-        - **Flow & Breaks:** Connect sentences naturally. Think of it as telling a friend what happened. Introduce topics smoothly and incorporate natural conversational pauses. For example, use phrases like "First up...", "And then...", "Speaking of that...", "Oh, also...", "Finally...".
-        - **Personality:** Be upbeat and engaging. Add subtle observations or lighthearted remarks where appropriate. If something seems interesting or fun, comment on it.
-        - **"Laughs" / Expression:** If a notification implies something humorous, exciting, or surprising, you can add a subtle conversational expression like "heh," "lol," or phrases such as "bet that's interesting!", "sounds fun!", "you're gonna love this one!" Try to integrate these naturally into the flow.
-        - **Conciseness:** Keep the entire briefing under 150 words.
-        - **No Technical Jargon:** Absolutely avoid terms like "notificationcategory," "resource_id," or specific database fields. Translate all information into plain, friendly language. Use relative times like "just now," "a few minutes ago," "earlier today," "yesterday."
-        - **Contextualization:** Briefly explain what a notification means if it's not immediately obvious (e.g., "Someone reacted to your post" could become "Someone showed some love for your latest photo").
-        - **Closing:** End with a natural closing and a simple, engaging question related to checking activities (e.g., "Ready to dive in?", "Want to check these out?", "Anything pique your interest?").
+        - **Warm Greeting:** Start with a friendly, natural greeting (e.g., "Hey ${userName}!", "What's up ${userName}?", "Hi there!").
+        - **Conversational Flow:** Write as if you're speaking to them directly. Use natural pauses indicated by commas and periods.
+        - **Highlight Key Activities:** Focus on the most interesting updates. Mention:
+          * New posts (especially with photos/videos or hashtags)
+          * Comments or interactions
+          * New followers
+          * Use the actual message content which now includes details like "shared 3 photos about #travel"
+        - **Natural Speech Patterns:** Use conversational phrases like "Looks like...", "Your friend...", "Also...", "Oh, and..."
+        - **Keep it Concise:** Aim for 80-120 words. Natural speaking length.
+        - **Use Plain Language:** Make it sound like a friend talking to them, not a formal report.
+        - **Time References:** Use natural time phrases like "just now", "a few minutes ago", "earlier", "today".
+        - **Friendly Close:** End with something natural like "Want to check it out?", "Ready to see what's new?", or "Should we take a look?"
 
-        **Important:** Your entire response MUST be a single, continuous string of text. Do NOT wrap it in JSON, markdown, or any other formatting besides the natural text itself.
+        **Critical Requirements:**
+        - Write EXACTLY how you would speak it out loud
+        - Must be a single flowing paragraph
+        - NO markdown, NO formatting, NO JSON
+        - Should sound natural when spoken by a text-to-speech system
+        - Use proper punctuation for natural speech pauses
 
-        Begin your single, continuous message now:
+        Generate the spoken briefing message now (plain text only):
     `;
     // --- PROMPT ENDS HERE ---
 
@@ -150,18 +174,14 @@ export const getNotificationSummary = async (
     }
     */
 
-    // 4. Mark notifications as read
-    // This ensures that the next brief only contains new unread notifications.
-    // Ensure you uncomment this line once you're confident with the flow.
-    await prisma.$executeRaw`
-      UPDATE notifications
-      SET "isRead" = TRUE
-      WHERE "user_reciever_id"::text = ${userId.toString()} AND "isRead" = FALSE;
-    `;
+    // 4. DON'T mark notifications as read here
+    // Let the user mark them as read manually via the notification panel
+    // This prevents conflict with the notification badge system
 
     // The frontend expects { summary: string }
     return res.json({
       summary: geminiData.candidates[0].content.parts[0].text.trim(),
+      unreadCount: unreadCount, // Include count for UI indicator (only unread ones)
     }); // .trim() removes leading/trailing whitespace
   } catch (error) {
     console.error("Error generating notification summary:", error);

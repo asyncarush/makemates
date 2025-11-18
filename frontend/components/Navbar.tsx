@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext } from "react";
+import React, { useContext, useMemo } from "react";
 import { TiHome } from "react-icons/ti";
 import { BsMessenger } from "react-icons/bs";
 import { BiSolidBell } from "react-icons/bi";
@@ -25,9 +25,9 @@ import { useLogout } from "@/hooks/useLogout";
 import { AuthContext } from "@/app/context/AuthContext";
 import FeedUploadBox from "@/app/(dashboard)/feed/_components/FeedUploadBox";
 import Notification from "./Notification";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { fetchUserNotifications } from "@/axios.config";
+import { fetchUserNotifications, markNotificationsAsRead } from "@/axios.config";
 import { RiProfileFill } from "react-icons/ri";
 import { ThemeToggle } from "./theme-toggle";
 import { Separator } from "@radix-ui/react-dropdown-menu";
@@ -35,6 +35,7 @@ import { Separator } from "@radix-ui/react-dropdown-menu";
 function Navbar() {
   const { currentUser }: any = useContext(AuthContext);
   const logout = useLogout();
+  const queryClient = useQueryClient();
 
   const handleLogout = async () => {
     await logout();
@@ -53,6 +54,25 @@ function Navbar() {
   if (isError) {
     console.log(error);
   }
+
+  // Calculate unread notification count
+  const unreadCount = useMemo(() => {
+    if (!notifications || !Array.isArray(notifications)) return 0;
+    return notifications.filter((n: any) => !n.isRead).length;
+  }, [notifications]);
+
+  // Mark notifications as read when dropdown opens
+  const handleNotificationOpen = async () => {
+    if (unreadCount > 0) {
+      try {
+        await markNotificationsAsRead();
+        // Refetch notifications to update the UI
+        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      } catch (error) {
+        console.error("Failed to mark notifications as read:", error);
+      }
+    }
+  };
 
   const navigation = [
     {
@@ -78,15 +98,16 @@ function Navbar() {
         <div className="relative">
           <BiSolidBell className="w-5 h-5 text-white hover:text-white transition-colors" />
           <div>
-            {notifications && (
+            {unreadCount > 0 && (
               <span className="absolute -top-2 -right-2 flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-white text-xs font-bold ring-2 ring-white">
-                {notifications.length}
+                {unreadCount}
               </span>
             )}
           </div>
         </div>
       ),
       Data: <Notification notifications={notifications} />,
+      onOpen: handleNotificationOpen,
     },
     {
       name: "setting",
@@ -163,9 +184,12 @@ function Navbar() {
       {/* Navigation */}
       <NavigationMenu>
         <NavigationMenuList className="flex items-center gap-2">
-          {navigation.map(({ name, Icon, Data }) => (
+          {navigation.map(({ name, Icon, Data, onOpen }) => (
             <NavigationMenuItem className={`relative`} key={name}>
-              <NavigationMenuTrigger className="h-10 w-10 p-0 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full flex items-center justify-center border border-white/20 focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200">
+              <NavigationMenuTrigger
+                onClick={() => onOpen && onOpen()}
+                className="h-10 w-10 p-0 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full flex items-center justify-center border border-white/20 focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200"
+              >
                 {Icon}
               </NavigationMenuTrigger>
               {Data && (
